@@ -14,9 +14,7 @@
   font-size: 13px;
 }
 
-.topBar strong {
-  font-weight: 700;
-}
+.topBar strong { font-weight: 700; }
 
 .nav {
   max-width: 1280px;
@@ -54,9 +52,7 @@
   outline: none;
 }
 
-.searchBar input:focus {
-  border-color: #2563eb;
-}
+.searchBar input:focus { border-color: #2563eb; }
 
 .searchBtn {
   position: absolute;
@@ -69,9 +65,7 @@
   align-items: center;
 }
 
-.searchBtn:hover {
-  color: #374151;
-}
+.searchBtn:hover { color: #374151; }
 
 .rightIcons {
   display: flex;
@@ -85,20 +79,64 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 6px 12px;
+  padding: 6px 10px;
   color: #4b5563;
-  font-size: 12px;
+  font-size: 11px;
   border-radius: 6px;
   transition: color 0.15s;
 }
 
-.iconBtn:hover {
+.iconBtn:hover { color: #2563eb; }
+
+/* 로그인 상태 - 유저 버튼 */
+.userBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
   color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: color 0.15s;
 }
 
-.cartBtn {
-  position: relative;
+.userBtn:hover { color: #1d4ed8; }
+
+.userAvatar {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
 }
+
+/* 로그아웃 버튼 */
+.logoutBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  color: #9ca3af;
+  font-size: 11px;
+  border-radius: 6px;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.logoutBtn:hover { color: #ef4444; }
+
+.cartBtn { position: relative; }
 
 .cartBadge {
   position: absolute;
@@ -120,6 +158,9 @@
   display: flex;
   padding: 8px;
   color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .mobileSearch {
@@ -147,9 +188,7 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.categoryWrapper {
-  position: relative;
-}
+.categoryWrapper { position: relative; }
 
 .categoryTrigger {
   display: flex;
@@ -158,12 +197,13 @@
   font-size: 14px;
   font-weight: 500;
   color: #374151;
-  padding: 4px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.categoryTrigger:hover {
-  color: #2563eb;
-}
+.categoryTrigger:hover { color: #2563eb; }
 
 .categoryDropdown {
   position: absolute;
@@ -199,10 +239,9 @@
   transition: color 0.15s;
 }
 
-.navLink:hover {
-  color: #2563eb;
-}
+.navLink:hover { color: #2563eb; }
 
+/* 모바일 메뉴 */
 .mobileMenu {
   border-top: 1px solid #e5e7eb;
   background-color: #ffffff;
@@ -226,31 +265,70 @@
   transition: color 0.15s;
 }
 
-.mobileMenuItem:last-child {
-  border-bottom: none;
-}
+.mobileMenuItem:last-child { border-bottom: none; }
+.mobileMenuItem:hover { color: #2563eb; }
 
-.mobileMenuItem:hover {
-  color: #2563eb;
+.mobileBtns {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .mobileLoginBtn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px;
-  margin-top: 16px;
-  border: 1px solid #d1d5db;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #2563eb;
   border-radius: 8px;
-  font-size: 14px;
-  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
   transition: background-color 0.15s;
 }
 
-.mobileLoginBtn:hover {
-  background-color: #f9fafb;
+.mobileLoginBtn:hover { background-color: #eff6ff; }
+
+.mobileSignupBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: #2563eb;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  transition: background-color 0.15s;
+}
+
+.mobileSignupBtn:hover { background-color: #1d4ed8; }
+
+.mobileLogoutBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.mobileLogoutBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 /* 반응형 */
@@ -259,5 +337,4 @@
   .navBottom { display: flex; }
   .mobileMenuBtn { display: none; }
   .mobileSearch { display: none; }
-  .iconBtnText { display: inline; }
 }
