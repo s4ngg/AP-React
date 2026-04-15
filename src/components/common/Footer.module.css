@@ -1,0 +1,90 @@
+.footer {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 640px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 1024px) {
+  .grid { grid-template-columns: 2fr 1fr 1fr; }
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.desc {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.contactList {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.hours {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.colTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.linkList a {
+  font-size: 13px;
+  color: #9ca3af;
+  transition: color 0.15s;
+}
+
+.linkList a:hover {
+  color: #ffffff;
+}
+
+.copyright {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #374151;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+}

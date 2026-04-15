@@ -1,0 +1,146 @@
+.section {
+  position: relative;
+  overflow: hidden;
+}
+
+.bannerWrap {
+  transition: background-color 0.3s;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .inner {
+    flex-direction: row;
+    padding: 48px 24px;
+  }
+}
+
+.textArea {
+  flex: 1;
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .textArea { text-align: left; }
+}
+
+.subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+@media (min-width: 1024px) {
+  .title { font-size: 48px; }
+}
+
+.desc {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.shopBtn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.shopBtn:hover {
+  background-color: #1d4ed8;
+}
+
+.imageArea {
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+}
+
+@media (min-width: 1024px) {
+  .imageArea { max-width: none; }
+}
+
+.imageBox {
+  position: relative;
+  padding-top: 75%;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .imageBox { padding-top: 62.5%; }
+}
+
+.imageBox img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.prevBtn, .nextBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.prevBtn { left: 16px; }
+.nextBtn { right: 16px; }
+
+.prevBtn:hover, .nextBtn:hover {
+  background-color: #f3f4f6;
+}
+
+.dots {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(0,0,0,0.2);
+  transition: background-color 0.15s;
+}
+
+.dotActive {
+  background-color: #2563eb;
+}
