@@ -1,0 +1,263 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topBar {
+  background-color: #2563eb;
+  color: #ffffff;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.topBar strong {
+  font-weight: 700;
+}
+
+.nav {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+.navTop {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.searchBar {
+  flex: 1;
+  max-width: 480px;
+  position: relative;
+  display: none;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 8px 40px 8px 14px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.searchBar input:focus {
+  border-color: #2563eb;
+}
+
+.searchBtn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  padding: 0 12px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+}
+
+.searchBtn:hover {
+  color: #374151;
+}
+
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.iconBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  color: #4b5563;
+  font-size: 12px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.iconBtn:hover {
+  color: #2563eb;
+}
+
+.cartBtn {
+  position: relative;
+}
+
+.cartBadge {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileMenuBtn {
+  display: flex;
+  padding: 8px;
+  color: #4b5563;
+}
+
+.mobileSearch {
+  margin-top: 12px;
+  position: relative;
+}
+
+.mobileSearch input {
+  width: 100%;
+  padding: 8px 40px 8px 14px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.navBottom {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.categoryWrapper {
+  position: relative;
+}
+
+.categoryTrigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  padding: 4px 0;
+}
+
+.categoryTrigger:hover {
+  color: #2563eb;
+}
+
+.categoryDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  width: 160px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.categoryDropdown a {
+  display: block;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #374151;
+  transition: background-color 0.15s;
+}
+
+.categoryDropdown a:hover {
+  background-color: #f9fafb;
+  color: #2563eb;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  transition: color 0.15s;
+}
+
+.navLink:hover {
+  color: #2563eb;
+}
+
+.mobileMenu {
+  border-top: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  padding: 12px 16px;
+}
+
+.mobileMenuLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.mobileMenuItem {
+  display: block;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+  transition: color 0.15s;
+}
+
+.mobileMenuItem:last-child {
+  border-bottom: none;
+}
+
+.mobileMenuItem:hover {
+  color: #2563eb;
+}
+
+.mobileLoginBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  margin-top: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  transition: background-color 0.15s;
+}
+
+.mobileLoginBtn:hover {
+  background-color: #f9fafb;
+}
+
+/* 반응형 */
+@media (min-width: 1024px) {
+  .searchBar { display: block; }
+  .navBottom { display: flex; }
+  .mobileMenuBtn { display: none; }
+  .mobileSearch { display: none; }
+  .iconBtnText { display: inline; }
+}
