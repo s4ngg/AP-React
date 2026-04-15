@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import OrderPage from "./pages/order/OrderPage"
 import Header from "./components/common/Header"
 import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
@@ -19,7 +20,7 @@ function App() {
             {/* <Route path="/login" element={<LoginPage />} /> */}
             {/* <Route path="/signup" element={<SignupPage />} /> */}
             {/* <Route path="/mypage" element={<MyPage />} /> */}
-            {/* <Route path="/order" element={<OrderPage />} /> */}
+            <Route path="/order" element={<OrderPage />} />
             {/* <Route path="/admin" element={<AdminPage />} /> */}
           </Routes>
         </div>
