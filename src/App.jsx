@@ -3,6 +3,8 @@ import OrderPage from "./pages/order/OrderPage"
 import Header from "./components/common/Header"
 import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
+import CartPage from "./pages/cart/CartPage"
+import ProductDetailPage from "./pages/product/ProductDetailPage"
 import "./index.css"
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
             {/* <Route path="/mypage" element={<MyPage />} /> */}
             <Route path="/order" element={<OrderPage />} />
             {/* <Route path="/admin" element={<AdminPage />} /> */}
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/products/:id" element={<ProductDetailPage />} />
           </Routes>
         </div>
         <Footer />
