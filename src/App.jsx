@@ -7,7 +7,8 @@ import MyPage from "./pages/member/MyPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
 import "./index.css"
-
+import SignupPage from "./pages/member/SignupPage"
+import LoginPage from "./pages/member/LoginPage"
 function App() {
   return (
     <BrowserRouter>
@@ -20,8 +21,8 @@ function App() {
             {/* <Route path="/products" element={<ProductListPage />} /> */}
             {/* <Route path="/products/:id" element={<ProductDetailPage />} /> */}
             {/* <Route path="/cart" element={<CartPage />} /> */}
-            {/* <Route path="/login" element={<LoginPage />} /> */}
-            {/* <Route path="/signup" element={<SignupPage />} /> */}
+            {<Route path="/login" element={<LoginPage />} /> }
+            { <Route path="/signup" element={<SignupPage />} /> }
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/order" element={<OrderPage />} />
             {/* <Route path="/admin" element={<AdminPage />} /> */}
