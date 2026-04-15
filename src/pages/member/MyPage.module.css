@@ -1,0 +1,649 @@
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #111827;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+}
+
+/* ─── 사이드바 ─────────────────────────── */
+.sidebar {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+  }
+}
+
+.userCard {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.userName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.userEmail {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.tabNav {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f3f4f6;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.tabBtn:last-child {
+  border-bottom: none;
+}
+
+.tabBtn:hover {
+  background-color: #f9fafb;
+  color: #2563eb;
+}
+
+.tabBtnActive {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.tabBtnDanger:hover {
+  color: #ef4444;
+  background-color: #fff5f5;
+}
+
+.tabBtnDanger.tabBtnActive {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.tabChevron {
+  margin-left: auto;
+  color: #d1d5db;
+}
+
+/* ─── 콘텐츠 영역 ─────────────────────── */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.section {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ─── 내 정보 ─────────────────────────── */
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.infoLabel {
+  width: 60px;
+  flex-shrink: 0;
+  color: #9ca3af;
+  font-size: 13px;
+  padding-top: 2px;
+}
+
+.infoValue {
+  color: #111827;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  font-family: inherit;
+  width: 100%;
+}
+
+.input:focus {
+  border-color: #2563eb;
+}
+
+.addressInputWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.actionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.editBtn {
+  padding: 6px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: background-color 0.15s;
+}
+
+.editBtn:hover {
+  background-color: #f9fafb;
+}
+
+.cancelBtn {
+  padding: 9px 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: background-color 0.15s;
+}
+
+.cancelBtn:hover {
+  background-color: #f9fafb;
+}
+
+.saveBtn {
+  padding: 9px 24px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.saveBtn:hover {
+  background-color: #1d4ed8;
+}
+
+/* 비밀번호 변경 */
+.pwSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.subSectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pwForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pwInputWrap {
+  position: relative;
+}
+
+.pwInputWrap .input {
+  padding-right: 40px;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+}
+
+.eyeBtn:hover {
+  color: #374151;
+}
+
+/* ─── 주문 내역 ───────────────────────── */
+.orderList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.orderCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.orderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.orderMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orderDate {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.orderNum {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusOrder {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.statusShipping {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.statusDone {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.statusCancel {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.orderItems {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orderItem {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.orderItemImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #f3f4f6;
+}
+
+.orderItemInfo {
+  flex: 1;
+}
+
+.orderItemName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.orderItemMeta {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.orderItemPrice {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.orderFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid #f3f4f6;
+  background-color: #fafafa;
+}
+
+.orderTotal {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.orderTotal strong {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.cancelOrderBtn {
+  padding: 6px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: background-color 0.15s;
+}
+
+.cancelOrderBtn:hover {
+  background-color: #f9fafb;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* ─── 배송지 관리 ─────────────────────── */
+.addBtn {
+  padding: 6px 14px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+
+.addBtn:hover {
+  background-color: #1d4ed8;
+}
+
+.addressList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.addressCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.addressCardDefault {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.addressCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.addressNameWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addressName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.defaultBadge {
+  padding: 2px 8px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.addressActions {
+  display: flex;
+  gap: 6px;
+}
+
+.addressActionBtn {
+  padding: 4px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: background-color 0.15s;
+}
+
+.addressActionBtn:hover {
+  background-color: #f9fafb;
+}
+
+.addressDeleteBtn {
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+.addressDeleteBtn:hover {
+  background-color: #fee2e2;
+}
+
+.addressPhone {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.addressText {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* ─── 회원 탈퇴 ───────────────────────── */
+.withdrawalWrap {
+  max-width: 480px;
+}
+
+.withdrawalWarning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.withdrawalWarningText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.withdrawalList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-left: 4px;
+}
+
+.withdrawalList li {
+  font-size: 14px;
+  color: #374151;
+  padding-left: 12px;
+  position: relative;
+}
+
+.withdrawalList li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #9ca3af;
+}
+
+.withdrawalNotice {
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.withdrawalBtn {
+  padding: 10px 24px;
+  border: 1.5px solid #ef4444;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ef4444;
+  background-color: #ffffff;
+  transition: all 0.15s;
+}
+
+.withdrawalBtn:hover {
+  background-color: #fee2e2;
+}
+
+.withdrawalConfirm {
+  margin-top: 16px;
+}
+
+.withdrawalConfirmText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.withdrawalConfirmBtn {
+  padding: 9px 24px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.withdrawalConfirmBtn:hover {
+  background-color: #dc2626;
+}
