@@ -17,7 +17,6 @@ import FindEmailPage from "./pages/member/FindEmailPage"
 import FindPasswordPage from "./pages/member/FindPasswordPage"
 import ResetPasswordPage from "./pages/member/ResetPasswordPage"
 import "./index.css"
-import ProductListPage from "./pages/product/ProductListPage";
 
 function App() {
   return (
@@ -41,7 +40,6 @@ function App() {
             <Route path="/find-email" element={<FindEmailPage />} />
             <Route path="/find-password" element={<FindPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/products" element={<ProductListPage />} />
           </Routes>
         </div>
         <Footer />
