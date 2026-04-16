@@ -5,6 +5,7 @@ import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
+import ReviewWritePage from "./pages/product/ReviewWritePage"
 import "./index.css"
 
 function App() {
@@ -18,7 +19,6 @@ function App() {
             {/* 추후 추가 */}
             {/* <Route path="/products" element={<ProductListPage />} /> */}
             {/* <Route path="/products/:id" element={<ProductDetailPage />} /> */}
-            {/* <Route path="/cart" element={<CartPage />} /> */}
             {/* <Route path="/login" element={<LoginPage />} /> */}
             {/* <Route path="/signup" element={<SignupPage />} /> */}
             {/* <Route path="/mypage" element={<MyPage />} /> */}
@@ -26,6 +26,7 @@ function App() {
             {/* <Route path="/admin" element={<AdminPage />} /> */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/products/:id/review/write" element={<ReviewWritePage />} />
           </Routes>
         </div>
         <Footer />
