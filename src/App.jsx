@@ -5,7 +5,11 @@ import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
+<<<<<<< HEAD
 import ReviewWritePage from "./pages/product/ReviewWritePage"
+=======
+import CustomerPage from "./pages/coustomer/CustomerPage"
+>>>>>>> 93d6a331e20155e2f0939d0755483b27fd3a3b1d
 import "./index.css"
 
 function App() {
