@@ -14,7 +14,7 @@ import SignupCompletePage from "./pages/member/SignupCompletePage"
 import FindEmailPage from "./pages/member/FindEmailPage"
 import FindPasswordPage from "./pages/member/FindPasswordPage"
 import ResetPasswordPage from "./pages/member/ResetPasswordPage"
-import CustomerPage from "./pages/coustomer/CustomerPage"
+import CustomerPage from "./pages/customer/CustomerPage"
 import "./index.css"
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
                 <div style={{ flex: 1 }}>
                     <Routes>
                         <Route path="/" element={<MainPage />} />
-                        <Route path="/order" element={<OrderPage />} />
+                        <Route path="/order" element={<OrderPage />} />  
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/products/:id" element={<ProductDetailPage />} />
                         <Route path="/customer" element={<CustomerPage />} />
