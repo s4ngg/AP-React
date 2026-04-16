@@ -1,0 +1,161 @@
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    gap: 32px;
+    padding: 50px 16px;
+    flex-grow: 1; /* App.css 스타일 유지 */
+    background-color: #f9fafb; /* 메인 페이지 배경색 계승 */
+}
+
+/* 왼쪽 사이드바 - AllPick 디자인 시스템 적용 */
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+}
+
+.sideTitle {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #111827;
+}
+
+.menuList {
+    list-style: none;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px; /* 메인 페이지 카드 라운드 계승 */
+    background: #fff;
+    overflow: hidden;
+}
+
+.menuItem, .menuActive {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.3s; /* App.css transition 계승 */
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 15px;
+}
+
+.menuItem { color: #4b5563; }
+.menuItem:hover {
+    background-color: #f9fafb;
+    color: #2563eb; /* AllPick 포인트 컬러 */
+}
+
+.menuActive {
+    background-color: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.arrowIcon {
+    margin-left: auto;
+    color: #d1d5db;
+}
+
+/* 오른쪽 메인 콘텐츠 영역 - 모던 카드 스타일 적용 */
+.contentArea {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 메인 페이지 카드 쉐도우 계승 */
+}
+
+.contentHeader {
+    padding: 24px 32px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.contentHeader h3 { font-size: 20px; font-weight: 700; color: #111827; }
+
+.contentBody {
+    padding: 32px;
+    color: #374151;
+}
+
+.homeGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.quickCard {
+    padding: 30px;
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.quickCard:hover {
+    border-color: #2563eb; /* App.css hover 효과 참고 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.iconCircle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #eff6ff; /* 메인 포인트 컬러의 연한 배경 */
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quickCard h4 { font-size: 17px; font-weight: 600; }
+.quickCard p { font-size: 14px; color: #6b7280; margin-bottom: 20px; flex: 1; }
+.quickCard p span { color: #2563eb; font-weight: 500; }
+
+.cardBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background-color: #2563eb;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.cardBtnSub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background-color: #fff;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* 1024px 미만일 때 사이드바 상단 배치 */
+@media (max-width: 1024px) {
+    .container { flex-direction: column; padding: 24px 20px; }
+    .sidebar { width: 100%; }
+}
