@@ -5,7 +5,7 @@ import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
-import CustomerPage from "./pages/coustomer/CustomerPage"
+import CustomerPage from "./pages/customer/CustomerPage"
 import "./index.css"
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
             {/* <Route path="/admin" element={<AdminPage />} /> */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/products/:id" element={<CustomerPage/>} />
+            <Route path="/customer" element={<CustomerPage/>} />
           </Routes>
         </div>
         <Footer />
