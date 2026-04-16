@@ -1,0 +1,42 @@
+.wrapper {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+.main {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 16px;
+}
+
+.steps {
+  margin-bottom: 32px;
+}
+
+.titleSection {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 30px;
+  }
+}
+
+.description {
+  margin-top: 8px;
+  color: var(--color-muted);
+}
+
+.content {
+  max-width: 448px;
+  margin: 0 auto;
+}

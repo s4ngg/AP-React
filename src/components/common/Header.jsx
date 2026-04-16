@@ -1,21 +1,21 @@
 import { Link, useNavigate } from "react-router-dom"
-import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut } from "lucide-react"
 import { useState } from "react"
+import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones } from "lucide-react"
 import useAuthStore from "../../store/authStore"
 import styles from "./Header.module.css"
 
 const categories = [
-  { name: "뷰티",  href: "/products?category=beauty" },
-  { name: "패션",  href: "/products?category=fashion" },
-  { name: "식품",  href: "/products?category=food" },
-  { name: "주류",  href: "/products?category=alcohol" },
-  { name: "리빙",  href: "/products?category=living" },
+  { name: "뷰티", href: "/products?category=beauty" },
+  { name: "패션", href: "/products?category=fashion" },
+  { name: "식품", href: "/products?category=food" },
+  { name: "주류", href: "/products?category=alcohol" },
+  { name: "리빙", href: "/products?category=living" },
 ]
 
 const navLinks = [
   { name: "특별할인", href: "#" },
-  { name: "이벤트",   href: "#" },
-  { name: "쿠폰",    href: "#" },
+  { name: "이벤트", href: "#" },
+  { name: "쿠폰", href: "#" },
   { name: "베스트셀러", href: "#" },
 ]
 
@@ -86,6 +86,11 @@ export default function Header() {
               <ShoppingCart size={20} />
               <span>장바구니</span>
               <span className={styles.cartBadge}>3</span>
+            </Link>
+
+            <Link to="/customer" className={styles.iconBtn}>
+              <Headphones size={20} />
+              <span>고객센터</span>
             </Link>
 
             {/* 모바일 메뉴 버튼 */}
@@ -163,6 +168,13 @@ export default function Header() {
             ))}
           </div>
 
+          <Link
+            to="/customer"
+            className={styles.mobileMenuItem}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            고객센터
+          </Link>
           <div className={styles.mobileBtns}>
             {isLoggedIn ? (
               <>
