@@ -16,6 +16,10 @@ import SignupCompletePage from "./pages/member/SignupCompletePage"
 import FindEmailPage from "./pages/member/FindEmailPage"
 import FindPasswordPage from "./pages/member/FindPasswordPage"
 import ResetPasswordPage from "./pages/member/ResetPasswordPage"
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
+import AdminMemberPage from "./pages/admin/AdminMemberPage"
+import AdminProductsPage from "./pages/admin/AdminProductsPage"
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage"
 import "./index.css"
 
 function App() {
@@ -40,6 +44,10 @@ function App() {
             <Route path="/find-email" element={<FindEmailPage />} />
             <Route path="/find-password" element={<FindPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/members" element={<AdminMemberPage />} />
+            <Route path="/admin/products" element={<AdminProductsPage />} />
+            <Route path="/admin/orders" element={<AdminOrdersPage />} />
           </Routes>
         </div>
         <Footer />
