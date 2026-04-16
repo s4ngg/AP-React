@@ -1,0 +1,78 @@
+.faqContainer { width: 100%; }
+
+.categoryBar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.catBtn, .catBtnActive {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #fff;
+    color: #6b7280;
+}
+
+.catBtnActive {
+    background-color: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+    font-weight: 600;
+}
+
+.accordionList { border-top: 1px solid #111827; }
+
+.faqItem { border-bottom: 1px solid #f3f4f6; }
+
+.questionBox {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    cursor: pointer;
+    background-color: #fff;
+    transition: background-color 0.2s;
+}
+
+.questionBox:hover { background-color: #f9fafb; }
+
+.questionBox.open { background-color: #f8faff; }
+
+.categoryTag {
+    color: #2563eb;
+    font-weight: 600;
+    margin-right: 12px;
+    min-width: 70px;
+}
+
+.questionText {
+    flex: 1;
+    font-weight: 500;
+    color: #111827;
+}
+
+.answerBox {
+    background-color: #f9fafb;
+    padding: 20px 20px 20px 102px; /* 카테고리 태그 너비만큼 여백 */
+    border-top: 1px solid #f3f4f6;
+    animation: slideDown 0.3s ease-out;
+}
+
+.answerContent {
+    color: #4b5563;
+    line-height: 1.6;
+    font-size: 14.5px;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .answerBox { padding: 20px; }
+}
