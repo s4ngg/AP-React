@@ -5,7 +5,11 @@ import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
+<<<<<<< HEAD
+import ReviewWritePage from "./pages/product/ReviewWritePage"
+=======
 import CustomerPage from "./pages/coustomer/CustomerPage"
+>>>>>>> 93d6a331e20155e2f0939d0755483b27fd3a3b1d
 import "./index.css"
 
 function App() {
@@ -19,7 +23,6 @@ function App() {
             {/* 추후 추가 */}
             {/* <Route path="/products" element={<ProductListPage />} /> */}
             {/* <Route path="/products/:id" element={<ProductDetailPage />} /> */}
-            {/* <Route path="/cart" element={<CartPage />} /> */}
             {/* <Route path="/login" element={<LoginPage />} /> */}
             {/* <Route path="/signup" element={<SignupPage />} /> */}
             {/* <Route path="/mypage" element={<MyPage />} /> */}
@@ -27,7 +30,7 @@ function App() {
             {/* <Route path="/admin" element={<AdminPage />} /> */}
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/products/:id" element={<CustomerPage/>} />
+            <Route path="/products/:id/review/write" element={<ReviewWritePage />} />
           </Routes>
         </div>
         <Footer />
