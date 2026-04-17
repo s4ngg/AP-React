@@ -1,0 +1,61 @@
+.deliveryContainer { width: 100%; }
+
+.summaryBox {
+    background-color: #f8faff;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #e5edff;
+    margin-bottom: 40px;
+}
+
+.orderLabel { color: #6b7280; font-size: 14px; margin-right: 10px; }
+.orderValue { font-weight: 700; color: #111827; }
+
+.deliveryStatus { display: flex; align-items: center; gap: 12px; margin-top: 15px; }
+.truckIcon { color: #2563eb; }
+.statusText { font-size: 18px; color: #374151; }
+.blue { color: #2563eb; }
+
+.timeline {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 50px;
+    position: relative;
+    padding: 0 20px;
+}
+
+.stepItem { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+
+.iconPoint { color: #d1d5db; margin-bottom: 10px; z-index: 1; background: #fff; }
+.active .iconPoint { color: #2563eb; }
+
+.circle { width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 50%; }
+
+.stepStatus { font-weight: 600; font-size: 14px; color: #9ca3af; }
+.active .stepStatus { color: #111827; }
+.stepDate { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+.line {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background-color: #e5e7eb;
+}
+
+.active .line { background-color: #2563eb; }
+
+.detailList { border-top: 1px solid #f3f4f6; padding-top: 30px; }
+.detailTitle { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 20px; }
+
+.detailItem {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #f9fafb;
+    font-size: 14px;
+}
+
+.time { width: 100px; color: #6b7280; }
+.location { width: 150px; font-weight: 600; color: #374151; }
+.desc { flex: 1; color: #374151; }

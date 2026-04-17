@@ -1,0 +1,30 @@
+.otpContainer {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.otpSlot {
+  width: 48px;
+  height: 56px;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text);
+  background-color: var(--color-card);
+  outline: none;
+  transition: border-color 0.2s;
+  caret-color: var(--color-primary);
+}
+
+.otpSlot:focus {
+  border-color: var(--color-primary);
+}
+
+.otpSlot:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}

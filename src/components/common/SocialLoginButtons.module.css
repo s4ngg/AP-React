@@ -1,0 +1,72 @@
+.container {
+  width: 100%;
+}
+
+.divider {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.dividerLine {
+  border-top: 1px solid var(--color-border);
+}
+
+.dividerText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--color-bg);
+  padding: 0 16px;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn {
+  display: flex;
+  height: 48px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.btnGoogle {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card);
+  color: var(--color-text);
+}
+
+.btnGoogle:hover {
+  background-color: var(--color-bg);
+}
+
+.btnKakao {
+  background-color: #FEE500;
+  color: #191919;
+}
+
+.btnKakao:hover {
+  opacity: 0.9;
+}
+
+.btnNaver {
+  background-color: #03C75A;
+  color: #fff;
+}
+
+.btnNaver:hover {
+  opacity: 0.9;
+}
