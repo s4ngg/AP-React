@@ -142,30 +142,6 @@ export default function AdminMemberPage() {
     setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
   }
 
-  const handleSellerStatusToggle = (sellerId) => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setSellers((prev) =>
-        prev.map((m) =>
-          m.id === sellerId
-            ? { ...m, status: m.status === "활성" ? "정지" : "활성" }
-            : m
-        )
-      )
-      setIsLoading(false)
-    }, 500)
-  }
-
-  const handleSellerApprove = (sellerId) => {
-    const approved = pendingSellers.find((s) => s.id === sellerId)
-    setSellers((prev) => [...prev, { ...approved, status: "활성" }])
-    setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
-  }
-
-  const handleSellerReject = (sellerId) => {
-    setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
-  }
-
   return (
     <div className={styles.adminLayout}>
       <AdminSidebar />
