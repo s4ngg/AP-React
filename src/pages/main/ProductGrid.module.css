@@ -192,6 +192,11 @@
   font-size: 11px;
   border-radius: 4px;
 }
+.shippingArea {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
 
 .cartBtn {
   width: 100%;

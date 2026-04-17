@@ -1,8 +1,7 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
 import { useState } from "react"
 import styles from "./ProductGrid.module.css"
-import { useNavigate } from "react-router-dom"
 
 
 const sortOptions = [
@@ -32,7 +31,9 @@ function ProductCard({ product }) {
   return (
     <div className={styles.card}>
       <div className={styles.imageBox}>
-        <img src={product.image} alt={product.name} />
+        <Link to={`/products/${product.id}`}>
+          <img src={product.image} alt={product.name} />
+        </Link>
         {product.badge && <span className={styles.badge}>{product.badge}</span>}
         <button className={styles.wishBtn} onClick={() => setLiked(!liked)} aria-label="위시리스트">
           <Heart size={16} fill={liked ? "#ef4444" : "none"} color={liked ? "#ef4444" : "#9ca3af"} />
@@ -49,11 +50,13 @@ function ProductCard({ product }) {
         {product.originalPrice && (
           <div className={styles.originalPrice}>{product.originalPrice.toLocaleString()}원</div>
         )}
-        {product.freeShipping && (
-          <div className={styles.shipping}>
-            <Truck size={11} />무료배송
-          </div>
-        )}
+        <div className={styles.shippingArea}>
+          {product.freeShipping && (
+            <div className={styles.shipping}>
+              <Truck size={11} />무료배송
+            </div>
+          )}
+        </div>
         <button className={styles.cartBtn}>
           <ShoppingCart size={14} />장바구니
         </button>
