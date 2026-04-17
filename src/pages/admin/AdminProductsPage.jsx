@@ -29,9 +29,9 @@ export default function AdminProductsPage() {
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
     return products.filter((p) => {
-      const matchCategory = selectedCategory === "전체" || p.category === selectedCategory
-      const matchSearch = !term || p.name.toLowerCase().includes(term)
-      return matchCategory && matchSearch
+      const matchesSearch = !term || p.name.toLowerCase().includes(term)
+      const matchesCategory = selectedCategory === "전체" || p.category === selectedCategory
+      return matchesSearch && matchesCategory
     })
   }, [products, searchTerm, selectedCategory])
 

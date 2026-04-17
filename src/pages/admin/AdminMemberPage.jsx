@@ -3,6 +3,9 @@ import { Search, CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminMemberPage.module.css"
 
+const TABS = ["구매자", "판매자", "판매자 승인"]
+
+// 임시 구매자 데이터 (추후 API 연동 예정)
 const mockBuyers = [
   { id: 1, name: "김민수", email: "minsu@example.com", joinedAt: "2025-01-15", status: "활성" },
   { id: 2, name: "이영희", email: "younghee@example.com", joinedAt: "2025-02-03", status: "활성" },
@@ -11,33 +14,87 @@ const mockBuyers = [
   { id: 5, name: "정해인", email: "haein@example.com", joinedAt: "2025-03-28", status: "활성" },
 ]
 
+// 임시 판매자 데이터 — sellers 테이블 기준 (추후 API 연동 예정)
 const mockSellers = [
-  { id: 1, name: "나이키코리아", email: "nike@seller.com", shopName: "나이키 공식몰", joinedAt: "2025-01-10", status: "활성" },
-  { id: 2, name: "설화수", email: "sulwhasoo@seller.com", shopName: "설화수 공식", joinedAt: "2025-02-14", status: "활성" },
-  { id: 3, name: "무인양품", email: "muji@seller.com", shopName: "MUJI Korea", joinedAt: "2025-03-01", status: "정지" },
+  {
+    id: 1,
+    memberId: 10,
+    businessName: "뷰티스타일샵",
+    businessNumber: "123-45-67890",
+    representativeName: "홍길동",
+    bankName: "국민은행",
+    bankAccount: "123-456-789012",
+    status: "APPROVED",
+    registeredAt: "2025-01-20",
+  },
+  {
+    id: 2,
+    memberId: 11,
+    businessName: "패션킹",
+    businessNumber: "234-56-78901",
+    representativeName: "김철수",
+    bankName: "신한은행",
+    bankAccount: "234-567-890123",
+    status: "APPROVED",
+    registeredAt: "2025-02-10",
+  },
+  {
+    id: 3,
+    memberId: 12,
+    businessName: "리빙하우스",
+    businessNumber: "345-67-89012",
+    representativeName: "이순신",
+    bankName: "하나은행",
+    bankAccount: "345-678-901234",
+    status: "SUSPENDED",
+    registeredAt: "2025-03-05",
+  },
 ]
 
+// 임시 승인 대기 판매자 데이터 (추후 API 연동 예정)
 const mockPendingSellers = [
-  { id: 1, name: "홍길동", email: "hong@apply.com", shopName: "홍길동패션", businessNum: "123-45-67890", appliedAt: "2026-04-15" },
-  { id: 2, name: "이순신", email: "lee@apply.com", shopName: "순신뷰티", businessNum: "987-65-43210", appliedAt: "2026-04-16" },
-  { id: 3, name: "강감찬", email: "kang@apply.com", shopName: "감찬리빙", businessNum: "456-78-90123", appliedAt: "2026-04-17" },
+  {
+    id: 4,
+    memberId: 13,
+    businessName: "트렌디샵",
+    businessNumber: "456-78-90123",
+    representativeName: "박영수",
+    bankName: "우리은행",
+    bankAccount: "456-789-012345",
+    status: "PENDING",
+    registeredAt: "2025-04-10",
+  },
+  {
+    id: 5,
+    memberId: 14,
+    businessName: "글로우뷰티",
+    businessNumber: "567-89-01234",
+    representativeName: "최지연",
+    bankName: "카카오뱅크",
+    bankAccount: "567-890-123456",
+    status: "PENDING",
+    registeredAt: "2025-04-14",
+  },
 ]
 
-const TABS = ["구매자", "판매자", "판매자 승인"]
+const sellerStatusLabel = (status) => {
+  if (status === "APPROVED") return "승인"
+  if (status === "SUSPENDED") return "정지"
+  return status
+}
 
 export default function AdminMemberPage() {
-  const [activeTab, setActiveTab] = useState("구매자")
+  const [activeTab, setActiveTab] = useState(0)
   const [buyers, setBuyers] = useState(mockBuyers)
   const [sellers, setSellers] = useState(mockSellers)
   const [pendingSellers, setPendingSellers] = useState(mockPendingSellers)
   const [searchTerm, setSearchTerm] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
 
   const filteredBuyers = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
     if (!term) return buyers
     return buyers.filter(
-      (m) => m.name.toLowerCase().includes(term) || m.email.toLowerCase().includes(term)
+      (b) => b.name.toLowerCase().includes(term) || b.email.toLowerCase().includes(term)
     )
   }, [buyers, searchTerm])
 
@@ -45,27 +102,44 @@ export default function AdminMemberPage() {
     const term = searchTerm.trim().toLowerCase()
     if (!term) return sellers
     return sellers.filter(
-      (m) => m.name.toLowerCase().includes(term) || m.email.toLowerCase().includes(term)
+      (s) =>
+        s.businessName.toLowerCase().includes(term) ||
+        s.representativeName.toLowerCase().includes(term)
     )
   }, [sellers, searchTerm])
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab)
+  const handleTabChange = (index) => {
+    setActiveTab(index)
     setSearchTerm("")
   }
 
-  const handleBuyerStatusToggle = (memberId) => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setBuyers((prev) =>
-        prev.map((m) =>
-          m.id === memberId
-            ? { ...m, status: m.status === "활성" ? "정지" : "활성" }
-            : m
-        )
+  const handleBuyerStatusToggle = (buyerId) => {
+    setBuyers((prev) =>
+      prev.map((b) =>
+        b.id === buyerId ? { ...b, status: b.status === "활성" ? "정지" : "활성" } : b
       )
-      setIsLoading(false)
-    }, 500)
+    )
+  }
+
+  const handleSellerStatusToggle = (sellerId) => {
+    setSellers((prev) =>
+      prev.map((s) =>
+        s.id === sellerId
+          ? { ...s, status: s.status === "APPROVED" ? "SUSPENDED" : "APPROVED" }
+          : s
+      )
+    )
+  }
+
+  const handleSellerApprove = (sellerId) => {
+    const target = pendingSellers.find((s) => s.id === sellerId)
+    if (!target) return
+    setSellers((prev) => [...prev, { ...target, status: "APPROVED" }])
+    setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
+  }
+
+  const handleSellerReject = (sellerId) => {
+    setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
   }
 
   const handleSellerStatusToggle = (sellerId) => {
@@ -99,15 +173,15 @@ export default function AdminMemberPage() {
         <h1 className={styles.pageTitle}>회원 관리</h1>
 
         {/* 탭 */}
-        <div className={styles.tabBar}>
-          {TABS.map((tab) => (
+        <div className={styles.tabList}>
+          {TABS.map((tab, index) => (
             <button
               key={tab}
-              className={`${styles.tabBtn} ${activeTab === tab ? styles.tabBtnActive : ""}`}
-              onClick={() => handleTabChange(tab)}
+              className={`${styles.tabBtn} ${activeTab === index ? styles.tabBtnActive : ""}`}
+              onClick={() => handleTabChange(index)}
             >
               {tab}
-              {tab === "판매자 승인" && pendingSellers.length > 0 && (
+              {index === 2 && pendingSellers.length > 0 && (
                 <span className={styles.badge}>{pendingSellers.length}</span>
               )}
             </button>
@@ -115,166 +189,219 @@ export default function AdminMemberPage() {
         </div>
 
         <div className={styles.section}>
-          {/* 검색 (판매자 승인 탭에서는 숨김) */}
-          {activeTab !== "판매자 승인" && (
-            <div className={styles.toolbar}>
-              <div className={styles.searchWrap}>
-                <Search size={16} className={styles.searchIcon} />
-                <input
-                  type="text"
-                  className={styles.searchInput}
-                  placeholder="이름 또는 이메일로 검색"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+
+          {/* ── 구매자 탭 ── */}
+          {activeTab === 0 && (
+            <>
+              <div className={styles.toolbar}>
+                <div className={styles.searchWrap}>
+                  <Search size={16} className={styles.searchIcon} />
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="이름 또는 이메일로 검색"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <span className={styles.totalCount}>총 {filteredBuyers.length}명</span>
               </div>
-              <span className={styles.totalCount}>
-                총 {activeTab === "구매자" ? filteredBuyers.length : filteredSellers.length}명
-              </span>
-            </div>
-          )}
-
-          {/* 구매자 탭 */}
-          {activeTab === "구매자" && (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>번호</th>
-                    <th>이름</th>
-                    <th>이메일</th>
-                    <th>가입일</th>
-                    <th>상태</th>
-                    <th>관리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBuyers.length === 0 ? (
-                    <tr><td colSpan={6} className={styles.emptyRow}>검색 결과가 없습니다.</td></tr>
-                  ) : (
-                    filteredBuyers.map((member) => (
-                      <tr key={member.id}>
-                        <td className={styles.idCell}>{member.id}</td>
-                        <td className={styles.nameCell}>{member.name}</td>
-                        <td>{member.email}</td>
-                        <td>{member.joinedAt}</td>
-                        <td>
-                          <span className={`${styles.statusBadge} ${member.status === "활성" ? styles.statusActive : styles.statusSuspended}`}>
-                            {member.status}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className={`${styles.toggleBtn} ${member.status === "활성" ? styles.toggleBtnDanger : styles.toggleBtnSuccess}`}
-                            onClick={() => handleBuyerStatusToggle(member.id)}
-                            disabled={isLoading}
-                          >
-                            {member.status === "활성" ? "정지" : "활성화"}
-                          </button>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>번호</th>
+                      <th>이름</th>
+                      <th>이메일</th>
+                      <th>가입일</th>
+                      <th>상태</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredBuyers.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className={styles.emptyRow}>
+                          검색 결과가 없습니다.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      filteredBuyers.map((buyer) => (
+                        <tr key={buyer.id}>
+                          <td className={styles.idCell}>{buyer.id}</td>
+                          <td className={styles.nameCell}>{buyer.name}</td>
+                          <td>{buyer.email}</td>
+                          <td>{buyer.joinedAt}</td>
+                          <td>
+                            <span
+                              className={`${styles.statusBadge} ${
+                                buyer.status === "활성" ? styles.statusActive : styles.statusSuspended
+                              }`}
+                            >
+                              {buyer.status}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className={`${styles.toggleBtn} ${
+                                buyer.status === "활성" ? styles.toggleBtnDanger : styles.toggleBtnSuccess
+                              }`}
+                              onClick={() => handleBuyerStatusToggle(buyer.id)}
+                            >
+                              {buyer.status === "활성" ? "정지" : "활성화"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
-          {/* 판매자 탭 */}
-          {activeTab === "판매자" && (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>번호</th>
-                    <th>대표자명</th>
-                    <th>샵 이름</th>
-                    <th>이메일</th>
-                    <th>가입일</th>
-                    <th>상태</th>
-                    <th>관리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredSellers.length === 0 ? (
-                    <tr><td colSpan={7} className={styles.emptyRow}>검색 결과가 없습니다.</td></tr>
-                  ) : (
-                    filteredSellers.map((seller) => (
-                      <tr key={seller.id}>
-                        <td className={styles.idCell}>{seller.id}</td>
-                        <td className={styles.nameCell}>{seller.name}</td>
-                        <td>{seller.shopName}</td>
-                        <td>{seller.email}</td>
-                        <td>{seller.joinedAt}</td>
-                        <td>
-                          <span className={`${styles.statusBadge} ${seller.status === "활성" ? styles.statusActive : styles.statusSuspended}`}>
-                            {seller.status}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className={`${styles.toggleBtn} ${seller.status === "활성" ? styles.toggleBtnDanger : styles.toggleBtnSuccess}`}
-                            onClick={() => handleSellerStatusToggle(seller.id)}
-                            disabled={isLoading}
-                          >
-                            {seller.status === "활성" ? "정지" : "활성화"}
-                          </button>
+          {/* ── 판매자 탭 ── */}
+          {activeTab === 1 && (
+            <>
+              <div className={styles.toolbar}>
+                <div className={styles.searchWrap}>
+                  <Search size={16} className={styles.searchIcon} />
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="상호명 또는 대표자명으로 검색"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <span className={styles.totalCount}>총 {filteredSellers.length}명</span>
+              </div>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>번호</th>
+                      <th>상호명</th>
+                      <th>사업자등록번호</th>
+                      <th>대표자명</th>
+                      <th>은행명</th>
+                      <th>계좌번호</th>
+                      <th>등록일</th>
+                      <th>상태</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSellers.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className={styles.emptyRow}>
+                          검색 결과가 없습니다.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      filteredSellers.map((seller) => (
+                        <tr key={seller.id}>
+                          <td className={styles.idCell}>{seller.id}</td>
+                          <td className={styles.nameCell}>{seller.businessName}</td>
+                          <td>{seller.businessNumber}</td>
+                          <td>{seller.representativeName}</td>
+                          <td>{seller.bankName}</td>
+                          <td>{seller.bankAccount}</td>
+                          <td>{seller.registeredAt}</td>
+                          <td>
+                            <span
+                              className={`${styles.statusBadge} ${
+                                seller.status === "APPROVED"
+                                  ? styles.statusActive
+                                  : styles.statusSuspended
+                              }`}
+                            >
+                              {sellerStatusLabel(seller.status)}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className={`${styles.toggleBtn} ${
+                                seller.status === "APPROVED"
+                                  ? styles.toggleBtnDanger
+                                  : styles.toggleBtnSuccess
+                              }`}
+                              onClick={() => handleSellerStatusToggle(seller.id)}
+                            >
+                              {seller.status === "APPROVED" ? "정지" : "활성화"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
-          {/* 판매자 승인 탭 */}
-          {activeTab === "판매자 승인" && (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>번호</th>
-                    <th>신청자</th>
-                    <th>샵 이름</th>
-                    <th>사업자번호</th>
-                    <th>신청일</th>
-                    <th>처리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingSellers.length === 0 ? (
-                    <tr><td colSpan={6} className={styles.emptyRow}>대기 중인 신청이 없습니다.</td></tr>
-                  ) : (
-                    pendingSellers.map((seller) => (
-                      <tr key={seller.id}>
-                        <td className={styles.idCell}>{seller.id}</td>
-                        <td className={styles.nameCell}>{seller.name}</td>
-                        <td>{seller.shopName}</td>
-                        <td>{seller.businessNum}</td>
-                        <td>{seller.appliedAt}</td>
-                        <td className={styles.actionCell}>
-                          <button
-                            className={styles.approveBtn}
-                            onClick={() => handleSellerApprove(seller.id)}
-                          >
-                            <CheckCircle size={14} />
-                            승인
-                          </button>
-                          <button
-                            className={styles.rejectBtn}
-                            onClick={() => handleSellerReject(seller.id)}
-                          >
-                            <XCircle size={14} />
-                            거절
-                          </button>
+          {/* ── 판매자 승인 탭 ── */}
+          {activeTab === 2 && (
+            <>
+              <div className={styles.toolbar}>
+                <span className={styles.totalCount}>승인 대기 {pendingSellers.length}건</span>
+              </div>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>번호</th>
+                      <th>상호명</th>
+                      <th>사업자등록번호</th>
+                      <th>대표자명</th>
+                      <th>은행명</th>
+                      <th>계좌번호</th>
+                      <th>신청일</th>
+                      <th>처리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingSellers.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className={styles.emptyRow}>
+                          승인 대기 중인 판매자가 없습니다.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      pendingSellers.map((seller) => (
+                        <tr key={seller.id}>
+                          <td className={styles.idCell}>{seller.id}</td>
+                          <td className={styles.nameCell}>{seller.businessName}</td>
+                          <td>{seller.businessNumber}</td>
+                          <td>{seller.representativeName}</td>
+                          <td>{seller.bankName}</td>
+                          <td>{seller.bankAccount}</td>
+                          <td>{seller.registeredAt}</td>
+                          <td>
+                            <div className={styles.actionGroup}>
+                              <button
+                                className={`${styles.toggleBtn} ${styles.toggleBtnSuccess}`}
+                                onClick={() => handleSellerApprove(seller.id)}
+                              >
+                                <CheckCircle size={14} />
+                                승인
+                              </button>
+                              <button
+                                className={`${styles.toggleBtn} ${styles.toggleBtnDanger}`}
+                                onClick={() => handleSellerReject(seller.id)}
+                              >
+                                <XCircle size={14} />
+                                거절
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </main>

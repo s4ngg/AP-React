@@ -3,80 +3,91 @@ import { CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminRefundPage.module.css"
 
+// 임시 환불 요청 데이터 (추후 API 연동 예정)
 const mockRefundRequests = [
-  { id: 1, orderId: "AP-00000011", memberName: "김민수", productName: "[에스티로더] 갈색병 세럼 50ml", amount: 89000, reason: "단순 변심", requestedAt: "2026-04-15", sellerHandled: true },
-  { id: 2, orderId: "AP-00000015", memberName: "이영희", productName: "[나이키] 에어맥스 97", amount: 179000, reason: "상품 불량", requestedAt: "2026-04-16", sellerHandled: true },
-  { id: 3, orderId: "AP-00000018", memberName: "박지성", productName: "[설화수] 윤조에센스 60ml", amount: 128000, reason: "오배송", requestedAt: "2026-04-17", sellerHandled: true },
+  { id: 1, orderId: "AP-00000003", memberName: "박지성", productName: "[설화수] 윤조에센스 60ml", amount: 128000, reason: "상품 불량", requestedAt: "2026-04-15" },
+  { id: 2, orderId: "AP-00000006", memberName: "손예진", productName: "[헤라] 블랙쿠션 파운데이션", amount: 55000, reason: "단순 변심", requestedAt: "2026-04-16" },
+  { id: 3, orderId: "AP-00000008", memberName: "유재석", productName: "[나이키] 에어맥스 97 화이트", amount: 179000, reason: "사이즈 불일치", requestedAt: "2026-04-16" },
 ]
 
 export default function AdminRefundPage() {
-  const [requests, setRequests] = useState(mockRefundRequests)
+  const [refundRequests, setRefundRequests] = useState(mockRefundRequests)
 
-  const handleApprove = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id))
+  const handleApprove = (id, orderId) => {
+    if (!window.confirm(`주문 ${orderId}의 환불을 승인하시겠습니까?`)) return
+    setRefundRequests((prev) => prev.filter((r) => r.id !== id))
   }
 
-  const handleReject = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id))
+  const handleReject = (id, orderId) => {
+    if (!window.confirm(`주문 ${orderId}의 환불을 거절하시겠습니까?`)) return
+    setRefundRequests((prev) => prev.filter((r) => r.id !== id))
   }
 
   return (
     <div className={styles.adminLayout}>
       <AdminSidebar />
       <main className={styles.content}>
-        <h1 className={styles.pageTitle}>환불 최종 승인</h1>
-        <p className={styles.pageDesc}>판매자가 처리한 환불 요청을 최종 승인하는 페이지입니다.</p>
+        <h1 className={styles.pageTitle}>환불 승인</h1>
 
         <div className={styles.section}>
-          {requests.length === 0 ? (
-            <div className={styles.emptyState}>대기 중인 환불 요청이 없습니다.</div>
-          ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
+          <div className={styles.countBar}>
+            <span className={styles.countText}>환불 요청 {refundRequests.length}건</span>
+          </div>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>번호</th>
+                  <th>주문번호</th>
+                  <th>신청자</th>
+                  <th>상품명</th>
+                  <th>환불금액</th>
+                  <th>환불사유</th>
+                  <th>신청일</th>
+                  <th>처리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {refundRequests.length === 0 ? (
                   <tr>
-                    <th>번호</th>
-                    <th>주문번호</th>
-                    <th>신청자</th>
-                    <th>상품명</th>
-                    <th>환불금액</th>
-                    <th>사유</th>
-                    <th>신청일</th>
-                    <th>최종 처리</th>
+                    <td colSpan={8} className={styles.emptyRow}>
+                      환불 요청이 없습니다.
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {requests.map((req) => (
+                ) : (
+                  refundRequests.map((req) => (
                     <tr key={req.id}>
                       <td className={styles.idCell}>{req.id}</td>
-                      <td className={styles.orderIdCell}>{req.orderId}</td>
-                      <td className={styles.nameCell}>{req.memberName}</td>
-                      <td className={styles.ellipsis}>{req.productName}</td>
-                      <td className={styles.amountCell}>{req.amount.toLocaleString()}원</td>
+                      <td className={styles.orderId}>{req.orderId}</td>
+                      <td>{req.memberName}</td>
+                      <td className={styles.productName}>{req.productName}</td>
+                      <td>{req.amount.toLocaleString()}원</td>
                       <td>{req.reason}</td>
                       <td>{req.requestedAt}</td>
-                      <td className={styles.actionCell}>
-                        <button
-                          className={styles.approveBtn}
-                          onClick={() => handleApprove(req.id)}
-                        >
-                          <CheckCircle size={14} />
-                          승인
-                        </button>
-                        <button
-                          className={styles.rejectBtn}
-                          onClick={() => handleReject(req.id)}
-                        >
-                          <XCircle size={14} />
-                          거절
-                        </button>
+                      <td>
+                        <div className={styles.actionGroup}>
+                          <button
+                            className={`${styles.actionBtn} ${styles.approveBtn}`}
+                            onClick={() => handleApprove(req.id, req.orderId)}
+                          >
+                            <CheckCircle size={14} />
+                            승인
+                          </button>
+                          <button
+                            className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                            onClick={() => handleReject(req.id, req.orderId)}
+                          >
+                            <XCircle size={14} />
+                            거절
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>

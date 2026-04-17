@@ -1,37 +1,61 @@
 import { useState } from "react"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminCategoryPage.module.css"
 
+const TABS = ["대분류", "소분류"]
+
 const mockParentCategories = [
-  { id: 1, name: "뷰티", description: "화장품, 스킨케어 등" },
-  { id: 2, name: "패션", description: "의류, 신발, 가방 등" },
-  { id: 3, name: "리빙", description: "가구, 인테리어, 주방 등" },
+  { id: 1, name: "뷰티", createdAt: "2025-01-01" },
+  { id: 2, name: "패션", createdAt: "2025-01-01" },
+  { id: 3, name: "리빙", createdAt: "2025-01-01" },
 ]
 
 const mockChildCategories = [
-  { id: 1, parentId: 1, parentName: "뷰티", name: "스킨케어" },
-  { id: 2, parentId: 1, parentName: "뷰티", name: "립" },
-  { id: 3, parentId: 1, parentName: "뷰티", name: "베이스" },
-  { id: 4, parentId: 2, parentName: "패션", name: "상의" },
-  { id: 5, parentId: 2, parentName: "패션", name: "하의" },
-  { id: 6, parentId: 2, parentName: "패션", name: "신발" },
-  { id: 7, parentId: 3, parentName: "리빙", name: "가구" },
-  { id: 8, parentId: 3, parentName: "리빙", name: "주방용품" },
+  { id: 1, parentName: "뷰티", name: "스킨케어", createdAt: "2025-01-05" },
+  { id: 2, parentName: "뷰티", name: "메이크업", createdAt: "2025-01-05" },
+  { id: 3, parentName: "뷰티", name: "향수", createdAt: "2025-01-06" },
+  { id: 4, parentName: "패션", name: "상의", createdAt: "2025-01-05" },
+  { id: 5, parentName: "패션", name: "하의", createdAt: "2025-01-05" },
+  { id: 6, parentName: "패션", name: "신발", createdAt: "2025-01-06" },
+  { id: 7, parentName: "리빙", name: "침구", createdAt: "2025-01-05" },
+  { id: 8, parentName: "리빙", name: "주방", createdAt: "2025-01-06" },
 ]
 
-const TABS = ["대분류", "소분류"]
-
 export default function AdminCategoryPage() {
-  const [activeTab, setActiveTab] = useState("대분류")
+  const [activeTab, setActiveTab] = useState(0)
   const [parentCategories, setParentCategories] = useState(mockParentCategories)
   const [childCategories, setChildCategories] = useState(mockChildCategories)
+  const [newParentName, setNewParentName] = useState("")
+  const [newChildName, setNewChildName] = useState("")
+  const [newChildParent, setNewChildParent] = useState(mockParentCategories[0].name)
 
-  const handleParentDelete = (id) => {
-    setParentCategories((prev) => prev.filter((c) => c.id !== id))
+  const handleParentAdd = (e) => {
+    e.preventDefault()
+    const name = newParentName.trim()
+    if (!name) return
+    const newItem = { id: Date.now(), name, createdAt: new Date().toISOString().slice(0, 10) }
+    setParentCategories((prev) => [...prev, newItem])
+    setNewParentName("")
   }
 
-  const handleChildDelete = (id) => {
+  const handleParentDelete = (id, name) => {
+    if (!window.confirm(`"${name}" 대분류를 삭제하시겠습니까?\n해당 대분류의 소분류도 함께 삭제됩니다.`)) return
+    setParentCategories((prev) => prev.filter((c) => c.id !== id))
+    setChildCategories((prev) => prev.filter((c) => c.parentName !== name))
+  }
+
+  const handleChildAdd = (e) => {
+    e.preventDefault()
+    const name = newChildName.trim()
+    if (!name) return
+    const newItem = { id: Date.now(), parentName: newChildParent, name, createdAt: new Date().toISOString().slice(0, 10) }
+    setChildCategories((prev) => [...prev, newItem])
+    setNewChildName("")
+  }
+
+  const handleChildDelete = (id, name) => {
+    if (!window.confirm(`"${name}" 소분류를 삭제하시겠습니까?`)) return
     setChildCategories((prev) => prev.filter((c) => c.id !== id))
   }
 
@@ -39,20 +63,15 @@ export default function AdminCategoryPage() {
     <div className={styles.adminLayout}>
       <AdminSidebar />
       <main className={styles.content}>
-        <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>카테고리 관리</h1>
-          <button className={styles.addBtn}>
-            <Plus size={16} />
-            {activeTab === "대분류" ? "대분류 추가" : "소분류 추가"}
-          </button>
-        </div>
+        <h1 className={styles.pageTitle}>카테고리 관리</h1>
 
-        <div className={styles.tabBar}>
-          {TABS.map((tab) => (
+        {/* 탭 */}
+        <div className={styles.tabList}>
+          {TABS.map((tab, index) => (
             <button
               key={tab}
-              className={`${styles.tabBtn} ${activeTab === tab ? styles.tabBtnActive : ""}`}
-              onClick={() => setActiveTab(tab)}
+              className={`${styles.tabBtn} ${activeTab === index ? styles.tabBtnActive : ""}`}
+              onClick={() => setActiveTab(index)}
             >
               {tab}
             </button>
@@ -60,80 +79,126 @@ export default function AdminCategoryPage() {
         </div>
 
         <div className={styles.section}>
-          {activeTab === "대분류" && (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>번호</th>
-                    <th>카테고리명</th>
-                    <th>설명</th>
-                    <th>관리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {parentCategories.map((cat) => (
-                    <tr key={cat.id}>
-                      <td className={styles.idCell}>{cat.id}</td>
-                      <td className={styles.nameCell}>{cat.name}</td>
-                      <td>{cat.description}</td>
-                      <td className={styles.actionCell}>
-                        <button className={styles.editBtn}>
-                          <Pencil size={13} />
-                          수정
-                        </button>
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={() => handleParentDelete(cat.id)}
-                        >
-                          <Trash2 size={13} />
-                          삭제
-                        </button>
-                      </td>
+
+          {/* ── 대분류 탭 ── */}
+          {activeTab === 0 && (
+            <>
+              <form className={styles.addForm} onSubmit={handleParentAdd}>
+                <input
+                  type="text"
+                  className={styles.addInput}
+                  placeholder="대분류명 입력"
+                  value={newParentName}
+                  onChange={(e) => setNewParentName(e.target.value)}
+                />
+                <button type="submit" className={styles.addBtn}>
+                  <Plus size={15} />
+                  추가
+                </button>
+              </form>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>번호</th>
+                      <th>대분류명</th>
+                      <th>등록일</th>
+                      <th>관리</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {parentCategories.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className={styles.emptyRow}>등록된 대분류가 없습니다.</td>
+                      </tr>
+                    ) : (
+                      parentCategories.map((cat) => (
+                        <tr key={cat.id}>
+                          <td className={styles.idCell}>{cat.id}</td>
+                          <td className={styles.nameCell}>{cat.name}</td>
+                          <td>{cat.createdAt}</td>
+                          <td>
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => handleParentDelete(cat.id, cat.name)}
+                              aria-label="삭제"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
-          {activeTab === "소분류" && (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>번호</th>
-                    <th>대분류</th>
-                    <th>소분류명</th>
-                    <th>관리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {childCategories.map((cat) => (
-                    <tr key={cat.id}>
-                      <td className={styles.idCell}>{cat.id}</td>
-                      <td>
-                        <span className={styles.parentBadge}>{cat.parentName}</span>
-                      </td>
-                      <td className={styles.nameCell}>{cat.name}</td>
-                      <td className={styles.actionCell}>
-                        <button className={styles.editBtn}>
-                          <Pencil size={13} />
-                          수정
-                        </button>
-                        <button
-                          className={styles.deleteBtn}
-                          onClick={() => handleChildDelete(cat.id)}
-                        >
-                          <Trash2 size={13} />
-                          삭제
-                        </button>
-                      </td>
-                    </tr>
+          {/* ── 소분류 탭 ── */}
+          {activeTab === 1 && (
+            <>
+              <form className={styles.addForm} onSubmit={handleChildAdd}>
+                <select
+                  className={styles.addSelect}
+                  value={newChildParent}
+                  onChange={(e) => setNewChildParent(e.target.value)}
+                >
+                  {parentCategories.map((p) => (
+                    <option key={p.id} value={p.name}>{p.name}</option>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </select>
+                <input
+                  type="text"
+                  className={styles.addInput}
+                  placeholder="소분류명 입력"
+                  value={newChildName}
+                  onChange={(e) => setNewChildName(e.target.value)}
+                />
+                <button type="submit" className={styles.addBtn}>
+                  <Plus size={15} />
+                  추가
+                </button>
+              </form>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>번호</th>
+                      <th>대분류</th>
+                      <th>소분류명</th>
+                      <th>등록일</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {childCategories.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className={styles.emptyRow}>등록된 소분류가 없습니다.</td>
+                      </tr>
+                    ) : (
+                      childCategories.map((cat) => (
+                        <tr key={cat.id}>
+                          <td className={styles.idCell}>{cat.id}</td>
+                          <td>{cat.parentName}</td>
+                          <td className={styles.nameCell}>{cat.name}</td>
+                          <td>{cat.createdAt}</td>
+                          <td>
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => handleChildDelete(cat.id, cat.name)}
+                              aria-label="삭제"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </main>

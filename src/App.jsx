@@ -26,6 +26,11 @@ import AdminCategoryPage from "./pages/admin/AdminCategoryPage"
 import AdminRefundPage from "./pages/admin/AdminRefundPage"
 import AdminNoticePage from "./pages/admin/AdminNoticePage"
 import AdminFAQPage from "./pages/admin/AdminFAQPage"
+import SellerDashboardPage from "./pages/seller/SellerDashboardPage"
+import SellerProductsPage from "./pages/seller/SellerProductsPage"
+import SellerOrdersPage from "./pages/seller/SellerOrdersPage"
+import SellerRefundPage from "./pages/seller/SellerRefundPage"
+import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
 import "./index.css"
 
 function App() {
@@ -60,6 +65,11 @@ function App() {
             <Route path="/admin/refunds" element={<AdminRefundPage />} />
             <Route path="/admin/notices" element={<AdminNoticePage />} />
             <Route path="/admin/faqs" element={<AdminFAQPage />} />
+            <Route path="/seller" element={<SellerDashboardPage />} />
+            <Route path="/seller/products" element={<SellerProductsPage />} />
+            <Route path="/seller/orders" element={<SellerOrdersPage />} />
+            <Route path="/seller/refunds" element={<SellerRefundPage />} />
+            <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
           </Routes>
         </div>
         <Footer />
