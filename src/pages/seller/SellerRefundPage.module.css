@@ -85,6 +85,24 @@
   text-overflow: ellipsis;
 }
 
+/* 상품명 링크 */
+.productLink {
+  display: inline-block;
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.productLink:hover {
+  color: #1d4ed8;
+}
+
 .emptyRow {
   text-align: center;
   color: #9ca3af;

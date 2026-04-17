@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { CheckCircle, XCircle, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import styles from "./SellerRefundPage.module.css"
@@ -8,6 +9,7 @@ const mockRefundRequests = [
   {
     id: 1,
     orderId: "AP-00000007",
+    productId: 3,
     memberName: "이영희",
     memberEmail: "younghee@example.com",
     memberPhone: "010-5555-6666",
@@ -27,6 +29,7 @@ const mockRefundRequests = [
   {
     id: 2,
     orderId: "AP-00000005",
+    productId: 1,
     memberName: "박지성",
     memberEmail: "jisung@example.com",
     memberPhone: "010-7777-8888",
@@ -112,7 +115,11 @@ export default function SellerRefundPage() {
                           {req.memberName}
                         </button>
                       </td>
-                      <td className={styles.productName}>{req.productName}</td>
+                      <td className={styles.productName}>
+                          <Link className={styles.productLink} to={`/products/${req.productId}`}>
+                            {req.productName}
+                          </Link>
+                        </td>
                       <td>{req.amount.toLocaleString()}원</td>
                       <td>
                         <span className={`${styles.typeBadge} ${styles[TYPE_CLASS[req.type]]}`}>

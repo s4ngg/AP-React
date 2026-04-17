@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { MessageSquare, ChevronDown, ChevronUp } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import styles from "./SellerInquiryPage.module.css"
@@ -7,6 +8,7 @@ import styles from "./SellerInquiryPage.module.css"
 const mockInquiries = [
   {
     id: 1,
+    productId: 1,
     productName: "[뷰티스타일샵] 수분 세럼 30ml",
     memberName: "홍길동",
     question: "이 제품 민감성 피부에도 사용 가능한가요?",
@@ -15,6 +17,7 @@ const mockInquiries = [
   },
   {
     id: 2,
+    productId: 2,
     productName: "[뷰티스타일샵] 토너 200ml",
     memberName: "김민수",
     question: "재입고 예정이 있나요?",
@@ -23,6 +26,7 @@ const mockInquiries = [
   },
   {
     id: 3,
+    productId: 1,
     productName: "[뷰티스타일샵] 수분 세럼 30ml",
     memberName: "이영희",
     question: "향이 강한가요?",
@@ -85,7 +89,13 @@ export default function SellerInquiryPage() {
                   >
                     <div className={styles.inquiryMeta}>
                       <span className={`${styles.statusDot} ${inq.answer ? styles.statusDotDone : styles.statusDotPending}`} />
-                      <span className={styles.productName}>{inq.productName}</span>
+                      <Link
+                          className={styles.productLink}
+                          to={`/products/${inq.productId}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {inq.productName}
+                        </Link>
                       <span className={styles.memberName}>{inq.memberName}</span>
                       <span className={styles.createdAt}>{inq.createdAt}</span>
                     </div>

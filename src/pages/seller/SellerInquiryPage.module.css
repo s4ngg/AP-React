@@ -106,6 +106,25 @@
   max-width: 280px;
 }
 
+/* 상품명 링크 */
+.productLink {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2563eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+  vertical-align: middle;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.productLink:hover {
+  color: #1d4ed8;
+}
+
 .memberName {
   font-size: 13px;
   color: #6b7280;

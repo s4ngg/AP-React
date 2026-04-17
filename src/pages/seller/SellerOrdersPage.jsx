@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react"
-import { X } from "lucide-react"
+import { X, Search } from "lucide-react"
+import { Link } from "react-router-dom"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import styles from "./SellerOrdersPage.module.css"
 
@@ -7,6 +8,7 @@ import styles from "./SellerOrdersPage.module.css"
 const initialOrders = [
   {
     id: "AP-00000010",
+    productId: 1,
     memberId: 101,
     memberName: "홍길동",
     memberEmail: "hong@example.com",
@@ -16,7 +18,6 @@ const initialOrders = [
     quantity: 1,
     status: "결제완료",
     createdAt: "2026-04-16",
-    // delivery_addresses 기준
     delivery: {
       recipientName: "홍길동",
       phone: "010-1111-2222",
@@ -27,6 +28,7 @@ const initialOrders = [
   },
   {
     id: "AP-00000009",
+    productId: 2,
     memberId: 102,
     memberName: "김민수",
     memberEmail: "minsu@example.com",
@@ -46,6 +48,7 @@ const initialOrders = [
   },
   {
     id: "AP-00000008",
+    productId: 3,
     memberId: 103,
     memberName: "이영희",
     memberEmail: "younghee@example.com",
@@ -65,6 +68,7 @@ const initialOrders = [
   },
   {
     id: "AP-00000007",
+    productId: 1,
     memberId: 104,
     memberName: "박지성",
     memberEmail: "jisung@example.com",
@@ -84,6 +88,7 @@ const initialOrders = [
   },
   {
     id: "AP-00000005",
+    productId: 2,
     memberId: 105,
     memberName: "최수영",
     memberEmail: "suyoung@example.com",
@@ -125,15 +130,55 @@ const NEXT_STATUS_LABEL = {
   배송중: "배송 완료",
 }
 
+// 검색 유형 목록 — 실제 판매자 포털(스마트스토어, 쿠팡 Wing) 기준
+const SEARCH_TYPES = [
+  { value: "memberName", label: "구매자명" },
+  { value: "memberPhone", label: "연락처" },
+  { value: "productName", label: "상품명" },
+  { value: "orderId", label: "주문번호" },
+]
+
+const SEARCH_PLACEHOLDERS = {
+  memberName: "구매자 이름을 입력하세요",
+  memberPhone: "연락처를 입력하세요 (예: 010-1234)",
+  productName: "상품명을 입력하세요",
+  orderId: "주문번호를 입력하세요 (예: AP-00000010)",
+}
+
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState(initialOrders)
   const [activeTab, setActiveTab] = useState("전체")
   const [selectedOrder, setSelectedOrder] = useState(null)
 
+  // 검색 상태
+  const [searchType, setSearchType] = useState("memberName")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [appliedSearch, setAppliedSearch] = useState({ type: "memberName", term: "" })
+
+  const handleSearch = () => {
+    setAppliedSearch({ type: searchType, term: searchTerm.trim() })
+  }
+
+  const handleSearchClear = () => {
+    setSearchTerm("")
+    setAppliedSearch({ type: searchType, term: "" })
+  }
+
   const filteredOrders = useMemo(() => {
-    if (activeTab === "전체") return orders
-    return orders.filter((o) => o.status === activeTab)
-  }, [orders, activeTab])
+    // 1. 탭 필터
+    let list = activeTab === "전체" ? orders : orders.filter((o) => o.status === activeTab)
+    // 2. 검색 필터
+    const { type, term } = appliedSearch
+    if (!term) return list
+    const lower = term.toLowerCase()
+    return list.filter((o) => {
+      if (type === "orderId") return o.id.toLowerCase().includes(lower)
+      if (type === "memberName") return o.memberName.includes(term)
+      if (type === "memberPhone") return o.memberPhone.includes(term)
+      if (type === "productName") return o.productName.toLowerCase().includes(lower)
+      return true
+    })
+  }, [orders, activeTab, appliedSearch])
 
   const handleStatusUpdate = (orderId, currentStatus) => {
     const nextStatus = NEXT_STATUS_MAP[currentStatus]
@@ -155,6 +200,39 @@ export default function SellerOrdersPage() {
         <h1 className={styles.pageTitle}>주문 현황</h1>
 
         <div className={styles.section}>
+          {/* 검색 영역 */}
+          <div className={styles.searchBar}>
+            <select
+              className={styles.searchTypeSelect}
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+            >
+              {SEARCH_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+            <div className={styles.searchInputWrap}>
+              <Search size={16} className={styles.searchIcon} />
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder={SEARCH_PLACEHOLDERS[searchType]}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+            </div>
+            <button className={styles.searchBtn} onClick={handleSearch}>검색</button>
+            {appliedSearch.term && (
+              <button className={styles.searchResetBtn} onClick={handleSearchClear}>초기화</button>
+            )}
+          </div>
+          {appliedSearch.term && (
+            <p className={styles.searchResultInfo}>
+              <strong>"{appliedSearch.term}"</strong> 검색 결과 {filteredOrders.length}건
+            </p>
+          )}
+
           {/* 상태 필터 탭 */}
           <div className={styles.tabs}>
             {STATUS_TABS.map((tab) => (
@@ -191,7 +269,7 @@ export default function SellerOrdersPage() {
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={7} className={styles.emptyRow}>
-                      해당 상태의 주문이 없습니다.
+                      해당 조건의 주문이 없습니다.
                     </td>
                   </tr>
                 ) : (
@@ -206,7 +284,14 @@ export default function SellerOrdersPage() {
                           {order.memberName}
                         </button>
                       </td>
-                      <td className={styles.productName}>{order.productName}</td>
+                      <td>
+                        <Link
+                          className={styles.productLink}
+                          to={`/products/${order.productId}`}
+                        >
+                          {order.productName}
+                        </Link>
+                      </td>
                       <td>{order.amount.toLocaleString()}원</td>
                       <td>{order.createdAt}</td>
                       <td>
