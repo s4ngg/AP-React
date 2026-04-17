@@ -50,6 +50,9 @@
 .stepContent {
   display: flex;
   flex-direction: column;
+  border-color: #ccc;
+  background-color: #fff;
+  color: #aaa;
   align-items: center;
 }
 
@@ -61,6 +64,9 @@
   justify-content: center;
   border-radius: 50%;
   border: 2px solid;
+  border-color: #ccc;
+  background-color: #fff;
+  color: #aaa;
   font-size: 14px;
   font-weight: 600;
   transition: all 0.2s;
@@ -73,9 +79,9 @@
 }
 
 .stepCircleCurrent {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary);
-  color: #fff;
+  border-color: #ccc;
+  background-color: #fff;
+  color: #aaa;
 }
 
 .stepCirclePending {

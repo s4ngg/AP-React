@@ -93,7 +93,7 @@ export default function SignupPage() {
   };
 
   return (
-    <AuthLayout showSteps currentStep={1} title="회원가입" description="SHOP 회원이 되어 다양한 혜택을 누리세요">
+    <AuthLayout showSteps currentStep={1} title="회원가입" description="AllPick 회원이 되어 다양한 혜택을 누리세요">
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
 
         {/* 이메일 */}
