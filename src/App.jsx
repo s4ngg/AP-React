@@ -3,6 +3,7 @@ import OrderPage from "./pages/order/OrderPage"
 import Header from "./components/common/Header"
 import Footer from "./components/common/Footer"
 import MainPage from "./pages/main/MainPage"
+import MyPage from "./pages/member/MyPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
 import ReviewWritePage from "./pages/product/ReviewWritePage"
@@ -17,6 +18,10 @@ import FindEmailPage from "./pages/member/FindEmailPage"
 import FindPasswordPage from "./pages/member/FindPasswordPage"
 import ResetPasswordPage from "./pages/member/ResetPasswordPage"
 import ProductListPage from "./pages/product/ProductListPage"
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
+import AdminMemberPage from "./pages/admin/AdminMemberPage"
+import AdminProductsPage from "./pages/admin/AdminProductsPage"
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage"
 import "./index.css"
 
 function App() {
@@ -27,6 +32,7 @@ function App() {
         <div style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<MainPage />} />
+            <Route path="/mypage" element={<MyPage />} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
@@ -42,6 +48,10 @@ function App() {
             <Route path="/find-email" element={<FindEmailPage />} />
             <Route path="/find-password" element={<FindPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/members" element={<AdminMemberPage />} />
+            <Route path="/admin/products" element={<AdminProductsPage />} />
+            <Route path="/admin/orders" element={<AdminOrdersPage />} />
           </Routes>
         </div>
         <Footer />
