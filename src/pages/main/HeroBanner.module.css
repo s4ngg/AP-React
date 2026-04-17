@@ -4,7 +4,11 @@
 }
 
 .bannerWrap {
-  transition: background-color 0.3s;
+  transition: background-color 0.5s ease;
+}
+
+.imageBox img {
+  transition: opacity 0.5s ease;
 }
 
 .inner {
@@ -15,6 +19,29 @@
   flex-direction: column;
   align-items: center;
   gap: 32px;
+}
+.slideIn {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.sliderOuter {
+  width: 100%;
+  overflow: hidden;
+}
+
+.sliderTrack {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.slide {
+  min-width: 100%;
+}
+
+.bannerWrap {
+  transition: background-color 0.4s ease;
+  overflow: hidden;
 }
 
 @media (min-width: 1024px) {

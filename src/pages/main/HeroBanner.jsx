@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import styles from "./HeroBanner.module.css"
 
 const banners = [
@@ -11,7 +11,7 @@ const banners = [
     description: "인기 스킨케어 & 메이크업 브랜드 특가",
     image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&h=500&fit=crop",
     bgColor: "#fdf2f8",
-    href: "#",
+    href: "/products?category=beauty",
   },
   {
     id: 2,
@@ -20,7 +20,7 @@ const banners = [
     description: "제철 과일과 채소를 합리적인 가격에",
     image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&h=500&fit=crop",
     bgColor: "#f0fdf4",
-    href: "#",
+    href: "/products?category=food",
   },
   {
     id: 3,
@@ -29,32 +29,52 @@ const banners = [
     description: "인테리어 소품 & 가구 모음전",
     image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1200&h=500&fit=crop",
     bgColor: "#fffbeb",
-    href: "#",
+    href: "/products?category=living",
   },
 ]
 
 export default function HeroBanner() {
   const [current, setCurrent] = useState(0)
-  const banner = banners[current]
 
   const prev = () => setCurrent((c) => (c - 1 + banners.length) % banners.length)
   const next = () => setCurrent((c) => (c + 1) % banners.length)
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((c) => (c + 1) % banners.length)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [])
+
   return (
     <section className={styles.section}>
-      <div className={styles.bannerWrap} style={{ backgroundColor: banner.bgColor }}>
-        <div className={styles.inner}>
-          <div className={styles.textArea}>
-            <p className={styles.subtitle}>{banner.subtitle}</p>
-            <h1 className={styles.title}>{banner.title}</h1>
-            <p className={styles.desc}>{banner.description}</p>
-            <Link to={banner.href} className={styles.shopBtn}>지금 쇼핑하기</Link>
-          </div>
-          <div className={styles.imageArea}>
-            <div className={styles.imageBox}>
-              <img src={banner.image} alt={banner.title} />
+      {/* 슬라이드 트랙 */}
+      <div className={styles.sliderOuter}>
+        <div
+          className={styles.sliderTrack}
+          style={{ transform: `translateX(-${current * 100}%)` }}
+        >
+          {banners.map((banner) => (
+            <div
+              key={banner.id}
+              className={styles.slide}
+              style={{ backgroundColor: banner.bgColor }}
+            >
+              <div className={styles.inner}>
+                <div className={styles.textArea}>
+                  <p className={styles.subtitle}>{banner.subtitle}</p>
+                  <h1 className={styles.title}>{banner.title}</h1>
+                  <p className={styles.desc}>{banner.description}</p>
+                  <Link to={banner.href} className={styles.shopBtn}>지금 쇼핑하기</Link>
+                </div>
+                <div className={styles.imageArea}>
+                  <div className={styles.imageBox}>
+                    <img src={banner.image} alt={banner.title} />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 
