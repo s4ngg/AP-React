@@ -23,32 +23,14 @@ const statusBadgeClass = {
   "취소": "statusCancelled",
 }
 
-// 결제완료 → 배송중, 배송중 → 배송완료 순서로만 이동 가능
-const nextStatusMap = {
-  "결제완료": "배송중",
-  "배송중": "배송완료",
-}
-
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState(initialOrders)
+  const [orders] = useState(initialOrders)
   const [activeTab, setActiveTab] = useState("전체")
-  const [isLoading, setIsLoading] = useState(false)
 
   const filteredOrders = useMemo(() => {
     if (activeTab === "전체") return orders
     return orders.filter((o) => o.status === activeTab)
   }, [orders, activeTab])
-
-  const handleStatusUpdate = (orderId, nextStatus) => {
-    setIsLoading(true)
-    // FakeAPI - 실제 API 연동 전 500ms 시뮬레이션
-    setTimeout(() => {
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
-      )
-      setIsLoading(false)
-    }, 500)
-  }
 
   return (
     <div className={styles.adminLayout}>
@@ -86,13 +68,12 @@ export default function AdminOrdersPage() {
                   <th>결제금액</th>
                   <th>주문일</th>
                   <th>상태</th>
-                  <th>관리</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className={styles.emptyRow}>
+                    <td colSpan={6} className={styles.emptyRow}>
                       해당 상태의 주문이 없습니다.
                     </td>
                   </tr>
@@ -108,17 +89,6 @@ export default function AdminOrdersPage() {
                         <span className={`${styles.statusBadge} ${styles[statusBadgeClass[order.status]]}`}>
                           {order.status}
                         </span>
-                      </td>
-                      <td>
-                        {nextStatusMap[order.status] && (
-                          <button
-                            className={styles.statusBtn}
-                            onClick={() => handleStatusUpdate(order.id, nextStatusMap[order.status])}
-                            disabled={isLoading}
-                          >
-                            {nextStatusMap[order.status]}으로 변경
-                          </button>
-                        )}
                       </td>
                     </tr>
                   ))
