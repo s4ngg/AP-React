@@ -1,5 +1,9 @@
 :root {
-  --color-border: #ccc;
+  --color-primary: #1a6dff;   /* AllPick 파란색 */
+  --color-border: #e5e7eb;
+  --color-text: #1a1a1a;
+  --color-muted: #9ca3af;
+  --color-card: #ffffff;
 }
 * {
   box-sizing: border-box;
