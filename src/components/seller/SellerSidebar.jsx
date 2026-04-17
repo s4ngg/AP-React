@@ -14,7 +14,9 @@ export default function SellerSidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
-        <span className={styles.sidebarBadge}>SELLER</span>
+        {/* 추후 API 연동 시 로그인한 판매자의 business_name으로 교체 */}
+        <p className={styles.businessName}>뷰티스타일샵</p>
+        <span className={styles.sidebarBadge}>셀러페이지</span>
       </div>
       <nav className={styles.nav}>
         {navItems.map(({ to, label, icon: Icon, end }) => (
