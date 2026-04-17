@@ -18,6 +18,7 @@ export default function SignupPage() {
   const [emailAvailable, setEmailAvailable] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSeller, setIsSeller] = useState(false); // ✅ 추가
 
   const {
     register,
@@ -66,6 +67,7 @@ export default function SignupPage() {
     }
   };
 
+  // ✅ onSubmit 수정 (중복 제거 + 판매자 데이터 추가)
   const onSubmit = async (data) => {
     if (!emailChecked || !emailAvailable) {
       setError("email", { message: "이메일 중복 확인을 해주세요" });
@@ -84,6 +86,17 @@ export default function SignupPage() {
         zipCode: data.zipCode,
         address: data.address,
         addressDetail: data.addressDetail,
+        // ✅ 판매자 정보 추가
+        isSeller,
+        ...(isSeller && {
+          sellerData: {
+            business_name: data.business_name,
+            business_number: data.business_number,
+            representative_name: data.representative_name,
+            bank_name: data.bank_name,
+            bank_account: data.bank_account,
+          },
+        }),
       });
       setCurrentStep(2);
       navigate("/signup/verify-email");
@@ -242,6 +255,85 @@ export default function SignupPage() {
             {...register("addressDetail")}
           />
         </div>
+
+        {/* ✅ 판매자 토글 */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={isSeller}
+              onChange={(e) => setIsSeller(e.target.checked)}
+            />
+            판매자로 가입하기
+            <span style={{ fontSize: 12, color: "var(--color-muted)" }}>
+              (승인 후 판매 가능)
+            </span>
+          </label>
+        </div>
+
+        {/* ✅ 판매자 정보 섹션 - isSeller 체크 시에만 표시 */}
+        {isSeller && (
+          <>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>상호명</label>
+              <input
+                type="text"
+                placeholder="상호명을 입력해주세요"
+                className={styles.input}
+                {...register("business_name")}
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>사업자 등록번호</label>
+              <input
+                type="text"
+                placeholder="000-00-00000"
+                className={`${styles.input} ${errors.business_number ? styles.inputError : ""}`}
+                {...register("business_number", {
+                  required: "사업자 등록번호를 입력해주세요",
+                  pattern: { value: /^\d{3}-\d{2}-\d{5}$/, message: "000-00-00000 형식으로 입력해주세요" },
+                })}
+              />
+              {errors.business_number && (
+                <p className={styles.fieldError}>{errors.business_number.message}</p>
+              )}
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>대표자명</label>
+              <input
+                type="text"
+                placeholder="대표자명을 입력해주세요"
+                className={styles.input}
+                {...register("representative_name")}
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>은행명</label>
+              <select className={styles.input} {...register("bank_name")}>
+                <option value="">은행 선택</option>
+                <option value="국민은행">국민은행</option>
+                <option value="신한은행">신한은행</option>
+                <option value="우리은행">우리은행</option>
+                <option value="하나은행">하나은행</option>
+                <option value="카카오뱅크">카카오뱅크</option>
+                <option value="토스뱅크">토스뱅크</option>
+              </select>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>계좌번호</label>
+              <input
+                type="text"
+                placeholder="계좌번호를 입력해주세요"
+                className={styles.input}
+                {...register("bank_account")}
+              />
+            </div>
+          </>
+        )}
 
         {/* 다음 버튼 */}
         <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
