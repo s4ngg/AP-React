@@ -75,6 +75,8 @@
   border: 1px solid #e5e7eb;
   overflow: hidden;
   transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .card:hover {
@@ -132,6 +134,9 @@
 
 .cardBody {
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .productName {
@@ -190,7 +195,7 @@
 
 .cartBtn {
   width: 100%;
-  margin-top: 10px;
+  margin-top: auto;
   padding: 8px;
   display: flex;
   align-items: center;

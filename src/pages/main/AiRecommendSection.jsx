@@ -10,7 +10,7 @@ const mockRecommendations = {
   keywords: ["스킨케어", "인테리어소품", "보습"],
   products: [
     {
-      id: 1,
+      id: 101,
       name: "[에스티로더] 갈색병 세럼 50ml",
       price: 89000,
       originalPrice: 145000,
@@ -18,7 +18,7 @@ const mockRecommendations = {
       freeShipping: true,
     },
     {
-      id: 2,
+      id: 102,
       name: "[설화수] 자음생크림 60ml",
       price: 112000,
       originalPrice: 140000,
@@ -26,7 +26,7 @@ const mockRecommendations = {
       freeShipping: true,
     },
     {
-      id: 3,
+      id: 103,
       name: "[이케아] 말름 서랍장 6칸",
       price: 249000,
       originalPrice: 299000,
@@ -34,7 +34,7 @@ const mockRecommendations = {
       freeShipping: true,
     },
     {
-      id: 4,
+      id: 104,
       name: "[무인양품] 아크릴 수납함 세트",
       price: 35000,
       originalPrice: null,
@@ -68,7 +68,9 @@ function ProductCard({ product }) {
   return (
     <div className={styles.card}>
       <div className={styles.imageBox}>
-        <img src={product.image} alt={product.name} />
+        <Link to={`/products/${product.id}`}>
+          <img src={product.image} alt={product.name} />
+        </Link>
         <div className={styles.aiBadge}>
           <Sparkles size={10} /> AI 추천
         </div>
@@ -97,7 +99,7 @@ function ProductCard({ product }) {
             {product.originalPrice.toLocaleString()}원
           </div>
         )}
-        <button className={styles.cartBtn}>
+        <button className={styles.cartBtn} onClick={() => alert(`${product.name} 장바구니 추가! (추후 API 연동)`)}>
           <ShoppingCart size={13} /> 장바구니
         </button>
       </div>
