@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom"
-import { LayoutDashboard, Users, Package, ShoppingBag } from "lucide-react"
+import { LayoutDashboard, Users, Package, ShoppingBag, Tag, RefreshCcw, Bell, HelpCircle } from "lucide-react"
 import styles from "./AdminSidebar.module.css"
 
 const navItems = [
@@ -7,6 +7,10 @@ const navItems = [
   { to: "/admin/members", label: "회원 관리", icon: Users },
   { to: "/admin/products", label: "상품 관리", icon: Package },
   { to: "/admin/orders", label: "주문 관리", icon: ShoppingBag },
+  { to: "/admin/categories", label: "카테고리 관리", icon: Tag },
+  { to: "/admin/refunds", label: "환불 승인", icon: RefreshCcw },
+  { to: "/admin/notices", label: "공지사항 관리", icon: Bell },
+  { to: "/admin/faqs", label: "FAQ 관리", icon: HelpCircle },
 ]
 
 export default function AdminSidebar() {

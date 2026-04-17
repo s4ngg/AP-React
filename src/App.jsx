@@ -22,6 +22,10 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
 import AdminMemberPage from "./pages/admin/AdminMemberPage"
 import AdminProductsPage from "./pages/admin/AdminProductsPage"
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage"
+import AdminCategoryPage from "./pages/admin/AdminCategoryPage"
+import AdminRefundPage from "./pages/admin/AdminRefundPage"
+import AdminNoticePage from "./pages/admin/AdminNoticePage"
+import AdminFAQPage from "./pages/admin/AdminFAQPage"
 import "./index.css"
 
 function App() {
@@ -52,6 +56,10 @@ function App() {
             <Route path="/admin/members" element={<AdminMemberPage />} />
             <Route path="/admin/products" element={<AdminProductsPage />} />
             <Route path="/admin/orders" element={<AdminOrdersPage />} />
+            <Route path="/admin/categories" element={<AdminCategoryPage />} />
+            <Route path="/admin/refunds" element={<AdminRefundPage />} />
+            <Route path="/admin/notices" element={<AdminNoticePage />} />
+            <Route path="/admin/faqs" element={<AdminFAQPage />} />
           </Routes>
         </div>
         <Footer />
