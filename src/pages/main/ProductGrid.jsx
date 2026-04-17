@@ -2,6 +2,8 @@ import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
 import { useState } from "react"
 import styles from "./ProductGrid.module.css"
+import { useNavigate } from "react-router-dom"
+
 
 const sortOptions = [
   { label: "최신순",    value: "latest" },
@@ -62,6 +64,7 @@ function ProductCard({ product }) {
 
 export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
+  const navigate = useNavigate()
 
   return (
     <section className={styles.section}>
@@ -83,7 +86,9 @@ export default function ProductGrid() {
         <div className={styles.grid}>
           {products.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
-        <button className={styles.moreBtn}>더보기</button>
+        <button className={styles.moreBtn} onClick={() => navigate("/products")}>
+          더보기
+        </button>
       </div>
     </section>
   )
