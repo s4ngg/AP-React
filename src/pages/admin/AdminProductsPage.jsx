@@ -14,11 +14,13 @@ const initialProducts = [
 ]
 
 const categories = ["뷰티", "패션", "리빙"]
+const FILTER_CATEGORIES = ["전체", ...categories]
 const EMPTY_FORM = { name: "", category: "뷰티", price: "", stock: "" }
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState(initialProducts)
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("전체")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
   const [formData, setFormData] = useState(EMPTY_FORM)
@@ -26,9 +28,12 @@ export default function AdminProductsPage() {
 
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
-    if (!term) return products
-    return products.filter((p) => p.name.toLowerCase().includes(term))
-  }, [products, searchTerm])
+    return products.filter((p) => {
+      const matchCategory = selectedCategory === "전체" || p.category === selectedCategory
+      const matchSearch = !term || p.name.toLowerCase().includes(term)
+      return matchCategory && matchSearch
+    })
+  }, [products, searchTerm, selectedCategory])
 
   const handleOpenCreate = () => {
     setEditingProduct(null)
@@ -108,6 +113,19 @@ export default function AdminProductsPage() {
         <h1 className={styles.pageTitle}>상품 관리</h1>
 
         <div className={styles.section}>
+          {/* 카테고리 필터 */}
+          <div className={styles.filterBar}>
+            {FILTER_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                className={`${styles.filterBtn} ${selectedCategory === cat ? styles.filterBtnActive : ""}`}
+                onClick={() => setSelectedCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
           {/* 툴바 */}
           <div className={styles.toolbar}>
             <div className={styles.searchWrap}>
