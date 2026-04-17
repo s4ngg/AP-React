@@ -1,3 +1,6 @@
+:root {
+  --color-border: #ccc;
+}
 * {
   box-sizing: border-box;
   margin: 0;
