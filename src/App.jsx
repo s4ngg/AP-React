@@ -10,6 +10,7 @@ import ReviewWritePage from "./pages/product/ReviewWritePage"
 import CustomerPage from "./pages/customer/CustomerPage"
 import LoginPage from "./pages/member/LoginPage"
 import SignupPage from "./pages/member/SignupPage"
+import SignupSelectPage from "./pages/member/SignupSelectPage"  // ✅ 경로 수정
 import VerifyEmailPage from "./pages/member/VerifyEmailPage"
 import InterestsPage from "./pages/member/InterestsPage"
 import TermsPage from "./pages/member/TermsPage"
@@ -38,7 +39,9 @@ function App() {
             <Route path="/products/:id/review/write" element={<ReviewWritePage />} />
             <Route path="/customer" element={<CustomerPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup" element={<SignupSelectPage />} />
+            <Route path="/signup/user" element={<SignupPage />} />
+            <Route path="/signup/seller" element={<SignupPage isSeller={true} />} />  {/* ✅ 수정 */}
             <Route path="/signup/verify-email" element={<VerifyEmailPage />} />
             <Route path="/signup/interests" element={<InterestsPage />} />
             <Route path="/signup/terms" element={<TermsPage />} />
