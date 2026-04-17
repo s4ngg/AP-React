@@ -16,6 +16,7 @@ import SignupCompletePage from "./pages/member/SignupCompletePage"
 import FindEmailPage from "./pages/member/FindEmailPage"
 import FindPasswordPage from "./pages/member/FindPasswordPage"
 import ResetPasswordPage from "./pages/member/ResetPasswordPage"
+import ProductListPage from "./pages/product/ProductListPage"
 import "./index.css"
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             <Route path="/order" element={<OrderPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/products" element={<ProductListPage />} />
             <Route path="/products/:id/review/write" element={<ReviewWritePage />} />
             <Route path="/customer" element={<CustomerPage />} />
             <Route path="/login" element={<LoginPage />} />
