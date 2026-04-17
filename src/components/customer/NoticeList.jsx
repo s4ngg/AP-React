@@ -10,7 +10,8 @@ const noticeData = [
     { id: 5, title: "고객센터 운영 시간 변경 안내", date: "2026-03-20", isFixed: false },
 ];
 
-export default function NoticeList() {
+// onSelect 프롭스를 받도록 수정
+export default function NoticeList({ onSelect }) {
     return (
         <div className={styles.noticeContainer}>
             <div className={styles.tableHeader}>
@@ -21,21 +22,25 @@ export default function NoticeList() {
 
             <ul className={styles.list}>
                 {noticeData.map((notice) => (
-                    <li key={notice.id} className={`${styles.listItem} ${notice.isFixed ? styles.fixed : ""}`}>
-            <span className={styles.colNo}>
-              {notice.isFixed ? <Megaphone size={16} className={styles.fixedIcon} /> : notice.id}
-            </span>
+                    <li
+                        key={notice.id}
+                        className={`${styles.listItem} ${notice.isFixed ? styles.fixed : ""}`}
+                        // 클릭 시 부모(CustomerPage)에게 ID를 전달
+                        onClick={() => onSelect && onSelect(notice.id)}
+                    >
+                        <span className={styles.colNo}>
+                          {notice.isFixed ? <Megaphone size={16} className={styles.fixedIcon} /> : notice.id}
+                        </span>
                         <span className={styles.colTitle}>
-              {notice.title}
+                            {notice.title}
                             {notice.isFixed && <span className={styles.fixedBadge}>중요</span>}
-            </span>
+                        </span>
                         <span className={styles.colDate}>{notice.date}</span>
                         <ChevronRight size={16} className={styles.arrow} />
                     </li>
                 ))}
             </ul>
 
-            {/* 페이지네이션 (더미) */}
             <div className={styles.pagination}>
                 <button className={styles.pageBtnActive}>1</button>
                 <button className={styles.pageBtn}>2</button>

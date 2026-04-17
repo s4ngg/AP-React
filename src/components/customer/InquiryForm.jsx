@@ -14,10 +14,12 @@ export default function InquiryForm() {
                 <label>문의 유형 <span className={styles.required}>*</span></label>
                 <select className={styles.select}>
                     <option value="">유형을 선택해주세요</option>
-                    <option value="delivery">배송/포장</option>
-                    <option value="cancel">취소/환불</option>
-                    <option value="product">상품/이벤트</option>
-                    <option value="etc">기타</option>
+                    <option value="PRODUCT">상품/이벤트</option>
+                    <option value="DELIVERY">배송/포장</option>
+                    <option value="EXCHANGE">교환</option>
+                    <option value="REFUND">환불</option>
+                    <option value="ACCOUNT">계정</option>
+                    <option value="OTHER">기타</option>
                 </select>
             </div>
 
