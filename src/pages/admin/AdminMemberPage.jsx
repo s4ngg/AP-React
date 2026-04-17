@@ -83,6 +83,8 @@ export default function AdminMemberPage() {
   }
 
   const handleSellerApprove = (sellerId) => {
+    const approved = pendingSellers.find((s) => s.id === sellerId)
+    setSellers((prev) => [...prev, { ...approved, status: "활성" }])
     setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
   }
 
