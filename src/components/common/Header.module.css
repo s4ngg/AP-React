@@ -190,6 +190,7 @@
 
 .categoryWrapper { position: relative; }
 
+/* 카테고리 버튼 */
 .categoryTrigger {
   display: flex;
   align-items: center;
@@ -205,12 +206,15 @@
 
 .categoryTrigger:hover { color: #2563eb; }
 
+/* 카테고리 드롭다운 전체 박스 */
 .categoryDropdown {
   position: absolute;
   top: 100%;
   left: 0;
   margin-top: 4px;
-  width: 160px;
+  display: flex; /* 기존 block → flex로 확장 */
+  width: auto;   /* 기존 160px 깨기 */
+  align-items: stretch;
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -231,6 +235,58 @@
   background-color: #f9fafb;
   color: #2563eb;
 }
+
+/* 왼쪽 대분류 */
+.mainCategoryList {
+  width: 140px;
+  background: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainCategoryItem {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  width: 100%;
+}
+
+.activeMainCategoryItem {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+/* 오른쪽 소분류 */
+.subCategoryList {
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  background: #fff;
+}
+
+.subCategoryItem {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  width: 100%;
+}
+
+.subCategoryItem:hover {
+  background-color: #eff6ff;
+  color: #2563eb;            
+}
+
 
 .navLink {
   font-size: 14px;
@@ -266,8 +322,10 @@
 }
 
 .mobileMenuItem:last-child { border-bottom: none; }
+
 .mobileMenuItem:hover { color: #2563eb; }
 
+/* 모바일 카테고리 - 대분류/소분류 */
 .mobileBtns {
   display: flex;
   gap: 8px;
@@ -329,6 +387,40 @@
 .mobileLogoutBtn:hover {
   border-color: #ef4444;
   color: #ef4444;
+}
+
+.mobileCategoryGroup {
+  margin-bottom: 12px;
+}
+
+.mobileMenuItemButton {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+}
+
+.mobileSubCategoryList {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  margin-top: 6px;
+  gap: 6px;
+}
+
+.mobileSubCategoryItem {
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 0;
 }
 
 /* 반응형 */

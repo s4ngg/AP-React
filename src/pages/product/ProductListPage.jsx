@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import styles from "./ProductListPage.module.css";
 import productMockData from "./productMockData";
 
 function ProductListPage() {
     const categoryData = {
-        뷰티: ["메이크업", "스킨케어", "향수", "남성화장품"],
+        뷰티: ["메이크업", "스킨케어", "남성화장품", "향수"],
         패션: ["여성의류", "남성의류", "잡화·ACC"],
         식품: ["과일·견과", "축산·수산", "디저트"],
         주류: ["와인", "양주", "맥주·기타"],
@@ -13,12 +14,29 @@ function ProductListPage() {
 
     const sortOptions = ["최신순", "가격낮은순", "가격높은순", "인기순"];
 
+    const location = useLocation();
+
     const [selectedCategory, setSelectedCategory] = useState("뷰티");
     const [selectedSubCategory, setSelectedSubCategory] = useState("");
     const [selectedSort, setSelectedSort] = useState("최신순");
     const [currentPage, setCurrentPage] = useState(1);
 
     const itemsPerPage = 8;
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const queryCategory = params.get("category");
+        const querySubCategory = params.get("subCategory");
+
+        if (queryCategory && categoryData[queryCategory]) {
+            setSelectedCategory(queryCategory);
+            setSelectedSubCategory(
+                querySubCategory && categoryData[queryCategory].includes(querySubCategory)
+                    ? querySubCategory
+                    : ""
+            );
+        }
+    }, [location.search]);
 
     const filteredProducts = useMemo(() => {
         const categoryFiltered = productMockData.filter((product) => {
