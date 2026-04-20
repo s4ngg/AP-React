@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import { Headset, Megaphone, HelpCircle, MessageSquare, RotateCcw, ChevronRight, Search } from "lucide-react";
 import styles from "./CustomerPage.module.css";
-
-// 1. 우리가 만든 컴포넌트들 임포트
 import NoticeList from "../../components/customer/NoticeList.jsx";
 import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
 import FAQList from "../../components/customer/FAQList.jsx";
 import InquiryForm from "../../components/customer/InquiryForm.jsx";
 import ReturnGuide from "../../components/customer/ReturnGuide.jsx";
+import ReturnForm from "../../components/customer/ReturnForm.jsx";
+import ReturnHistory from "../../components/customer/ReturnHistory.jsx";
 
 export default function CustomerPage() {
     const [currentTab, setCurrentTab] = useState("home");
     // 상세보기를 위한 상태 추가 (null이면 리스트, id가 있으면 상세화면)
     const [selectedNoticeId, setSelectedNoticeId] = useState(null);
+    // 교환/반품 탭 내 뷰 상태: "guide" | "form"
+    const [returnView, setReturnView] = useState("guide");
 
     // 탭이 바뀌면 상세보기도 초기화
     const handleTabChange = (tabId) => {
         setCurrentTab(tabId);
         setSelectedNoticeId(null);
+        setReturnView("guide");
     };
 
     const sideMenus = [
@@ -39,7 +42,7 @@ export default function CustomerPage() {
                             <li
                                 key={menu.id}
                                 className={currentTab === menu.id ? styles.menuActive : styles.menuItem}
-                                onClick={() => setCurrentTab(menu.id)}
+                                onClick={() => handleTabChange(menu.id)}
                             >
                                 {menu.icon}
                                 <span>{menu.name}</span>
@@ -86,6 +89,7 @@ export default function CustomerPage() {
                             <NoticeDetail
                                 noticeId={selectedNoticeId}
                                 onBack={() => setSelectedNoticeId(null)}
+                                onSelect={(id) => setSelectedNoticeId(id)}
                             />
                         ) : (
                             <NoticeList onSelect={(id) => setSelectedNoticeId(id)} />
@@ -99,7 +103,16 @@ export default function CustomerPage() {
                     {currentTab === "inquiry" && <InquiryForm />}
 
                     {/* 5. 교환/반품 탭 */}
-                    {currentTab === "return" && <ReturnGuide />}
+                    {currentTab === "return" && (
+                        returnView === "form"
+                            ? <ReturnForm onBack={() => setReturnView("guide")} />
+                            : returnView === "history"
+                                ? <ReturnHistory onBack={() => setReturnView("guide")} />
+                                : <ReturnGuide
+                                    onApply={() => setReturnView("form")}
+                                    onConsult={() => setReturnView("history")}
+                                  />
+                    )}
 
                 </div>
             </main>
