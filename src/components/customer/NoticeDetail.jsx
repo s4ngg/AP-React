@@ -59,3 +59,5 @@ export default function NoticeDetail({ onBack }) {
         </div>
     );
 }
+
+
