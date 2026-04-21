@@ -24,6 +24,7 @@ export default function SignupPage({ isSeller = false }) {
     handleSubmit,
     watch,
     setError,
+    setValue,
     formState: { errors },
   } = useForm({ mode: "onChange" });
 
@@ -52,6 +53,14 @@ export default function SignupPage({ isSeller = false }) {
       setError("email", { message: "올바른 이메일 형식이 아닙니다" });
       return;
     }
+    const handleAddressSearch = () => {
+      new window.daum.Postcode({
+        oncomplete: (data) => {
+          setValue("zipCode", data.zonecode);  // 우편번호 자동 입력
+          setValue("address", data.address);   // 주소 자동 입력
+        }
+      }).open();
+    };
     setCheckingEmail(true);
     try {
       const response = await checkEmailDuplicate(email);
@@ -219,36 +228,39 @@ export default function SignupPage({ isSeller = false }) {
               {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
             </div>
 
+            {/* 우편번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>우편번호</label>
-              <input
-                type="text"
-                placeholder="우편번호"
-                className={`${styles.input} ${errors.zipCode ? styles.inputError : ""}`}
-                {...register("zipCode", { required: "우편번호를 입력해주세요" })}
-              />
+              <div className={styles.emailRow}>
+                <input
+                  type="text"
+                  placeholder="우편번호"
+                  readOnly  // ← 직접 입력 막기
+                  className={`${styles.input} ${styles.emailInput} ${errors.zipCode ? styles.inputError : ""}`}
+                  {...register("zipCode", { required: "우편번호를 입력해주세요" })}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddressSearch}  // ← 주소 검색 버튼
+                  className={styles.checkBtn}
+                >
+                  주소 검색
+                </button>
+              </div>
               {errors.zipCode && <p className={styles.fieldError}>{errors.zipCode.message}</p>}
             </div>
 
+            {/* 주소 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>주소</label>
               <input
                 type="text"
-                placeholder="주소를 입력해주세요"
+                placeholder="주소 검색 버튼을 눌러주세요"
+                readOnly  // ← 직접 입력 막기
                 className={`${styles.input} ${errors.address ? styles.inputError : ""}`}
                 {...register("address", { required: "주소를 입력해주세요" })}
               />
               {errors.address && <p className={styles.fieldError}>{errors.address.message}</p>}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>상세주소</label>
-              <input
-                type="text"
-                placeholder="상세주소를 입력해주세요"
-                className={styles.input}
-                {...register("addressDetail")}
-              />
             </div>
           </div>
 
