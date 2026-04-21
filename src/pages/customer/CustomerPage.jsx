@@ -110,7 +110,7 @@ export default function CustomerPage() {
                                 ? <ReturnHistory onBack={() => setReturnView("guide")} />
                                 : <ReturnGuide
                                     onApply={() => setReturnView("form")}
-                                    onConsult={() => setReturnView("history")}
+                                    onInquiry={() => handleTabChange("inquiry")}
                                   />
                     )}
 
