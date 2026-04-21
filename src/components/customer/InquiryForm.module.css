@@ -12,9 +12,7 @@
     margin-bottom: 30px;
 }
 
-.inputGroup {
-    margin-bottom: 25px;
-}
+.inputGroup { margin-bottom: 25px; }
 
 .inputGroup label {
     display: block;
@@ -32,17 +30,21 @@
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     font-size: 14.5px;
+    font-family: inherit;
     transition: border-color 0.2s;
     outline: none;
+    box-sizing: border-box;
 }
 
-.select:focus, .input:focus, .textarea:focus {
-    border-color: #2563eb;
-}
+.select:focus, .input:focus, .textarea:focus { border-color: #2563eb; }
 
-.textarea {
-    height: 200px;
-    resize: none;
+.textarea { height: 200px; resize: none; line-height: 1.7; }
+
+.charCount {
+    text-align: right;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 6px;
 }
 
 .orderSelectBox {
@@ -68,16 +70,266 @@
     cursor: pointer;
 }
 
-.fileUploadArea {
+/* ── 선택된 주문 ── */
+.selectedOrderBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1.5px solid #2563eb;
+    background-color: #eff6ff;
+    border-radius: 6px;
+    gap: 12px;
+}
+
+.selectedOrderInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.selectedOrderImg {
+    width: 52px;
+    height: 52px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.selectedOrderText {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.selectedOrderId {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.selectedOrderName {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.selectedOrderDate {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.changeOrderBtn {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 13px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* ── 주문 조회 모달 ── */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modalBox {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modalTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.modalClose {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.15s, background-color 0.15s;
+}
+.modalClose:hover { color: #111827; background-color: #f3f4f6; }
+
+.modalBody {
+    overflow-y: auto;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
+/* ── 주문 카드 ── */
+.orderCard {
+    width: 100%;
+    text-align: left;
+    background-color: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.orderCard:hover { border-color: #93c5fd; background-color: #f8faff; }
+.orderCardSelected { border-color: #2563eb !important; background-color: #eff6ff !important; }
+
+.orderCardTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.orderCardId {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.orderCardStatus {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.orderCardItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.orderCardImg {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.orderCardItemInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.orderCardItemName {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.orderCardItemOption {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.orderCardItemPrice {
+    font-size: 13px;
+    color: #374151;
+    font-weight: 600;
+}
+
+.orderCardBottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.orderCardDate {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.orderCardTotal {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+/* ── 사진 첨부 ── */
+.fileUploadArea { display: flex; flex-direction: column; gap: 10px; }
+.imagePreviewList { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.imagePreviewItem {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+.imagePreviewItem img { width: 100%; height: 100%; object-fit: cover; }
+
+.imageRemoveBtn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .uploadBtn {
     width: 80px;
     height: 80px;
-    border: 1px dashed #d1d5db;
+    border: 1.5px dashed #d1d5db;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
@@ -86,12 +338,13 @@
     color: #9ca3af;
     cursor: pointer;
     background-color: #fff;
+    gap: 4px;
+    transition: border-color 0.2s, color 0.2s;
 }
+.uploadBtn:hover { border-color: #2563eb; color: #2563eb; }
+.uploadBtn span { font-size: 12px; }
 
-.fileGuide {
-    font-size: 12px;
-    color: #9ca3af;
-}
+.fileGuide { font-size: 12px; color: #9ca3af; }
 
 .actionArea {
     margin-top: 40px;
@@ -111,5 +364,241 @@
     cursor: pointer;
     transition: background-color 0.2s;
 }
-
 .submitBtn:hover { background-color: #1d4ed8; }
+
+/* ── 등록 완료 화면 ── */
+.completeWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.completeIcon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.completeTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.completeDesc {
+    font-size: 14.5px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+.completeDesc strong { color: #111827; font-weight: 600; }
+
+/* ── 접수 내용 요약 카드 ── */
+.completeSummary {
+    width: 100%;
+    max-width: 500px;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 28px;
+    text-align: left;
+}
+
+.summaryHeader {
+    padding: 14px 20px;
+    background-color: #f9fafb;
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    gap: 16px;
+}
+.summaryRow span { color: #6b7280; white-space: nowrap; min-width: 72px; }
+.summaryRow strong { color: #111827; font-weight: 600; text-align: right; }
+
+.summaryRowContent {
+    padding: 13px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.summaryRowContent span { color: #6b7280; }
+.summaryRowContent p {
+    color: #111827;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    background-color: #f9fafb;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.summaryImages {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.summaryImg {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.summaryStatus {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+}
+.statusBadge {
+    padding: 4px 12px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.statusDesc {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* ── 완료 버튼 ── */
+.completeActions {
+    display: flex;
+    gap: 12px;
+}
+
+.cancelBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 13px 24px;
+    background-color: #fff;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.cancelBtn:hover { background-color: #fef2f2; border-color: #dc2626; }
+
+.viewBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 13px 24px;
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.viewBtn:hover { background-color: #1d4ed8; }
+
+/* ── 문의 취소 확인 팝업 ── */
+.confirmBox {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 360px;
+    padding: 32px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.confirmIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #fef2f2;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.confirmTitle {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 10px;
+}
+
+.confirmDesc {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin: 0 0 24px;
+}
+
+.confirmActions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.confirmNoBtn {
+    flex: 1;
+    padding: 13px;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: none;
+    border-radius: 6px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.confirmNoBtn:hover { background-color: #e5e7eb; }
+
+.confirmYesBtn {
+    flex: 1;
+    padding: 13px;
+    background-color: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.confirmYesBtn:hover { background-color: #b91c1c; }
+
+@media (max-width: 640px) {
+    .completeActions { flex-direction: column; width: 100%; max-width: 500px; }
+    .cancelBtn, .viewBtn { justify-content: center; }
+}
