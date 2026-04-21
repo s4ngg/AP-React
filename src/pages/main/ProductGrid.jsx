@@ -1,8 +1,8 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
 import { useState } from "react"
 import styles from "./ProductGrid.module.css"
-
+import useCartStore from "../../store/cartStore"
 
 const sortOptions = [
   { label: "최신순",    value: "latest" },
@@ -24,25 +24,42 @@ const products = [
 
 function ProductCard({ product }) {
   const [liked, setLiked] = useState(false)
+  const [toastVisible, setToastVisible] = useState(false)
+  const { addItem } = useCartStore()
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null
 
+  const handleAddCart = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    addItem(product)
+    setToastVisible(true)
+    setTimeout(() => setToastVisible(false), 2000)
+  }
+
   return (
-    <div className={styles.card}>
+    <Link to={`/products/${product.id}`} className={styles.card}>
+      {toastVisible && (
+        <div className={styles.toast}>
+          <ShoppingCart size={13} /> 장바구니에 담겼습니다!
+        </div>
+      )}
       <div className={styles.imageBox}>
-        <Link to={`/products/${product.id}`}>
-          <img src={product.image} alt={product.name} />
-        </Link>
+        <img src={product.image} alt={product.name} />
         {product.badge && <span className={styles.badge}>{product.badge}</span>}
-        <button className={styles.wishBtn} onClick={() => setLiked(!liked)} aria-label="위시리스트">
+        <button
+          className={styles.wishBtn}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(!liked) }}
+          aria-label="위시리스트"
+        >
           <Heart size={16} fill={liked ? "#ef4444" : "none"} color={liked ? "#ef4444" : "#9ca3af"} />
         </button>
       </div>
       <div className={styles.cardBody}>
-        <Link to={`/products/${product.id}`} className={styles.productName}>
+        <span className={styles.productName}>
           {product.name}
-        </Link>
+        </span>
         <div className={styles.priceRow}>
           {discount && <span className={styles.discount}>{discount}%</span>}
           <span className={styles.price}>{product.price.toLocaleString()}원</span>
@@ -50,24 +67,19 @@ function ProductCard({ product }) {
         {product.originalPrice && (
           <div className={styles.originalPrice}>{product.originalPrice.toLocaleString()}원</div>
         )}
-        <div className={styles.shippingArea}>
-          {product.freeShipping && (
-            <div className={styles.shipping}>
-              <Truck size={11} />무료배송
-            </div>
-          )}
-        </div>
-        <button className={styles.cartBtn}>
-          <ShoppingCart size={14} />장바구니
-        </button>
+        {product.freeShipping && (
+          <div className={styles.shipping}>
+            <Truck size={11} />무료배송
+          </div>
+        )}
+        
       </div>
-    </div>
+    </Link>
   )
 }
 
 export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
-  const navigate = useNavigate()
 
   return (
     <section className={styles.section}>
@@ -89,9 +101,7 @@ export default function ProductGrid() {
         <div className={styles.grid}>
           {products.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
-        <button className={styles.moreBtn} onClick={() => navigate("/products")}>
-          더보기
-        </button>
+        <button className={styles.moreBtn}>더보기</button>
       </div>
     </section>
   )
