@@ -157,6 +157,7 @@ export default function InquiryForm() {
     const handleCancel = () => {
         setSavedData(null);
         setSubmitted(false);
+        setCancelConfirmOpen(false);
         setInquiryType("");
         setTitle("");
         setContent("");
