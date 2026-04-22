@@ -1,0 +1,708 @@
+.sellerLayout {
+  display: flex;
+  min-height: calc(100vh - 120px);
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+  background-color: #f8fafc;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 24px;
+}
+
+.section {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* 카테고리 필터 */
+.filterBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 6px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filterBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.filterBtnActive {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* 툴바 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+  border-color: #2563eb;
+}
+
+.createBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+}
+
+.createBtn:hover {
+  background-color: #1d4ed8;
+}
+
+/* 테이블 */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background-color: #f9fafb;
+}
+
+.emptyRow {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px 0;
+}
+
+/* 상품 셀 */
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productThumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.productName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 상태 배지 */
+.statusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusOnSale {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.statusSoldOut {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* 액션 버튼 */
+.actionBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.editBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.deleteBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.deleteBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+/* 행 클릭 가능 표시 */
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover td {
+  background-color: #eff6ff !important;
+}
+
+/* 모달 공통 */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+/* ── 등록/수정 모달 ── */
+.modal {
+  background-color: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modalCloseBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  color: #6b7280;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.modalCloseBtn:hover {
+  background-color: #f3f4f6;
+}
+
+/* form = flex 컨테이너 → 필드 영역 스크롤 + 버튼 하단 고정 */
+.formWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.formBody {
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── 상품 상세 모달 ── */
+.detailModal {
+  background-color: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.detailModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.detailModalActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editInDetailBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.editInDetailBtn:hover {
+  background-color: #dbeafe;
+}
+
+.detailModalBody {
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── 이미지 갤러리 (상세 모달) ── */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.galleryMain {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  max-height: 320px;
+}
+
+.galleryMainImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.galleryThumbs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.galleryThumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.galleryThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.galleryThumbActive {
+  border-color: #2563eb;
+}
+
+/* ── 상품 정보 그리드 (상세 모달) ── */
+.productInfoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 10px;
+}
+
+.productInfoRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.productInfoLabel {
+  width: 72px;
+  font-size: 13px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.productInfoValue {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* ── 상세 설명 이미지 섹션 (상세 모달) ── */
+.descImagesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.descImagesTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.descImagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.descFullImage {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ── 폼 레이아웃 ── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* 폼 */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.formInput {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.formInput:focus {
+  border-color: #2563eb;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* 텍스트 영역 */
+.formTextarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.formTextarea:focus {
+  border-color: #2563eb;
+}
+
+/* 힌트 텍스트 */
+.formHint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: -2px 0 6px;
+}
+
+/* 파일 인풋 — label로 스타일링, input은 숨김 */
+.fileInputLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #6b7280;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 6px;
+}
+
+.fileInputLabel:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.fileInput {
+  display: none;
+}
+
+/* 대표 이미지 미리보기 */
+.thumbPreviewWrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.thumbPreview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  display: block;
+}
+
+/* 이미지 삭제 버튼 (공통) */
+.removeImageBtn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.removeImageBtn:hover {
+  background-color: #dc2626;
+}
+
+/* 추가 이미지 미리보기 리스트 */
+.imagePreviewList {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.imagePreviewItem {
+  position: relative;
+}
+
+.imagePreviewThumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  display: block;
+}
+
+/* 상세 설명 이미지 미리보기 리스트 */
+.descImagePreviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.descImagePreviewItem {
+  position: relative;
+  display: inline-block;
+}
+
+.descImagePreviewImg {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  display: block;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  background-color: #ffffff;
+  transition: background-color 0.15s;
+}
+
+.cancelBtn:hover {
+  background-color: #f9fafb;
+}
+
+.submitBtn {
+  flex: 1;
+  padding: 12px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.submitBtn:hover {
+  background-color: #1d4ed8;
+}
+
+.submitBtn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}

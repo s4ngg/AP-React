@@ -13,7 +13,6 @@ const quickLinks = [
 const customerLinks = [
   { name: "자주 묻는 질문", href: "#" },
   { name: "1:1 문의", href: "#" },
-  { name: "배송 조회", href: "#" },
   { name: "교환/반품", href: "#" },
 ]
 

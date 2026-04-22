@@ -1,0 +1,26 @@
+.detailContainer { width: 100%; animation: fadeIn 0.3s ease-in; }
+
+.backBtn {
+    display: flex; align-items: center; gap: 5px;
+    background: none; border: none; color: #6b7280;
+    cursor: pointer; margin-bottom: 20px; font-weight: 500;
+}
+
+.article { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+
+.articleHeader { padding: 30px; border-bottom: 1px solid #f3f4f6; }
+.title { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 15px; }
+.metaInfo { display: flex; gap: 20px; color: #9ca3af; font-size: 14px; }
+.metaInfo span { display: flex; align-items: center; gap: 5px; }
+
+.content { padding: 30px; min-height: 300px; line-height: 1.8; color: #374151; white-space: pre-wrap; }
+.contentImg { max-width: 100%; border-radius: 8px; margin-bottom: 20px; }
+
+.articleFooter { padding: 20px 30px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; }
+.navItem { display: flex; gap: 15px; padding: 8px 0; font-size: 14px; }
+.navLabel { font-weight: 700; color: #6b7280; min-width: 50px; }
+.navTitle { color: #111827; cursor: pointer; }
+.navTitle:hover { text-decoration: underline; }
+.navEmpty { color: #9ca3af; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

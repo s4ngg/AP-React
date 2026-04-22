@@ -169,3 +169,8 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+}

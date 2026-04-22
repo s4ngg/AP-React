@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
 import { useState } from "react"
 import styles from "./ProductGrid.module.css"
+
 
 const sortOptions = [
   { label: "최신순",    value: "latest" },
@@ -30,7 +31,9 @@ function ProductCard({ product }) {
   return (
     <div className={styles.card}>
       <div className={styles.imageBox}>
-        <img src={product.image} alt={product.name} />
+        <Link to={`/products/${product.id}`}>
+          <img src={product.image} alt={product.name} />
+        </Link>
         {product.badge && <span className={styles.badge}>{product.badge}</span>}
         <button className={styles.wishBtn} onClick={() => setLiked(!liked)} aria-label="위시리스트">
           <Heart size={16} fill={liked ? "#ef4444" : "none"} color={liked ? "#ef4444" : "#9ca3af"} />
@@ -47,11 +50,13 @@ function ProductCard({ product }) {
         {product.originalPrice && (
           <div className={styles.originalPrice}>{product.originalPrice.toLocaleString()}원</div>
         )}
-        {product.freeShipping && (
-          <div className={styles.shipping}>
-            <Truck size={11} />무료배송
-          </div>
-        )}
+        <div className={styles.shippingArea}>
+          {product.freeShipping && (
+            <div className={styles.shipping}>
+              <Truck size={11} />무료배송
+            </div>
+          )}
+        </div>
         <button className={styles.cartBtn}>
           <ShoppingCart size={14} />장바구니
         </button>
@@ -62,6 +67,7 @@ function ProductCard({ product }) {
 
 export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
+  const navigate = useNavigate()
 
   return (
     <section className={styles.section}>
@@ -83,7 +89,9 @@ export default function ProductGrid() {
         <div className={styles.grid}>
           {products.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
-        <button className={styles.moreBtn}>더보기</button>
+        <button className={styles.moreBtn} onClick={() => navigate("/products")}>
+          더보기
+        </button>
       </div>
     </section>
   )

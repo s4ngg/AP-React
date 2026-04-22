@@ -1,21 +1,76 @@
 .form {
   display: flex;
   flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+ 
+/* ✅ 좌우 2단 레이아웃 */
+.twoColumn {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+ 
+.column {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
-
+ 
+.columnDivider {
+  background-color: var(--color-border);
+  align-self: stretch;
+}
+ 
+.columnTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.optionalBadge {
+  font-size: 11px;
+  font-weight: 400;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #eef2ff;
+  color: var(--color-primary);
+}
+ 
+/* 모바일: 1단 */
+@media (max-width: 768px) {
+  .twoColumn {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .columnDivider {
+    display: none;
+  }
+}
+ 
 .fieldGroup {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
+ 
 .label {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-text);
 }
-
+ 
 .input {
   width: 100%;
   height: 44px;
@@ -29,25 +84,23 @@
   outline: none;
   transition: border-color 0.2s;
 }
-
+ 
 .input:focus {
   border-color: var(--color-primary);
 }
-
+ 
 .inputError {
   border-color: #dc2626;
 }
-
+ 
 .inputWrapper {
   position: relative;
 }
-
+ 
 .inputWithButton {
-  border: 1px solid #ccc;
-  border-radius: 3px;
   padding-right: 44px;
 }
-
+ 
 .eyeButton {
   position: absolute;
   right: 12px;
@@ -60,65 +113,61 @@
   display: flex;
   align-items: center;
 }
-
+ 
 .eyeButton:hover {
   color: var(--color-text);
 }
-
+ 
 .fieldError {
   font-size: 13px;
   color: #dc2626;
 }
-
+ 
 .passwordValidation {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
 }
-
+ 
 .validItem {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
 }
-
+ 
 .validItemOk {
   color: #16a34a;
 }
-
+ 
 .validItemFail {
   color: var(--color-muted);
 }
-
+ 
 .passwordMatch {
-  border: 1px solid #ccc;
-  border-radius: 3px;
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
 }
-
+ 
 .matchOk {
   color: #16a34a;
 }
-
+ 
 .matchFail {
   color: #dc2626;
 }
-
+ 
 .emailRow {
   display: flex;
   gap: 8px;
 }
-
+ 
 .emailInput {
-  border: 1px solid #ccc;
-  border-radius: 3px;
   flex: 1;
 }
-
+ 
 .checkBtn {
   height: 44px;
   padding: 0 16px;
@@ -132,31 +181,31 @@
   white-space: nowrap;
   transition: background-color 0.2s;
 }
-
+ 
 .checkBtn:hover:not(:disabled) {
   background-color: #eef2ff;
 }
-
+ 
 .checkBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
+ 
 .emailStatus {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
 }
-
+ 
 .emailAvailable {
   color: #16a34a;
 }
-
+ 
 .emailUnavailable {
   color: #dc2626;
 }
-
+ 
 .submitBtn {
   width: 100%;
   height: 48px;
@@ -173,16 +222,16 @@
   gap: 8px;
   transition: opacity 0.2s;
 }
-
+ 
 .submitBtn:hover:not(:disabled) {
   opacity: 0.9;
 }
-
+ 
 .submitBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
+ 
 .links {
   display: flex;
   align-items: center;
@@ -190,22 +239,18 @@
   gap: 16px;
   font-size: 14px;
 }
-
+ 
 .link {
   color: var(--color-muted);
   text-decoration: none;
   transition: color 0.2s;
 }
-
+ 
 .link:hover {
   color: var(--color-text);
   text-decoration: underline;
 }
-
-.divider {
-  color: var(--color-border);
-}
-
+ 
 .spinner {
   width: 20px;
   height: 20px;
@@ -214,7 +259,14 @@
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
-
+ 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.singleColumn {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 500px;
+  margin: 0 auto;
 }

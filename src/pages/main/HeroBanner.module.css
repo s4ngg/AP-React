@@ -3,8 +3,22 @@
   overflow: hidden;
 }
 
+.sliderOuter {
+  width: 100%;
+  overflow: hidden;
+}
+
+.sliderTrack {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.slide {
+  min-width: 100%;
+}
+
 .bannerWrap {
-  transition: background-color 0.3s;
+  transition: background-color 0.4s ease;
 }
 
 .inner {
