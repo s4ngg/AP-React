@@ -99,9 +99,7 @@ function ProductCard({ product }) {
             {product.originalPrice.toLocaleString()}원
           </div>
         )}
-        <button className={styles.cartBtn} onClick={() => alert(`${product.name} 장바구니 추가! (추후 API 연동)`)}>
-          <ShoppingCart size={13} /> 장바구니
-        </button>
+        
       </div>
     </div>
   )
