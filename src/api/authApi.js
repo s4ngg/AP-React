@@ -60,3 +60,24 @@ export const resetPassword = async (data) => {
   const response = await api.post("/auth/reset-password", data);
   return response.data;
 };
+
+// ==================== 사업자등록번호 검증 ====================
+
+export const validateBusinessNumber = async (businessNumber) => {
+  const cleaned = businessNumber.replaceAll("-", "");
+
+  const response = await fetch(
+    `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${import.meta.env.VITE_BUSINESS_API_KEY}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ b_no: [cleaned] })
+    }
+  );
+
+  const data = await response.json();
+  return data.data[0]?.b_stt_cd === "01";
+};
