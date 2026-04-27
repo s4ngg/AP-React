@@ -365,3 +365,137 @@
 .completeBtnSecondary:hover {
   background-color: #f9fafb;
 }
+
+.emptyText {
+  font-size: 14px;
+  color: #9ca3af;
+  padding: 8px 0;
+}
+
+/* 배송지 선택 목록 */
+.addressList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.addressSelectBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.addressSelectBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.addressSelectActive {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.defaultBadge {
+  padding: 2px 6px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* 쿠폰 */
+.couponToggleBtn {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.couponToggleBtn:hover {
+  background-color: #f9fafb;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.couponItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.couponItem:hover {
+  border-color: #2563eb;
+}
+
+.couponItemActive {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.couponCode {
+  font-weight: 600;
+  color: #111827;
+  font-size: 13px;
+}
+
+.couponDiscount {
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 14px;
+}
+
+.couponCondition {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.discountText {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.emptyPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 80px 16px;
+  text-align: center;
+}
+
+.emptyPage p {
+  font-size: 16px;
+  color: #6b7280;
+}
