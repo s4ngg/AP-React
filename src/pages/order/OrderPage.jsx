@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { MapPin, Package, CreditCard, CheckCircle, Tag } from "lucide-react"
+import { MapPin, Package, CreditCard, CheckCircle, Tag, Plus, X } from "lucide-react"
 import styles from "./OrderPage.module.css"
 import useCartStore from "../../store/cartStore"
 import useAuthStore from "../../store/authStore"
-import { getDeliveryAddresses, createOrder } from "../../api/orderApi"
+import { getDeliveryAddresses, createOrder, addDeliveryAddress } from "../../api/orderApi"
 import { getUnusedCoupons } from "../../api/couponApi"
+import AddressSearch from "../../components/common/AddressSearch"
 
 const payMethods = [
   { id: "CARD",          label: "신용카드",   icon: "💳" },
@@ -13,6 +14,15 @@ const payMethods = [
   { id: "NAVER_PAY",     label: "네이버페이", icon: "🟢" },
   { id: "BANK_TRANSFER", label: "무통장입금", icon: "🏦" },
 ]
+
+const emptyAddressForm = {
+  recipientName: "",
+  phone: "",
+  zipCode: "",
+  address: "",
+  addressDetail: "",
+  isDefault: false,
+}
 
 export default function OrderPage() {
   const navigate = useNavigate()
@@ -27,6 +37,9 @@ export default function OrderPage() {
 
   const [addresses, setAddresses] = useState([])
   const [selectedAddressId, setSelectedAddressId] = useState(null)
+  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [addressForm, setAddressForm] = useState(emptyAddressForm)
+  const [isAddingAddress, setIsAddingAddress] = useState(false)
 
   const [coupons, setCoupons] = useState([])
   const [selectedCouponId, setSelectedCouponId] = useState(null)
@@ -68,6 +81,33 @@ export default function OrderPage() {
     : 0
 
   const totalPrice = totalProductPrice + shippingFee - discountAmount
+
+  // 카카오 주소 검색 완료 콜백
+  const handleAddressComplete = ({ zonecode, address }) => {
+    setAddressForm((prev) => ({ ...prev, zipCode: zonecode, address }))
+  }
+
+  // 배송지 추가 제출
+  const handleAddAddress = async () => {
+    if (!addressForm.recipientName || !addressForm.phone || !addressForm.address) {
+      alert("필수 항목을 입력해주세요.")
+      return
+    }
+    setIsAddingAddress(true)
+    try {
+      await addDeliveryAddress(user.id, addressForm)
+      const data = await getDeliveryAddresses(user.id)
+      setAddresses(data ?? [])
+      const newAddr = (data ?? []).find((a) => a.address === addressForm.address)
+      if (newAddr) setSelectedAddressId(newAddr.addressId)
+      setAddressForm(emptyAddressForm)
+      setShowAddressForm(false)
+    } catch (e) {
+      alert("배송지 추가 중 오류가 발생했습니다.")
+    } finally {
+      setIsAddingAddress(false)
+    }
+  }
 
   const handlePay = async () => {
     if (!selectedPay || !selectedAddressId || orderItems.length === 0) return
@@ -119,14 +159,14 @@ export default function OrderPage() {
     )
   }
 
-if (orderItems.length === 0) {
-  return (
-    <div className={styles.emptyPage}>
-      <p>주문할 상품이 없습니다.</p>
-      <Link to="/" className={styles.completeBtnPrimary}>쇼핑하러 가기</Link>
-    </div>
-  )
-}
+  if (orderItems.length === 0) {
+    return (
+      <div className={styles.emptyPage}>
+        <p>주문할 상품이 없습니다.</p>
+        <Link to="/" className={styles.completeBtnPrimary}>쇼핑하러 가기</Link>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -137,11 +177,80 @@ if (orderItems.length === 0) {
 
           {/* 배송지 */}
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              <MapPin size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
-              배송지 정보
-            </h2>
-            {selectedAddress ? (
+            <div className={styles.sectionTitleRow}>
+              <h2 className={styles.sectionTitle}>
+                <MapPin size={16} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+                배송지 정보
+              </h2>
+              <button
+                className={styles.addAddressBtn}
+                onClick={() => setShowAddressForm(!showAddressForm)}
+              >
+                {showAddressForm ? <X size={14} /> : <Plus size={14} />}
+                {showAddressForm ? "취소" : "새 배송지"}
+              </button>
+            </div>
+
+            {/* 새 배송지 추가 폼 */}
+            {showAddressForm && (
+              <div className={styles.addressForm}>
+                <div className={styles.addressFormRow}>
+                  <input
+                    className={styles.input}
+                    placeholder="받는 분 *"
+                    value={addressForm.recipientName}
+                    onChange={(e) => setAddressForm((p) => ({ ...p, recipientName: e.target.value }))}
+                  />
+                  <input
+                    className={styles.input}
+                    placeholder="연락처 * (010-0000-0000)"
+                    value={addressForm.phone}
+                    onChange={(e) => setAddressForm((p) => ({ ...p, phone: e.target.value }))}
+                  />
+                </div>
+                <div className={styles.addressSearchRow}>
+                  <input
+                    className={styles.input}
+                    placeholder="우편번호"
+                    value={addressForm.zipCode}
+                    readOnly
+                  />
+                  <AddressSearch onComplete={handleAddressComplete} />
+                </div>
+                <input
+                  className={styles.input}
+                  placeholder="기본 주소"
+                  value={addressForm.address}
+                  readOnly
+                />
+                <input
+                  className={styles.input}
+                  placeholder="상세 주소"
+                  value={addressForm.addressDetail}
+                  onChange={(e) => setAddressForm((p) => ({ ...p, addressDetail: e.target.value }))}
+                />
+                <div className={styles.addressFormFooter}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={addressForm.isDefault}
+                      onChange={(e) => setAddressForm((p) => ({ ...p, isDefault: e.target.checked }))}
+                    />
+                    기본 배송지로 설정
+                  </label>
+                  <button
+                    className={styles.saveBtn}
+                    onClick={handleAddAddress}
+                    disabled={isAddingAddress}
+                  >
+                    {isAddingAddress ? "저장 중..." : "배송지 저장"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 배송지 목록 */}
+            {selectedAddress && !showAddressForm && (
               <div className={styles.addressInfo}>
                 <div className={styles.addressRow}>
                   <span className={styles.addressLabel}>받는 분</span>
@@ -159,10 +268,13 @@ if (orderItems.length === 0) {
                   </span>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {!selectedAddress && !showAddressForm && (
               <p className={styles.emptyText}>등록된 배송지가 없습니다.</p>
             )}
-            {addresses.length > 1 && (
+
+            {addresses.length > 1 && !showAddressForm && (
               <div className={styles.addressList}>
                 {addresses.map((addr) => (
                   <button
