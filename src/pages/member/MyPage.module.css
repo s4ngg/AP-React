@@ -890,3 +890,41 @@
 .withdrawalConfirmBtn:hover {
   background-color: #dc2626;
 }
+
+/* 기존 MyPage.module.css 하단에 추가 */
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+}
+
+.historyGrades {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.historyArrow {
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+.historyMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #6b7280;
+}

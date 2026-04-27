@@ -1,6 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket } from "lucide-react"
 import styles from "./MyPage.module.css"
+import useAuthStore from "../../store/authStore"
+import { getMember } from "../../api/memberApi"
+import { getMembershipHistory } from "../../api/membershipApi"
 
 // 임시 사용자 데이터 (추후 API 연동)
 const mockUser = {
@@ -47,20 +50,6 @@ const mockOrders = [
       },
     ],
     totalPrice: 237000,
-  },
-  {
-    id: "AP-20250408003",
-    date: "2025-04-08",
-    status: "주문완료",
-    items: [
-      {
-        name: "[이니스프리] 그린티 씨드 세럼",
-        price: 35000,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&h=200&fit=crop",
-      },
-    ],
-    totalPrice: 35000,
   },
 ]
 
@@ -149,6 +138,13 @@ const GRADE_CONFIG = {
 
 const GRADE_ORDER = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
 
+const GRADE_LABEL = {
+  NORMAL: "일반",
+  SILVER: "실버",
+  GOLD: "골드",
+  PLATINUM: "플래티넘",
+}
+
 const tabs = [
   { id: "info",       label: "내 정보 관리", icon: User },
   { id: "orders",     label: "주문 내역",    icon: Package },
@@ -168,12 +164,34 @@ export default function MyPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false)
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
 
+  // 멤버십 API 상태
+  const { user: authUser } = useAuthStore()
+  const user = authUser ?? { id: 1 }
+  const [memberGrade, setMemberGrade] = useState(mockUser.grade)
+  const [membershipHistory, setMembershipHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
   const [form, setForm] = useState({
     phone: mockUser.phone,
     address: mockUser.address,
     addressDetail: mockUser.addressDetail,
   })
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" })
+
+  // 멤버십 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "membership" || !user?.id) return
+
+    getMember(user.id)
+      .then((data) => setMemberGrade(data.grade))
+      .catch(() => {})
+
+    setHistoryLoading(true)
+    getMembershipHistory(user.id)
+      .then((data) => setMembershipHistory(data ?? []))
+      .catch(() => setMembershipHistory([]))
+      .finally(() => setHistoryLoading(false))
+  }, [activeTab, user.id])
 
   const handleFormChange = (e) => {
     const { name, value } = e.target
@@ -185,18 +203,12 @@ export default function MyPage() {
     setPwForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleInfoSave = () => {
-    setIsEditing(false)
-  }
-
+  const handleInfoSave = () => setIsEditing(false)
   const handlePwSave = () => {
     setPwForm({ current: "", next: "", confirm: "" })
     setShowPwForm(false)
   }
-
-  const handleWithdraw = () => {
-    setShowWithdrawConfirm(false)
-  }
+  const handleWithdraw = () => setShowWithdrawConfirm(false)
 
   const filteredCoupons = mockCoupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
@@ -207,9 +219,10 @@ export default function MyPage() {
     return `${Number(coupon.discountValue).toLocaleString()}원 할인`
   }
 
-  const formatDate = (dateStr) => dateStr.slice(0, 10)
-
+  const formatDate = (dateStr) => dateStr?.slice(0, 10) ?? ""
   const isExpired = (dateStr) => new Date(dateStr) < new Date()
+
+  const currentGradeConfig = GRADE_CONFIG[memberGrade] ?? GRADE_CONFIG.NORMAL
 
   return (
     <div className={styles.page}>
@@ -225,12 +238,12 @@ export default function MyPage() {
             <div
               className={styles.gradeBadge}
               style={{
-                backgroundColor: GRADE_CONFIG[mockUser.grade].bg,
-                color: GRADE_CONFIG[mockUser.grade].color,
+                backgroundColor: currentGradeConfig.bg,
+                color: currentGradeConfig.color,
               }}
             >
               <Award size={12} />
-              {GRADE_CONFIG[mockUser.grade].label}
+              {currentGradeConfig.label}
             </div>
           </div>
           <nav className={styles.tabNav}>
@@ -419,7 +432,6 @@ export default function MyPage() {
                   사용 가능 <strong>{mockCoupons.filter((c) => !c.isUsed).length}</strong>장
                 </span>
               </div>
-
               <div className={styles.couponFilterWrap}>
                 <button
                   className={`${styles.couponFilterBtn} ${couponFilter === "available" ? styles.couponFilterActive : ""}`}
@@ -434,7 +446,6 @@ export default function MyPage() {
                   사용 완료
                 </button>
               </div>
-
               {filteredCoupons.length === 0 ? (
                 <div className={styles.empty}>
                   <Ticket size={40} color="#d1d5db" />
@@ -483,36 +494,37 @@ export default function MyPage() {
               <div
                 className={styles.gradeCard}
                 style={{
-                  backgroundColor: GRADE_CONFIG[mockUser.grade].bg,
-                  borderColor: GRADE_CONFIG[mockUser.grade].color,
+                  backgroundColor: currentGradeConfig.bg,
+                  borderColor: currentGradeConfig.color,
                 }}
               >
                 <div className={styles.gradeCardLeft}>
-                  <Award size={32} color={GRADE_CONFIG[mockUser.grade].color} />
+                  <Award size={32} color={currentGradeConfig.color} />
                   <div>
                     <p className={styles.gradeLabel}>현재 등급</p>
-                    <p className={styles.gradeName} style={{ color: GRADE_CONFIG[mockUser.grade].color }}>
-                      {GRADE_CONFIG[mockUser.grade].label}
+                    <p className={styles.gradeName} style={{ color: currentGradeConfig.color }}>
+                      {currentGradeConfig.label}
                     </p>
                   </div>
                 </div>
                 <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
               </div>
+
               <div className={styles.gradeCriteria}>
                 <h3 className={styles.subSectionTitle}>등급 기준</h3>
                 <div className={styles.gradeList}>
                   {GRADE_ORDER.map((grade) => (
                     <div
                       key={grade}
-                      className={`${styles.gradeItem} ${mockUser.grade === grade ? styles.gradeItemActive : ""}`}
-                      style={mockUser.grade === grade ? { borderColor: GRADE_CONFIG[grade].color } : {}}
+                      className={`${styles.gradeItem} ${memberGrade === grade ? styles.gradeItemActive : ""}`}
+                      style={memberGrade === grade ? { borderColor: GRADE_CONFIG[grade].color } : {}}
                     >
                       <div className={styles.gradeItemLeft}>
                         <Award size={16} color={GRADE_CONFIG[grade].color} />
                         <span className={styles.gradeItemName} style={{ color: GRADE_CONFIG[grade].color }}>
                           {GRADE_CONFIG[grade].label}
                         </span>
-                        {mockUser.grade === grade && (
+                        {memberGrade === grade && (
                           <span className={styles.currentBadge} style={{ backgroundColor: GRADE_CONFIG[grade].color }}>
                             현재
                           </span>
@@ -525,12 +537,37 @@ export default function MyPage() {
                   ))}
                 </div>
               </div>
+
               <div className={styles.gradeHistory}>
                 <h3 className={styles.subSectionTitle}>등급 변경 이력</h3>
-                <div className={styles.empty}>
-                  <Award size={40} color="#d1d5db" />
-                  <p>등급 변경 이력이 없습니다.</p>
-                </div>
+                {historyLoading ? (
+                  <div className={styles.empty}><p>불러오는 중...</p></div>
+                ) : membershipHistory.length === 0 ? (
+                  <div className={styles.empty}>
+                    <Award size={40} color="#d1d5db" />
+                    <p>등급 변경 이력이 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className={styles.historyList}>
+                    {membershipHistory.map((h) => (
+                      <div key={h.historyId} className={styles.historyItem}>
+                        <div className={styles.historyGrades}>
+                          <span style={{ color: GRADE_CONFIG[h.previousGrade]?.color ?? "#6b7280" }}>
+                            {GRADE_LABEL[h.previousGrade] ?? h.previousGrade}
+                          </span>
+                          <span className={styles.historyArrow}>→</span>
+                          <span style={{ color: GRADE_CONFIG[h.newGrade]?.color ?? "#6b7280" }}>
+                            {GRADE_LABEL[h.newGrade] ?? h.newGrade}
+                          </span>
+                        </div>
+                        <div className={styles.historyMeta}>
+                          <span>{Number(h.monthlyAmount).toLocaleString()}원</span>
+                          <span>{h.changedAt?.slice(0, 10)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
