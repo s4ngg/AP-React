@@ -19,6 +19,8 @@ import SignupCompletePage from "./pages/member/SignupCompletePage"
 import FindEmailPage from "./pages/member/FindEmailPage"
 import FindPasswordPage from "./pages/member/FindPasswordPage"
 import ResetPasswordPage from "./pages/member/ResetPasswordPage"
+import SellerApplyPage from "./pages/member/SellerApplyPage"
+import SellerApplyCompletePage from "./pages/member/SellerApplyCompletePage"
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
 import AdminMemberPage from "./pages/admin/AdminMemberPage"
 import AdminProductsPage from "./pages/admin/AdminProductsPage"
@@ -60,6 +62,8 @@ function App() {
             <Route path="/find-email" element={<FindEmailPage />} />
             <Route path="/find-password" element={<FindPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/seller-apply" element={<SellerApplyPage />} />
+            <Route path="/seller-apply/complete" element={<SellerApplyCompletePage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/members" element={<AdminMemberPage />} />
             <Route path="/admin/products" element={<AdminProductsPage />} />

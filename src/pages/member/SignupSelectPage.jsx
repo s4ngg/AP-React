@@ -27,7 +27,7 @@ export default function SignupSelectPage() {
                     <div className={styles.arrow}>→</div>
                 </div>
 
-                <div className={styles.card} onClick={() => navigate("/signup/seller")}>
+                <div className={`${styles.card} ${styles.cardDisabled}`}>
                     <div className={styles.iconWrap}>
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -35,15 +35,15 @@ export default function SignupSelectPage() {
                         </svg>
                     </div>
                     <div className={styles.cardBody}>
-                        <p className={styles.cardTitle}>판매자</p>
-                        <p className={styles.cardDesc}>상품을 등록하고 판매할 수 있어요</p>
+                        <p className={styles.cardTitle}>판매자 신청</p>
+                        <p className={styles.cardDesc}>일반 회원으로 가입 후 마이페이지에서 신청할 수 있어요</p>
                         <ul className={styles.featureList}>
                             <li>상품 등록 및 관리</li>
                             <li>주문 및 배송 관리</li>
                             <li>정산 및 매출 확인</li>
                         </ul>
+                        <p className={styles.infoTag}>로그인 후 마이페이지 → 판매자 신청</p>
                     </div>
-                    <div className={styles.arrow}>→</div>
                 </div>
             </div>
         </AuthLayout>
