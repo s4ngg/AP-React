@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store } from "lucide-react"
 import styles from "./MyPage.module.css"
 
 // 임시 사용자 데이터 (추후 API 연동)
@@ -94,10 +95,12 @@ const tabs = [
   { id: "info", label: "내 정보 관리", icon: User },
   { id: "orders", label: "주문 내역", icon: Package },
   { id: "address", label: "배송지 관리", icon: MapPin },
+  { id: "seller", label: "판매자 신청", icon: Store },
   { id: "withdrawal", label: "회원 탈퇴", icon: AlertTriangle },
 ]
 
 export default function MyPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("info")
   const [isEditing, setIsEditing] = useState(false)
   const [showPwForm, setShowPwForm] = useState(false)
@@ -394,6 +397,37 @@ export default function MyPage() {
                     <p className={styles.addressText}>{addr.addressDetail}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* 판매자 신청 */}
+          {activeTab === "seller" && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>판매자 신청</h2>
+              <div className={styles.sellerApplyCard}>
+                <div className={styles.sellerApplyIcon}>
+                  <Store size={36} />
+                </div>
+                <h3 className={styles.sellerApplyTitle}>AllPick 판매자가 되어보세요</h3>
+                <p className={styles.sellerApplyDesc}>
+                  사업자 정보를 입력하고 신청하면 관리자 검토 후 판매자 기능이 활성화됩니다.
+                </p>
+                <ul className={styles.sellerApplyList}>
+                  <li>상품 등록 및 재고 관리</li>
+                  <li>주문 및 배송 처리</li>
+                  <li>정산 및 매출 확인</li>
+                </ul>
+                <p className={styles.sellerApplyNotice}>
+                  · 승인까지 영업일 기준 1~3일이 소요됩니다.<br />
+                  · 사업자등록증 및 통장 정보가 필요합니다.
+                </p>
+                <button
+                  className={styles.sellerApplyBtn}
+                  onClick={() => navigate("/seller-apply")}
+                >
+                  판매자 신청하기
+                </button>
               </div>
             </div>
           )}
