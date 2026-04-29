@@ -1,0 +1,606 @@
+.formContainer { width: 100%; }
+
+/* ── 안내 박스 ── */
+.guideBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #f8faff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: #2563eb;
+    font-size: 14px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+.guideBox strong { font-weight: 700; }
+
+/* ── 스텝 인디케이터 ── */
+.stepBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 36px;
+    gap: 0;
+}
+
+.stepNode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #9ca3af;
+}
+
+.stepNode span {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.stepCircle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    background-color: #fff;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.stepActive .stepCircle {
+    border-color: #2563eb;
+    background-color: #2563eb;
+    color: #fff;
+}
+.stepActive span { color: #2563eb; font-weight: 700; }
+
+.stepDone .stepCircle {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+.stepDone span { color: #6b7280; }
+
+.stepLine {
+    flex: 1;
+    max-width: 80px;
+    height: 2px;
+    background-color: #e5e7eb;
+    margin: 0 8px;
+    margin-bottom: 22px;
+    transition: background-color 0.2s;
+}
+.stepLineDone { background-color: #2563eb; }
+
+/* ── 섹션 공통 ── */
+.stepContent { width: 100%; }
+
+.sectionTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 24px;
+}
+
+.inputGroup { margin-bottom: 26px; }
+
+.inputGroup label {
+    display: block;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.required { color: #ef4444; }
+.labelSub { font-size: 13px; font-weight: 400; color: #6b7280; margin-left: 4px; }
+
+/* ── 라디오 카드 (신청 유형) ── */
+.radioGroup {
+    display: flex;
+    gap: 12px;
+}
+
+.radioCard {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    background-color: #fff;
+    color: #374151;
+}
+.radioCard input[type="radio"] { display: none; }
+.radioCard > svg { flex-shrink: 0; color: #6b7280; transition: color 0.2s; }
+.radioCard div { display: flex; flex-direction: column; gap: 2px; }
+.radioCard strong { font-size: 15px; font-weight: 700; }
+.radioCard span { font-size: 12px; color: #9ca3af; }
+
+.radioCardActive {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+.radioCardActive > svg { color: #2563eb; }
+.radioCardActive strong { color: #2563eb; }
+
+/* ── 주문 선택 박스 ── */
+.orderSelectBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    color: #6b7280;
+    font-size: 14.5px;
+}
+
+.selectBtn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* ── 선택된 상품 카드 ── */
+.selectedProductCard {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1.5px solid #2563eb;
+    border-radius: 8px;
+    background-color: #f8faff;
+}
+
+.productImgPlaceholder {
+    width: 60px;
+    height: 60px;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.productInfo { flex: 1; }
+.productName { font-size: 14.5px; font-weight: 600; color: #111827; margin-bottom: 3px; }
+.productOption { font-size: 13px; color: #6b7280; margin-bottom: 2px; }
+.productMeta { font-size: 13px; color: #9ca3af; }
+
+.changeBtn {
+    padding: 7px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s;
+}
+.changeBtn:hover { border-color: #2563eb; color: #2563eb; }
+
+/* ── select / input / textarea ── */
+.select, .input, .textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14.5px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    outline: none;
+    background-color: #fff;
+    color: #111827;
+    box-sizing: border-box;
+}
+.select:focus, .input:focus, .textarea:focus { border-color: #2563eb; }
+
+.textarea { height: 160px; resize: none; line-height: 1.6; }
+
+.charCount {
+    text-align: right;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 6px;
+}
+
+/* ── 선택된 상품 요약 박스 (Step 2) ── */
+.selectedSummaryBox {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    margin-bottom: 26px;
+}
+
+.summaryBadge {
+    padding: 4px 12px;
+    background-color: #2563eb;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.summaryProductInfo .productName { font-size: 14px; font-weight: 600; color: #111827; }
+.summaryProductInfo .productOption { font-size: 13px; color: #6b7280; margin-top: 2px; }
+
+/* ── 사진 첨부 ── */
+.fileUploadArea { display: flex; flex-direction: column; gap: 10px; }
+
+.imagePreviewList { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.imagePreviewItem {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+.imagePreviewItem img { width: 100%; height: 100%; object-fit: cover; }
+
+.imageRemoveBtn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.uploadBtn {
+    width: 80px;
+    height: 80px;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    cursor: pointer;
+    background-color: #fff;
+    gap: 4px;
+    transition: border-color 0.2s;
+}
+.uploadBtn:hover { border-color: #2563eb; color: #2563eb; }
+.uploadBtn span { font-size: 12px; }
+
+.fileGuide { font-size: 12px; color: #9ca3af; }
+
+/* ── 수거 방법 카드 ── */
+.pickupGroup { display: flex; gap: 12px; }
+
+.pickupCard {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    background-color: #fff;
+}
+.pickupCard input[type="radio"] { display: none; }
+.pickupCard > svg { flex-shrink: 0; color: #6b7280; transition: color 0.2s; }
+.pickupCard div { display: flex; flex-direction: column; gap: 2px; }
+.pickupCard strong { font-size: 14px; font-weight: 700; color: #374151; }
+.pickupCard span { font-size: 12px; color: #9ca3af; }
+
+.pickupCardActive {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+}
+.pickupCardActive > svg { color: #2563eb; }
+.pickupCardActive strong { color: #2563eb; }
+
+/* ── 교환 배송지 ── */
+.addrRadioGroup {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 14px;
+}
+
+.addrRadio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14.5px;
+    color: #374151;
+    cursor: pointer;
+    font-weight: 500;
+}
+.addrRadio input[type="radio"] { accent-color: #2563eb; width: 16px; height: 16px; cursor: pointer; }
+
+.addrInfoBox {
+    padding: 14px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #f9fafb;
+}
+.addrName {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+.addrName span { font-weight: 400; color: #6b7280; margin-left: 8px; font-size: 13px; }
+.addrText { font-size: 14px; color: #374151; }
+
+.newAddrForm { display: flex; flex-direction: column; }
+
+.addrSearchRow { display: flex; gap: 8px; }
+.addrSearchRow .input { flex: 1; }
+
+.addrSearchBtn {
+    padding: 12px 16px;
+    background-color: #374151;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+.addrSearchBtn:hover { background-color: #1f2937; }
+
+/* ── 배송비 안내 박스 ── */
+.feeInfoBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 14px 16px;
+    border-radius: 8px;
+    color: #b91c1c;
+    font-size: 14px;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+.feeInfoBox strong { font-weight: 700; }
+
+/* ── 버튼 공통 ── */
+.stepActions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.primaryBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 32px;
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.primaryBtn:hover { background-color: #1d4ed8; }
+
+.ghostBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 24px;
+    background-color: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.ghostBtn:hover { border-color: #9ca3af; }
+
+/* ── 완료 화면 ── */
+.completeWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 20px;
+    text-align: center;
+}
+
+.completeIcon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.completeTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.completeDesc {
+    font-size: 14.5px;
+    color: #6b7280;
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+
+.completeSummary {
+    width: 100%;
+    max-width: 420px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    text-align: left;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14.5px;
+}
+.summaryRow:last-child { border-bottom: none; }
+.summaryRow span { color: #6b7280; }
+.summaryRow strong { color: #111827; font-weight: 600; }
+
+.completeActions { display: flex; gap: 12px; }
+
+/* ── 모달 ── */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modalBox {
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    overflow: hidden;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.modalHeader h4 { font-size: 17px; font-weight: 700; color: #111827; }
+
+.modalClose {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #6b7280;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s;
+}
+.modalClose:hover { background-color: #f3f4f6; }
+
+.modalBody { overflow-y: auto; padding: 16px 24px; }
+
+.orderGroup { margin-bottom: 20px; }
+
+.orderGroupHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+}
+.orderDate { font-size: 13px; font-weight: 600; color: #374151; }
+.orderId { font-size: 12px; color: #9ca3af; }
+
+.orderProductRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    margin-bottom: 8px;
+}
+.orderProductRow:hover { border-color: #93c5fd; background-color: #f8faff; }
+
+.orderProductRowSelected {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.selectedBadge {
+    padding: 4px 10px;
+    background-color: #2563eb;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 640px) {
+    .radioGroup, .pickupGroup { flex-direction: column; }
+    .stepBar { gap: 0; }
+    .stepLine { max-width: 40px; }
+    .stepNode span { font-size: 11px; }
+    .stepActions { flex-direction: column-reverse; }
+    .primaryBtn, .ghostBtn { width: 100%; justify-content: center; }
+    .modalBox { max-width: 100%; margin: 16px; border-radius: 12px; }
+    .addrSearchRow { flex-direction: column; }
+}

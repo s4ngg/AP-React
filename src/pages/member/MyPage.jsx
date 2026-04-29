@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store, Ticket, Crown } from "lucide-react"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store, Ticket, Crown, Award } from "lucide-react"
 import { getMemberCoupons } from "../../api/couponApi"
 import { getMembershipHistory } from "../../api/membershipApi"
 import styles from "./MyPage.module.css"
@@ -19,6 +19,15 @@ const GRADE_COLOR = {
   PLATINUM: styles.gradePlatinum,
 }
 
+const GRADE_CONFIG = {
+  NORMAL:   { label: "일반",     color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
+  SILVER:   { label: "실버",     color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
+  GOLD:     { label: "골드",     color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
+  PLATINUM: { label: "플래티넘", color: "#0891b2", bg: "#ecfeff", minAmount: 3000000 },
+}
+
+const GRADE_ORDER = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
+
 // 임시 사용자 데이터 (추후 API 연동)
 const mockUser = {
   name: "이소정",
@@ -26,6 +35,7 @@ const mockUser = {
   phone: "010-1234-5678",
   address: "(12345) 인천광역시 미추홀구 OO로 123",
   addressDetail: "OO아파트 101동 101호",
+  grade: "SILVER",
 }
 
 // 임시 주문 데이터 (추후 API 연동)
@@ -100,6 +110,55 @@ const mockAddresses = [
   },
 ]
 
+// 임시 쿠폰 데이터 (추후 API 연동)
+const mockCoupons = [
+  {
+    memberCouponId: 1,
+    memberId: 1,
+    coupon: {
+      couponId: 1,
+      couponCode: "WELCOME2026",
+      discountType: "PERCENT",
+      discountValue: 10,
+      minOrderAmount: 10000,
+      maxDiscount: 5000,
+      expiredAt: "2026-12-31T23:59:59",
+    },
+    isUsed: false,
+    usedAt: null,
+  },
+  {
+    memberCouponId: 2,
+    memberId: 1,
+    coupon: {
+      couponId: 2,
+      couponCode: "SILVER2026",
+      discountType: "AMOUNT",
+      discountValue: 3000,
+      minOrderAmount: 30000,
+      maxDiscount: null,
+      expiredAt: "2026-05-31T23:59:59",
+    },
+    isUsed: false,
+    usedAt: null,
+  },
+  {
+    memberCouponId: 3,
+    memberId: 1,
+    coupon: {
+      couponId: 3,
+      couponCode: "BIRTHDAY2026",
+      discountType: "PERCENT",
+      discountValue: 15,
+      minOrderAmount: 20000,
+      maxDiscount: 10000,
+      expiredAt: "2026-04-30T23:59:59",
+    },
+    isUsed: true,
+    usedAt: "2026-04-10T14:30:00",
+  },
+]
+
 const STATUS_CLASS = {
   주문완료: "statusOrder",
   배송중: "statusShipping",
@@ -108,13 +167,13 @@ const STATUS_CLASS = {
 }
 
 const tabs = [
-  { id: "info", label: "내 정보 관리", icon: User },
-  { id: "orders", label: "주문 내역", icon: Package },
-  { id: "address", label: "배송지 관리", icon: MapPin },
-  { id: "coupon", label: "쿠폰함", icon: Ticket },
-  { id: "membership", label: "멤버십", icon: Crown },
-  { id: "seller", label: "판매자 신청", icon: Store },
-  { id: "withdrawal", label: "회원 탈퇴", icon: AlertTriangle },
+  { id: "info",       label: "내 정보 관리", icon: User },
+  { id: "orders",     label: "주문 내역",    icon: Package },
+  { id: "address",    label: "배송지 관리",  icon: MapPin },
+  { id: "coupon",     label: "쿠폰함",       icon: Ticket },
+  { id: "membership", label: "멤버십",       icon: Crown },
+  { id: "seller",     label: "판매자 신청",  icon: Store },
+  { id: "withdrawal", label: "회원 탈퇴",    icon: AlertTriangle },
 ]
 
 export default function MyPage() {
@@ -136,7 +195,7 @@ export default function MyPage() {
 
   // 쿠폰
   const [coupons, setCoupons] = useState([])
-  const [couponFilter, setCouponFilter] = useState("all") // "all" | "unused"
+  const [couponFilter, setCouponFilter] = useState("available") // "available" | "used"
   const [couponLoading, setCouponLoading] = useState(false)
 
   // 멤버십
@@ -192,6 +251,21 @@ export default function MyPage() {
     setShowWithdrawConfirm(false)
   }
 
+  // 쿠폰 헬퍼 함수
+  const displayCoupons = coupons.length > 0 ? coupons : mockCoupons
+  const filteredCoupons = displayCoupons.filter((c) =>
+    couponFilter === "available" ? !c.isUsed : c.isUsed
+  )
+
+  const formatDiscount = (coupon) => {
+    if (coupon.discountType === "PERCENT") return `${coupon.discountValue}% 할인`
+    return `${Number(coupon.discountValue).toLocaleString()}원 할인`
+  }
+
+  const formatDate = (dateStr) => dateStr.slice(0, 10)
+
+  const isExpired = (dateStr) => new Date(dateStr) < new Date()
+
   return (
     <div className={styles.page}>
       <h1 className={styles.pageTitle}>마이페이지</h1>
@@ -200,11 +274,19 @@ export default function MyPage() {
         {/* 사이드바 */}
         <aside className={styles.sidebar}>
           <div className={styles.userCard}>
-            <div className={styles.avatar}>
-              {mockUser.name.slice(0, 1)}
-            </div>
+            <div className={styles.avatar}>{mockUser.name.slice(0, 1)}</div>
             <p className={styles.userName}>{mockUser.name}</p>
             <p className={styles.userEmail}>{mockUser.email}</p>
+            <div
+              className={styles.gradeBadge}
+              style={{
+                backgroundColor: GRADE_CONFIG[mockUser.grade].bg,
+                color: GRADE_CONFIG[mockUser.grade].color,
+              }}
+            >
+              <Award size={12} />
+              {GRADE_CONFIG[mockUser.grade].label}
+            </div>
           </div>
           <nav className={styles.tabNav}>
             {tabs.map(({ id, label, icon: Icon }) => (
@@ -230,12 +312,9 @@ export default function MyPage() {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>내 정보 관리</h2>
                 {!isEditing && (
-                  <button className={styles.editBtn} onClick={() => setIsEditing(true)}>
-                    수정
-                  </button>
+                  <button className={styles.editBtn} onClick={() => setIsEditing(true)}>수정</button>
                 )}
               </div>
-
               <div className={styles.infoList}>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>이름</span>
@@ -248,13 +327,7 @@ export default function MyPage() {
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>연락처</span>
                   {isEditing ? (
-                    <input
-                      className={styles.input}
-                      name="phone"
-                      value={form.phone}
-                      onChange={handleFormChange}
-                      placeholder="010-0000-0000"
-                    />
+                    <input className={styles.input} name="phone" value={form.phone} onChange={handleFormChange} placeholder="010-0000-0000" />
                   ) : (
                     <span className={styles.infoValue}>{form.phone}</span>
                   )}
@@ -263,97 +336,44 @@ export default function MyPage() {
                   <span className={styles.infoLabel}>주소</span>
                   {isEditing ? (
                     <div className={styles.addressInputWrap}>
-                      <input
-                        className={styles.input}
-                        name="address"
-                        value={form.address}
-                        onChange={handleFormChange}
-                        placeholder="기본 주소"
-                      />
-                      <input
-                        className={styles.input}
-                        name="addressDetail"
-                        value={form.addressDetail}
-                        onChange={handleFormChange}
-                        placeholder="상세 주소"
-                      />
+                      <input className={styles.input} name="address" value={form.address} onChange={handleFormChange} placeholder="기본 주소" />
+                      <input className={styles.input} name="addressDetail" value={form.addressDetail} onChange={handleFormChange} placeholder="상세 주소" />
                     </div>
                   ) : (
-                    <span className={styles.infoValue}>
-                      {form.address}<br />{form.addressDetail}
-                    </span>
+                    <span className={styles.infoValue}>{form.address}<br />{form.addressDetail}</span>
                   )}
                 </div>
               </div>
-
               {isEditing && (
                 <div className={styles.actionRow}>
                   <button className={styles.cancelBtn} onClick={() => setIsEditing(false)}>취소</button>
                   <button className={styles.saveBtn} onClick={handleInfoSave}>저장</button>
                 </div>
               )}
-
-              {/* 비밀번호 변경 */}
               <div className={styles.pwSection}>
                 <div className={styles.sectionHeader}>
                   <h3 className={styles.subSectionTitle}>비밀번호 변경</h3>
-                  <button
-                    className={styles.editBtn}
-                    onClick={() => setShowPwForm(!showPwForm)}
-                  >
+                  <button className={styles.editBtn} onClick={() => setShowPwForm(!showPwForm)}>
                     {showPwForm ? "취소" : "변경"}
                   </button>
                 </div>
                 {showPwForm && (
                   <div className={styles.pwForm}>
                     <div className={styles.pwInputWrap}>
-                      <input
-                        className={styles.input}
-                        type={showPw ? "text" : "password"}
-                        name="current"
-                        value={pwForm.current}
-                        onChange={handlePwChange}
-                        placeholder="현재 비밀번호"
-                      />
-                      <button
-                        className={styles.eyeBtn}
-                        onClick={() => setShowPw(!showPw)}
-                        aria-label="비밀번호 표시"
-                      >
+                      <input className={styles.input} type={showPw ? "text" : "password"} name="current" value={pwForm.current} onChange={handlePwChange} placeholder="현재 비밀번호" />
+                      <button className={styles.eyeBtn} onClick={() => setShowPw(!showPw)} aria-label="비밀번호 표시">
                         {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                     <div className={styles.pwInputWrap}>
-                      <input
-                        className={styles.input}
-                        type={showNewPw ? "text" : "password"}
-                        name="next"
-                        value={pwForm.next}
-                        onChange={handlePwChange}
-                        placeholder="새 비밀번호 (영문+숫자+특수문자 8자 이상)"
-                      />
-                      <button
-                        className={styles.eyeBtn}
-                        onClick={() => setShowNewPw(!showNewPw)}
-                        aria-label="새 비밀번호 표시"
-                      >
+                      <input className={styles.input} type={showNewPw ? "text" : "password"} name="next" value={pwForm.next} onChange={handlePwChange} placeholder="새 비밀번호 (영문+숫자+특수문자 8자 이상)" />
+                      <button className={styles.eyeBtn} onClick={() => setShowNewPw(!showNewPw)} aria-label="새 비밀번호 표시">
                         {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                     <div className={styles.pwInputWrap}>
-                      <input
-                        className={styles.input}
-                        type={showConfirmPw ? "text" : "password"}
-                        name="confirm"
-                        value={pwForm.confirm}
-                        onChange={handlePwChange}
-                        placeholder="새 비밀번호 확인"
-                      />
-                      <button
-                        className={styles.eyeBtn}
-                        onClick={() => setShowConfirmPw(!showConfirmPw)}
-                        aria-label="비밀번호 확인 표시"
-                      >
+                      <input className={styles.input} type={showConfirmPw ? "text" : "password"} name="confirm" value={pwForm.confirm} onChange={handlePwChange} placeholder="새 비밀번호 확인" />
+                      <button className={styles.eyeBtn} onClick={() => setShowConfirmPw(!showConfirmPw)} aria-label="비밀번호 확인 표시">
                         {showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
@@ -428,18 +448,12 @@ export default function MyPage() {
                     <div className={styles.addressCardHeader}>
                       <div className={styles.addressNameWrap}>
                         <span className={styles.addressName}>{addr.name}</span>
-                        {addr.isDefault && (
-                          <span className={styles.defaultBadge}>기본 배송지</span>
-                        )}
+                        {addr.isDefault && <span className={styles.defaultBadge}>기본 배송지</span>}
                       </div>
                       <div className={styles.addressActions}>
-                        {!addr.isDefault && (
-                          <button className={styles.addressActionBtn}>기본 설정</button>
-                        )}
+                        {!addr.isDefault && <button className={styles.addressActionBtn}>기본 설정</button>}
                         <button className={styles.addressActionBtn}>수정</button>
-                        {!addr.isDefault && (
-                          <button className={`${styles.addressActionBtn} ${styles.addressDeleteBtn}`}>삭제</button>
-                        )}
+                        {!addr.isDefault && <button className={`${styles.addressActionBtn} ${styles.addressDeleteBtn}`}>삭제</button>}
                       </div>
                     </div>
                     <p className={styles.addressPhone}>{addr.phone}</p>
@@ -456,68 +470,65 @@ export default function MyPage() {
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>쿠폰함</h2>
-                <div className={styles.couponFilterWrap}>
-                  <button
-                    className={`${styles.filterBtn} ${couponFilter === "all" ? styles.filterBtnActive : ""}`}
-                    onClick={() => setCouponFilter("all")}
-                  >
-                    전체
-                  </button>
-                  <button
-                    className={`${styles.filterBtn} ${couponFilter === "unused" ? styles.filterBtnActive : ""}`}
-                    onClick={() => setCouponFilter("unused")}
-                  >
-                    미사용
-                  </button>
-                </div>
+                <span className={styles.couponCount}>
+                  사용 가능 <strong>{displayCoupons.filter((c) => !c.isUsed).length}</strong>장
+                </span>
+              </div>
+
+              <div className={styles.couponFilterWrap}>
+                <button
+                  className={`${styles.couponFilterBtn} ${couponFilter === "available" ? styles.couponFilterActive : ""}`}
+                  onClick={() => setCouponFilter("available")}
+                >
+                  사용 가능
+                </button>
+                <button
+                  className={`${styles.couponFilterBtn} ${couponFilter === "used" ? styles.couponFilterActive : ""}`}
+                  onClick={() => setCouponFilter("used")}
+                >
+                  사용 완료
+                </button>
               </div>
 
               {couponLoading ? (
+                <div className={styles.empty}><p>로딩 중...</p></div>
+              ) : filteredCoupons.length === 0 ? (
                 <div className={styles.empty}>
-                  <p>로딩 중...</p>
+                  <Ticket size={40} color="#d1d5db" />
+                  <p>{couponFilter === "available" ? "사용 가능한 쿠폰이 없습니다." : "사용한 쿠폰이 없습니다."}</p>
                 </div>
               ) : (
-                (() => {
-                  const filtered = couponFilter === "unused"
-                    ? coupons.filter((c) => !c.isUsed)
-                    : coupons
-                  return filtered.length === 0 ? (
-                    <div className={styles.empty}>
-                      <Ticket size={40} color="#d1d5db" />
-                      <p>보유한 쿠폰이 없습니다.</p>
+                <div className={styles.couponList}>
+                  {filteredCoupons.map((mc) => (
+                    <div
+                      key={mc.memberCouponId}
+                      className={`${styles.couponCard} ${mc.isUsed || isExpired(mc.coupon.expiredAt) ? styles.couponCardDisabled : ""}`}
+                    >
+                      <div className={styles.couponLeft}>
+                        <p className={styles.couponDiscount}>{formatDiscount(mc.coupon)}</p>
+                        <p className={styles.couponCode}>{mc.coupon.couponCode}</p>
+                        <p className={styles.couponCondition}>
+                          {Number(mc.coupon.minOrderAmount).toLocaleString()}원 이상 구매 시
+                          {mc.coupon.maxDiscount && ` / 최대 ${Number(mc.coupon.maxDiscount).toLocaleString()}원`}
+                        </p>
+                      </div>
+                      <div className={styles.couponRight}>
+                        {mc.isUsed ? (
+                          <span className={styles.couponUsedBadge}>사용완료</span>
+                        ) : isExpired(mc.coupon.expiredAt) ? (
+                          <span className={styles.couponExpiredBadge}>기간만료</span>
+                        ) : (
+                          <span className={styles.couponAvailableBadge}>사용가능</span>
+                        )}
+                        <p className={styles.couponExpire}>
+                          {mc.isUsed
+                            ? `사용일: ${formatDate(mc.usedAt)}`
+                            : `만료일: ${formatDate(mc.coupon.expiredAt)}`}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    <div className={styles.couponList}>
-                      {filtered.map((mc) => (
-                        <div
-                          key={mc.memberCouponId}
-                          className={`${styles.couponCard} ${mc.isUsed ? styles.couponCardUsed : ""}`}
-                        >
-                          <div className={styles.couponLeft}>
-                            <p className={styles.couponDiscount}>
-                              {mc.coupon.discountType === "PERCENT"
-                                ? `${mc.coupon.discountValue}%`
-                                : `${Number(mc.coupon.discountValue).toLocaleString()}원`}
-                            </p>
-                            <p className={styles.couponCode}>{mc.coupon.couponCode}</p>
-                          </div>
-                          <div className={styles.couponRight}>
-                            <p className={styles.couponCondition}>
-                              {Number(mc.coupon.minOrderAmount).toLocaleString()}원 이상 구매 시
-                              {mc.coupon.maxDiscount && ` / 최대 ${Number(mc.coupon.maxDiscount).toLocaleString()}원`}
-                            </p>
-                            <p className={styles.couponExpiry}>
-                              ~{mc.coupon.expiredAt?.slice(0, 10)} 까지
-                            </p>
-                            <span className={`${styles.couponStatus} ${mc.isUsed ? styles.couponStatusUsed : styles.couponStatusUnused}`}>
-                              {mc.isUsed ? "사용완료" : "사용가능"}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )
-                })()
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -528,79 +539,86 @@ export default function MyPage() {
               <h2 className={styles.sectionTitle}>멤버십</h2>
 
               {/* 현재 등급 카드 */}
-              <div className={styles.gradeCard}>
+              <div
+                className={styles.gradeCard}
+                style={{
+                  backgroundColor: GRADE_CONFIG[mockUser.grade].bg,
+                  borderColor: GRADE_CONFIG[mockUser.grade].color,
+                }}
+              >
                 <div className={styles.gradeCardLeft}>
-                  <Crown size={28} />
+                  <Award size={32} color={GRADE_CONFIG[mockUser.grade].color} />
                   <div>
                     <p className={styles.gradeLabel}>현재 등급</p>
-                    <p className={`${styles.gradeName} ${GRADE_COLOR[membershipHistory[0]?.newGrade] ?? styles.gradeNormal}`}>
-                      {GRADE_LABEL[membershipHistory[0]?.newGrade] ?? "일반"}
+                    <p className={styles.gradeName} style={{ color: GRADE_CONFIG[mockUser.grade].color }}>
+                      {GRADE_CONFIG[mockUser.grade].label}
                     </p>
                   </div>
                 </div>
-                <div className={styles.gradeInfo}>
-                  <p className={styles.gradeInfoText}>매월 1일 전월 구매금액 기준으로 자동 갱신</p>
-                  <div className={styles.gradeSteps}>
-                    {Object.entries(GRADE_LABEL).map(([key, label]) => (
-                      <span
-                        key={key}
-                        className={`${styles.gradeStep} ${(membershipHistory[0]?.newGrade ?? "NORMAL") === key ? styles.gradeStepActive : ""}`}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
               </div>
 
-              {/* 등급 조건 안내 */}
-              <div className={styles.gradeConditionWrap}>
-                <p className={styles.gradeConditionTitle}>등급 기준 (전월 구매금액)</p>
-                <div className={styles.gradeConditionList}>
-                  {[
-                    { grade: "NORMAL", label: "일반", condition: "30만원 미만" },
-                    { grade: "SILVER", label: "실버", condition: "30만원 이상" },
-                    { grade: "GOLD", label: "골드", condition: "100만원 이상" },
-                    { grade: "PLATINUM", label: "플래티넘", condition: "300만원 이상" },
-                  ].map(({ grade, label, condition }) => (
-                    <div key={grade} className={styles.gradeConditionItem}>
-                      <span className={`${styles.gradeConditionBadge} ${GRADE_COLOR[grade]}`}>{label}</span>
-                      <span className={styles.gradeConditionText}>{condition}</span>
+              {/* 등급 기준 */}
+              <div className={styles.gradeCriteria}>
+                <h3 className={styles.subSectionTitle}>등급 기준</h3>
+                <div className={styles.gradeList}>
+                  {GRADE_ORDER.map((grade) => (
+                    <div
+                      key={grade}
+                      className={`${styles.gradeItem} ${mockUser.grade === grade ? styles.gradeItemActive : ""}`}
+                      style={mockUser.grade === grade ? { borderColor: GRADE_CONFIG[grade].color } : {}}
+                    >
+                      <div className={styles.gradeItemLeft}>
+                        <Award size={16} color={GRADE_CONFIG[grade].color} />
+                        <span className={styles.gradeItemName} style={{ color: GRADE_CONFIG[grade].color }}>
+                          {GRADE_CONFIG[grade].label}
+                        </span>
+                        {mockUser.grade === grade && (
+                          <span className={styles.currentBadge} style={{ backgroundColor: GRADE_CONFIG[grade].color }}>
+                            현재
+                          </span>
+                        )}
+                      </div>
+                      <span className={styles.gradeItemAmount}>
+                        {grade === "NORMAL" ? "기본 등급" : `전월 ${GRADE_CONFIG[grade].minAmount.toLocaleString()}원 이상`}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* 등급 변경 이력 */}
-              <h3 className={styles.subSectionTitle}>등급 변경 이력</h3>
-              {membershipLoading ? (
-                <div className={styles.empty}><p>로딩 중...</p></div>
-              ) : membershipHistory.length === 0 ? (
-                <div className={styles.empty}>
-                  <Crown size={40} color="#d1d5db" />
-                  <p>등급 변경 이력이 없습니다.</p>
-                </div>
-              ) : (
-                <div className={styles.historyList}>
-                  {membershipHistory.map((h) => (
-                    <div key={h.historyId} className={styles.historyItem}>
-                      <div className={styles.historyGrades}>
-                        <span className={`${styles.gradeStep} ${GRADE_COLOR[h.previousGrade]}`}>
-                          {GRADE_LABEL[h.previousGrade]}
-                        </span>
-                        <span className={styles.historyArrow}>→</span>
-                        <span className={`${styles.gradeStep} ${GRADE_COLOR[h.newGrade]}`}>
-                          {GRADE_LABEL[h.newGrade]}
-                        </span>
+              <div className={styles.gradeHistory}>
+                <h3 className={styles.subSectionTitle}>등급 변경 이력</h3>
+                {membershipLoading ? (
+                  <div className={styles.empty}><p>로딩 중...</p></div>
+                ) : membershipHistory.length === 0 ? (
+                  <div className={styles.empty}>
+                    <Award size={40} color="#d1d5db" />
+                    <p>등급 변경 이력이 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className={styles.historyList}>
+                    {membershipHistory.map((h) => (
+                      <div key={h.historyId} className={styles.historyItem}>
+                        <div className={styles.historyGrades}>
+                          <span className={`${styles.gradeStep} ${GRADE_COLOR[h.previousGrade]}`}>
+                            {GRADE_LABEL[h.previousGrade]}
+                          </span>
+                          <span className={styles.historyArrow}>→</span>
+                          <span className={`${styles.gradeStep} ${GRADE_COLOR[h.newGrade]}`}>
+                            {GRADE_LABEL[h.newGrade]}
+                          </span>
+                        </div>
+                        <div className={styles.historyMeta}>
+                          <span>전월 구매금액: {Number(h.monthlyAmount).toLocaleString()}원</span>
+                          <span>{h.changedAt?.slice(0, 10)}</span>
+                        </div>
                       </div>
-                      <div className={styles.historyMeta}>
-                        <span>전월 구매금액: {Number(h.monthlyAmount).toLocaleString()}원</span>
-                        <span>{h.changedAt?.slice(0, 10)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -654,10 +672,7 @@ export default function MyPage() {
                   탈퇴 후에는 동일한 이메일로 재가입이 가능하나, 기존 데이터는 복구되지 않습니다.
                 </p>
                 {!showWithdrawConfirm ? (
-                  <button
-                    className={styles.withdrawalBtn}
-                    onClick={() => setShowWithdrawConfirm(true)}
-                  >
+                  <button className={styles.withdrawalBtn} onClick={() => setShowWithdrawConfirm(true)}>
                     회원 탈퇴하기
                   </button>
                 ) : (
