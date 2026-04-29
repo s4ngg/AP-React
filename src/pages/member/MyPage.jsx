@@ -1,6 +1,32 @@
-import { useState } from "react"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store, Ticket, Crown, Award } from "lucide-react"
+import { getMemberCoupons } from "../../api/couponApi"
+import { getMembershipHistory } from "../../api/membershipApi"
 import styles from "./MyPage.module.css"
+
+const GRADE_LABEL = {
+  NORMAL: "일반",
+  SILVER: "실버",
+  GOLD: "골드",
+  PLATINUM: "플래티넘",
+}
+
+const GRADE_COLOR = {
+  NORMAL: styles.gradeNormal,
+  SILVER: styles.gradeSilver,
+  GOLD: styles.gradeGold,
+  PLATINUM: styles.gradePlatinum,
+}
+
+const GRADE_CONFIG = {
+  NORMAL:   { label: "일반",     color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
+  SILVER:   { label: "실버",     color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
+  GOLD:     { label: "골드",     color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
+  PLATINUM: { label: "플래티넘", color: "#0891b2", bg: "#ecfeff", minAmount: 3000000 },
+}
+
+const GRADE_ORDER = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
 
 // 임시 사용자 데이터 (추후 API 연동)
 const mockUser = {
@@ -140,27 +166,19 @@ const STATUS_CLASS = {
   취소: "statusCancel",
 }
 
-const GRADE_CONFIG = {
-  NORMAL:   { label: "일반",     color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
-  SILVER:   { label: "실버",     color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
-  GOLD:     { label: "골드",     color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
-  PLATINUM: { label: "플래티넘", color: "#0891b2", bg: "#ecfeff", minAmount: 3000000 },
-}
-
-const GRADE_ORDER = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
-
 const tabs = [
   { id: "info",       label: "내 정보 관리", icon: User },
   { id: "orders",     label: "주문 내역",    icon: Package },
   { id: "address",    label: "배송지 관리",  icon: MapPin },
   { id: "coupon",     label: "쿠폰함",       icon: Ticket },
-  { id: "membership", label: "멤버십",       icon: Award },
+  { id: "membership", label: "멤버십",       icon: Crown },
+  { id: "seller",     label: "판매자 신청",  icon: Store },
   { id: "withdrawal", label: "회원 탈퇴",    icon: AlertTriangle },
 ]
 
 export default function MyPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("info")
-  const [couponFilter, setCouponFilter] = useState("available")
   const [isEditing, setIsEditing] = useState(false)
   const [showPwForm, setShowPwForm] = useState(false)
   const [showPw, setShowPw] = useState(false)
@@ -175,6 +193,38 @@ export default function MyPage() {
   })
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" })
 
+  // 쿠폰
+  const [coupons, setCoupons] = useState([])
+  const [couponFilter, setCouponFilter] = useState("available") // "available" | "used"
+  const [couponLoading, setCouponLoading] = useState(false)
+
+  // 멤버십
+  const [membershipHistory, setMembershipHistory] = useState([])
+  const [membershipLoading, setMembershipLoading] = useState(false)
+
+  // 임시 memberId (추후 authStore에서 가져오기)
+  const TEMP_MEMBER_ID = 1
+
+  useEffect(() => {
+    if (activeTab === "coupon") {
+      setCouponLoading(true)
+      getMemberCoupons(TEMP_MEMBER_ID)
+        .then((data) => setCoupons(data ?? []))
+        .catch(() => setCoupons([]))
+        .finally(() => setCouponLoading(false))
+    }
+  }, [activeTab])
+
+  useEffect(() => {
+    if (activeTab === "membership") {
+      setMembershipLoading(true)
+      getMembershipHistory(TEMP_MEMBER_ID)
+        .then((data) => setMembershipHistory(data ?? []))
+        .catch(() => setMembershipHistory([]))
+        .finally(() => setMembershipLoading(false))
+    }
+  }, [activeTab])
+
   const handleFormChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
@@ -186,19 +236,24 @@ export default function MyPage() {
   }
 
   const handleInfoSave = () => {
+    // 추후 API 연동
     setIsEditing(false)
   }
 
   const handlePwSave = () => {
+    // 추후 API 연동
     setPwForm({ current: "", next: "", confirm: "" })
     setShowPwForm(false)
   }
 
   const handleWithdraw = () => {
+    // 추후 API 연동
     setShowWithdrawConfirm(false)
   }
 
-  const filteredCoupons = mockCoupons.filter((c) =>
+  // 쿠폰 헬퍼 함수
+  const displayCoupons = coupons.length > 0 ? coupons : mockCoupons
+  const filteredCoupons = displayCoupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
   )
 
@@ -416,7 +471,7 @@ export default function MyPage() {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>쿠폰함</h2>
                 <span className={styles.couponCount}>
-                  사용 가능 <strong>{mockCoupons.filter((c) => !c.isUsed).length}</strong>장
+                  사용 가능 <strong>{displayCoupons.filter((c) => !c.isUsed).length}</strong>장
                 </span>
               </div>
 
@@ -435,7 +490,9 @@ export default function MyPage() {
                 </button>
               </div>
 
-              {filteredCoupons.length === 0 ? (
+              {couponLoading ? (
+                <div className={styles.empty}><p>로딩 중...</p></div>
+              ) : filteredCoupons.length === 0 ? (
                 <div className={styles.empty}>
                   <Ticket size={40} color="#d1d5db" />
                   <p>{couponFilter === "available" ? "사용 가능한 쿠폰이 없습니다." : "사용한 쿠폰이 없습니다."}</p>
@@ -480,6 +537,8 @@ export default function MyPage() {
           {activeTab === "membership" && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>멤버십</h2>
+
+              {/* 현재 등급 카드 */}
               <div
                 className={styles.gradeCard}
                 style={{
@@ -498,6 +557,8 @@ export default function MyPage() {
                 </div>
                 <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
               </div>
+
+              {/* 등급 기준 */}
               <div className={styles.gradeCriteria}>
                 <h3 className={styles.subSectionTitle}>등급 기준</h3>
                 <div className={styles.gradeList}>
@@ -525,12 +586,69 @@ export default function MyPage() {
                   ))}
                 </div>
               </div>
+
+              {/* 등급 변경 이력 */}
               <div className={styles.gradeHistory}>
                 <h3 className={styles.subSectionTitle}>등급 변경 이력</h3>
-                <div className={styles.empty}>
-                  <Award size={40} color="#d1d5db" />
-                  <p>등급 변경 이력이 없습니다.</p>
+                {membershipLoading ? (
+                  <div className={styles.empty}><p>로딩 중...</p></div>
+                ) : membershipHistory.length === 0 ? (
+                  <div className={styles.empty}>
+                    <Award size={40} color="#d1d5db" />
+                    <p>등급 변경 이력이 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className={styles.historyList}>
+                    {membershipHistory.map((h) => (
+                      <div key={h.historyId} className={styles.historyItem}>
+                        <div className={styles.historyGrades}>
+                          <span className={`${styles.gradeStep} ${GRADE_COLOR[h.previousGrade]}`}>
+                            {GRADE_LABEL[h.previousGrade]}
+                          </span>
+                          <span className={styles.historyArrow}>→</span>
+                          <span className={`${styles.gradeStep} ${GRADE_COLOR[h.newGrade]}`}>
+                            {GRADE_LABEL[h.newGrade]}
+                          </span>
+                        </div>
+                        <div className={styles.historyMeta}>
+                          <span>전월 구매금액: {Number(h.monthlyAmount).toLocaleString()}원</span>
+                          <span>{h.changedAt?.slice(0, 10)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 판매자 신청 */}
+          {activeTab === "seller" && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>판매자 신청</h2>
+              <div className={styles.sellerApplyCard}>
+                <div className={styles.sellerApplyIcon}>
+                  <Store size={36} />
                 </div>
+                <h3 className={styles.sellerApplyTitle}>AllPick 판매자가 되어보세요</h3>
+                <p className={styles.sellerApplyDesc}>
+                  사업자 정보를 입력하고 신청하면 관리자 검토 후 판매자 기능이 활성화됩니다.
+                </p>
+                <ul className={styles.sellerApplyList}>
+                  <li>상품 등록 및 재고 관리</li>
+                  <li>주문 및 배송 처리</li>
+                  <li>정산 및 매출 확인</li>
+                </ul>
+                <p className={styles.sellerApplyNotice}>
+                  · 승인까지 영업일 기준 1~3일이 소요됩니다.<br />
+                  · 사업자등록증 및 통장 정보가 필요합니다.
+                </p>
+                <button
+                  className={styles.sellerApplyBtn}
+                  onClick={() => navigate("/seller-apply")}
+                >
+                  판매자 신청하기
+                </button>
               </div>
             </div>
           )}
