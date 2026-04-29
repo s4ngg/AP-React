@@ -732,3 +732,250 @@
 .sellerApplyBtn:hover {
   background-color: var(--color-primary-dark, #1d4ed8);
 }
+
+/* 쿠폰함 */
+.couponFilterWrap {
+  display: flex;
+  gap: 6px;
+}
+
+.filterBtn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filterBtnActive {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.couponCard {
+  display: flex;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.couponCardUsed {
+  opacity: 0.5;
+}
+
+.couponLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 24px;
+  background-color: var(--color-primary);
+  color: #fff;
+  min-width: 100px;
+}
+
+.couponDiscount {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.couponCode {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 0;
+}
+
+.couponRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 20px;
+  flex: 1;
+}
+
+.couponCondition {
+  font-size: 13px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.couponExpiry {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.couponStatus {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.couponStatusUnused {
+  background-color: #eef2ff;
+  color: var(--color-primary);
+}
+
+.couponStatusUsed {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* 멤버십 */
+.gradeCard {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.gradeCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-primary);
+  min-width: 120px;
+}
+
+.gradeLabel {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.gradeName {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.gradeInfo {
+  flex: 1;
+}
+
+.gradeInfoText {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0 0 10px;
+}
+
+.gradeSteps {
+  display: flex;
+  gap: 6px;
+}
+
+.gradeStep {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+.gradeStepActive {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.gradeNormal { color: #6b7280; }
+.gradeSilver { color: #6b7280; }
+.gradeGold { color: #d97706; }
+.gradePlatinum { color: #7c3aed; }
+
+.gradeConditionWrap {
+  padding: 16px;
+  background-color: #f8faff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.gradeConditionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 10px;
+}
+
+.gradeConditionList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gradeConditionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gradeConditionBadge {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  background-color: #f3f4f6;
+  min-width: 56px;
+  text-align: center;
+}
+
+.gradeConditionText {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.historyGrades {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.historyArrow {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.historyMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--color-muted);
+}

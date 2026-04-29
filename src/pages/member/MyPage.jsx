@@ -1,7 +1,23 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store } from "lucide-react"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store, Ticket, Crown } from "lucide-react"
+import { getMemberCoupons } from "../../api/couponApi"
+import { getMembershipHistory } from "../../api/membershipApi"
 import styles from "./MyPage.module.css"
+
+const GRADE_LABEL = {
+  NORMAL: "일반",
+  SILVER: "실버",
+  GOLD: "골드",
+  PLATINUM: "플래티넘",
+}
+
+const GRADE_COLOR = {
+  NORMAL: styles.gradeNormal,
+  SILVER: styles.gradeSilver,
+  GOLD: styles.gradeGold,
+  PLATINUM: styles.gradePlatinum,
+}
 
 // 임시 사용자 데이터 (추후 API 연동)
 const mockUser = {
@@ -95,6 +111,8 @@ const tabs = [
   { id: "info", label: "내 정보 관리", icon: User },
   { id: "orders", label: "주문 내역", icon: Package },
   { id: "address", label: "배송지 관리", icon: MapPin },
+  { id: "coupon", label: "쿠폰함", icon: Ticket },
+  { id: "membership", label: "멤버십", icon: Crown },
   { id: "seller", label: "판매자 신청", icon: Store },
   { id: "withdrawal", label: "회원 탈퇴", icon: AlertTriangle },
 ]
@@ -115,6 +133,38 @@ export default function MyPage() {
     addressDetail: mockUser.addressDetail,
   })
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" })
+
+  // 쿠폰
+  const [coupons, setCoupons] = useState([])
+  const [couponFilter, setCouponFilter] = useState("all") // "all" | "unused"
+  const [couponLoading, setCouponLoading] = useState(false)
+
+  // 멤버십
+  const [membershipHistory, setMembershipHistory] = useState([])
+  const [membershipLoading, setMembershipLoading] = useState(false)
+
+  // 임시 memberId (추후 authStore에서 가져오기)
+  const TEMP_MEMBER_ID = 1
+
+  useEffect(() => {
+    if (activeTab === "coupon") {
+      setCouponLoading(true)
+      getMemberCoupons(TEMP_MEMBER_ID)
+        .then((data) => setCoupons(data ?? []))
+        .catch(() => setCoupons([]))
+        .finally(() => setCouponLoading(false))
+    }
+  }, [activeTab])
+
+  useEffect(() => {
+    if (activeTab === "membership") {
+      setMembershipLoading(true)
+      getMembershipHistory(TEMP_MEMBER_ID)
+        .then((data) => setMembershipHistory(data ?? []))
+        .catch(() => setMembershipHistory([]))
+        .finally(() => setMembershipLoading(false))
+    }
+  }, [activeTab])
 
   const handleFormChange = (e) => {
     const { name, value } = e.target
@@ -398,6 +448,159 @@ export default function MyPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* 쿠폰함 */}
+          {activeTab === "coupon" && (
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>쿠폰함</h2>
+                <div className={styles.couponFilterWrap}>
+                  <button
+                    className={`${styles.filterBtn} ${couponFilter === "all" ? styles.filterBtnActive : ""}`}
+                    onClick={() => setCouponFilter("all")}
+                  >
+                    전체
+                  </button>
+                  <button
+                    className={`${styles.filterBtn} ${couponFilter === "unused" ? styles.filterBtnActive : ""}`}
+                    onClick={() => setCouponFilter("unused")}
+                  >
+                    미사용
+                  </button>
+                </div>
+              </div>
+
+              {couponLoading ? (
+                <div className={styles.empty}>
+                  <p>로딩 중...</p>
+                </div>
+              ) : (
+                (() => {
+                  const filtered = couponFilter === "unused"
+                    ? coupons.filter((c) => !c.isUsed)
+                    : coupons
+                  return filtered.length === 0 ? (
+                    <div className={styles.empty}>
+                      <Ticket size={40} color="#d1d5db" />
+                      <p>보유한 쿠폰이 없습니다.</p>
+                    </div>
+                  ) : (
+                    <div className={styles.couponList}>
+                      {filtered.map((mc) => (
+                        <div
+                          key={mc.memberCouponId}
+                          className={`${styles.couponCard} ${mc.isUsed ? styles.couponCardUsed : ""}`}
+                        >
+                          <div className={styles.couponLeft}>
+                            <p className={styles.couponDiscount}>
+                              {mc.coupon.discountType === "PERCENT"
+                                ? `${mc.coupon.discountValue}%`
+                                : `${Number(mc.coupon.discountValue).toLocaleString()}원`}
+                            </p>
+                            <p className={styles.couponCode}>{mc.coupon.couponCode}</p>
+                          </div>
+                          <div className={styles.couponRight}>
+                            <p className={styles.couponCondition}>
+                              {Number(mc.coupon.minOrderAmount).toLocaleString()}원 이상 구매 시
+                              {mc.coupon.maxDiscount && ` / 최대 ${Number(mc.coupon.maxDiscount).toLocaleString()}원`}
+                            </p>
+                            <p className={styles.couponExpiry}>
+                              ~{mc.coupon.expiredAt?.slice(0, 10)} 까지
+                            </p>
+                            <span className={`${styles.couponStatus} ${mc.isUsed ? styles.couponStatusUsed : styles.couponStatusUnused}`}>
+                              {mc.isUsed ? "사용완료" : "사용가능"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()
+              )}
+            </div>
+          )}
+
+          {/* 멤버십 */}
+          {activeTab === "membership" && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>멤버십</h2>
+
+              {/* 현재 등급 카드 */}
+              <div className={styles.gradeCard}>
+                <div className={styles.gradeCardLeft}>
+                  <Crown size={28} />
+                  <div>
+                    <p className={styles.gradeLabel}>현재 등급</p>
+                    <p className={`${styles.gradeName} ${GRADE_COLOR[membershipHistory[0]?.newGrade] ?? styles.gradeNormal}`}>
+                      {GRADE_LABEL[membershipHistory[0]?.newGrade] ?? "일반"}
+                    </p>
+                  </div>
+                </div>
+                <div className={styles.gradeInfo}>
+                  <p className={styles.gradeInfoText}>매월 1일 전월 구매금액 기준으로 자동 갱신</p>
+                  <div className={styles.gradeSteps}>
+                    {Object.entries(GRADE_LABEL).map(([key, label]) => (
+                      <span
+                        key={key}
+                        className={`${styles.gradeStep} ${(membershipHistory[0]?.newGrade ?? "NORMAL") === key ? styles.gradeStepActive : ""}`}
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 등급 조건 안내 */}
+              <div className={styles.gradeConditionWrap}>
+                <p className={styles.gradeConditionTitle}>등급 기준 (전월 구매금액)</p>
+                <div className={styles.gradeConditionList}>
+                  {[
+                    { grade: "NORMAL", label: "일반", condition: "30만원 미만" },
+                    { grade: "SILVER", label: "실버", condition: "30만원 이상" },
+                    { grade: "GOLD", label: "골드", condition: "100만원 이상" },
+                    { grade: "PLATINUM", label: "플래티넘", condition: "300만원 이상" },
+                  ].map(({ grade, label, condition }) => (
+                    <div key={grade} className={styles.gradeConditionItem}>
+                      <span className={`${styles.gradeConditionBadge} ${GRADE_COLOR[grade]}`}>{label}</span>
+                      <span className={styles.gradeConditionText}>{condition}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 등급 변경 이력 */}
+              <h3 className={styles.subSectionTitle}>등급 변경 이력</h3>
+              {membershipLoading ? (
+                <div className={styles.empty}><p>로딩 중...</p></div>
+              ) : membershipHistory.length === 0 ? (
+                <div className={styles.empty}>
+                  <Crown size={40} color="#d1d5db" />
+                  <p>등급 변경 이력이 없습니다.</p>
+                </div>
+              ) : (
+                <div className={styles.historyList}>
+                  {membershipHistory.map((h) => (
+                    <div key={h.historyId} className={styles.historyItem}>
+                      <div className={styles.historyGrades}>
+                        <span className={`${styles.gradeStep} ${GRADE_COLOR[h.previousGrade]}`}>
+                          {GRADE_LABEL[h.previousGrade]}
+                        </span>
+                        <span className={styles.historyArrow}>→</span>
+                        <span className={`${styles.gradeStep} ${GRADE_COLOR[h.newGrade]}`}>
+                          {GRADE_LABEL[h.newGrade]}
+                        </span>
+                      </div>
+                      <div className={styles.historyMeta}>
+                        <span>전월 구매금액: {Number(h.monthlyAmount).toLocaleString()}원</span>
+                        <span>{h.changedAt?.slice(0, 10)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
