@@ -365,3 +365,383 @@
 .completeBtnSecondary:hover {
   background-color: #f9fafb;
 }
+
+.emptyText {
+  font-size: 14px;
+  color: #9ca3af;
+  padding: 8px 0;
+}
+
+/* 배송지 선택 목록 */
+.addressList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.addressSelectBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.addressSelectBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.addressSelectActive {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.defaultBadge {
+  padding: 2px 6px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* 쿠폰 */
+.couponToggleBtn {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.couponToggleBtn:hover {
+  background-color: #f9fafb;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.couponItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.couponItem:hover {
+  border-color: #2563eb;
+}
+
+.couponItemActive {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.couponCode {
+  font-weight: 600;
+  color: #111827;
+  font-size: 13px;
+}
+
+.couponDiscount {
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 14px;
+}
+
+.couponCondition {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.discountText {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.emptyPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 80px 16px;
+  text-align: center;
+}
+
+.emptyPage p {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* 기존 CSS 아래에 추가 */
+
+.emptyPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 80px 16px;
+  text-align: center;
+}
+
+.emptyPage p {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: #9ca3af;
+  padding: 8px 0;
+}
+
+/* 섹션 타이틀 + 버튼 행 */
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.addAddressBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #2563eb;
+  background-color: #ffffff;
+  transition: all 0.15s;
+}
+
+.addAddressBtn:hover {
+  background-color: #eff6ff;
+}
+
+/* 새 배송지 추가 폼 */
+.addressForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.addressFormRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.addressSearchRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.addressSearchRow .input {
+  flex: 1;
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  font-family: inherit;
+  background-color: #ffffff;
+}
+
+.input:focus {
+  border-color: #2563eb;
+}
+
+.input[readonly] {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.addressFormFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.saveBtn {
+  padding: 9px 20px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.saveBtn:hover {
+  background-color: #1d4ed8;
+}
+
+.saveBtn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* 배송지 선택 목록 */
+.addressList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.addressSelectBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.addressSelectBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.addressSelectActive {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.defaultBadge {
+  padding: 2px 6px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* 쿠폰 */
+.couponToggleBtn {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.couponToggleBtn:hover {
+  background-color: #f9fafb;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.couponItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #ffffff;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.couponItem:hover {
+  border-color: #2563eb;
+}
+
+.couponItemActive {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.couponCode {
+  font-weight: 600;
+  color: #111827;
+  font-size: 13px;
+}
+
+.couponDiscount {
+  font-weight: 700;
+  color: #2563eb;
+  font-size: 14px;
+}
+
+.couponCondition {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.discountText {
+  color: #ef4444;
+  font-weight: 600;
+}
