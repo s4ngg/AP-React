@@ -61,6 +61,19 @@ export const resetPassword = async (data) => {
   return response.data;
 };
 
+export const sendSmsCode = async (phone) => {
+  const response = await api.post("/sms/send", { phone });
+  return response.data;
+};
+
+export const verifySmsCode = async (phone, code) => {
+  const response = await api.post("/sms/verify", { phone, code });
+  return response.data;
+};
+export const getTerms = async () => {
+  const response = await api.get("/terms");
+  return response.data;
+};
 // ==================== 사업자등록번호 검증 ====================
 
 export const validateBusinessNumber = async (businessNumber) => {

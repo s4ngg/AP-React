@@ -7,6 +7,7 @@ import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
 import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
+// import { sendSmsCode, verifySmsCode } from "../../api/authApi"; // import 추가
 
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
@@ -21,6 +22,12 @@ export default function SignupPage({ isSeller = false }) {
   const [emailAvailable, setEmailAvailable] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [phoneVerified, setPhoneVerified] = useState(false);
+  // const [phoneSent, setPhoneSent] = useState(false);
+  // const [smsCode, setSmsCode] = useState("");
+  // const [sendingCode, setSendingCode] = useState(false);
+  // const [verifyingCode, setVerifyingCode] = useState(false);
+  // const [smsError, setSmsError] = useState("");
 
   const {
     register,
@@ -35,6 +42,36 @@ export default function SignupPage({ isSeller = false }) {
   const passwordConfirm = watch("passwordConfirm");
   const email = watch("email");
 
+  // const handleSendSmsCode = async () => {
+  //   const phone = watch("phone");
+  //   if (!phone) return;
+  //   const cleaned = phone.replace(/-/g, "");
+  //   setSendingCode(true);
+  //   setSmsError("");
+  //   try {
+  //     await sendSmsCode(cleaned);
+  //     setPhoneSent(true);
+  //   } catch {
+  //     setSmsError("인증번호 발송에 실패했습니다.");
+  //   } finally {
+  //     setSendingCode(false);
+  //   }
+  // };
+
+  // const handleVerifySmsCode = async () => {
+  //   const phone = watch("phone");
+  //   const cleaned = phone.replace(/-/g, "");
+  //   setVerifyingCode(true);
+  //   setSmsError("");
+  //   try {
+  //     await verifySmsCode(cleaned, smsCode);
+  //     setPhoneVerified(true);
+  //   } catch {
+  //     setSmsError("인증번호가 올바르지 않습니다.");
+  //   } finally {
+  //     setVerifyingCode(false);
+  //   }
+  // };
   const passwordValidation = {
     hasLength: password?.length >= 8,
     hasLetter: /[a-zA-Z]/.test(password || ""),
@@ -70,15 +107,18 @@ export default function SignupPage({ isSeller = false }) {
   };
 
   const handleAddressSearch = () => {
-    new window.daum.Postcode({
-      oncomplete: (data) => {
-        setValue("zipCode", data.zonecode);
-        setValue("address", data.address);
-      }
-    }).open();
-  };
+  if (!window.daum || !window.daum.Postcode) {
+    alert("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+    return;
+  }
+  new window.daum.Postcode({
+    oncomplete: (data) => {
+      setValue("zipCode", data.zonecode);
+      setValue("address", data.address);
+    },
+  }).open();
+};
 
-  // ✅ 여기 추가!
   const handleValidateBusiness = async () => {
     const businessNumber = watch("business_number");
     if (!businessNumber) return;
@@ -103,6 +143,10 @@ export default function SignupPage({ isSeller = false }) {
       setError("email", { message: "이메일 중복 확인을 해주세요" });
       return;
     }
+    // if (!phoneVerified) {
+    //   setSmsError("휴대폰 인증을 완료해주세요");
+    //   return;
+    // }
     if (!isPasswordValid) return;
     if (!passwordsMatch) return;
 
@@ -112,7 +156,7 @@ export default function SignupPage({ isSeller = false }) {
         email: data.email,
         password: data.password,
         name: data.name,
-        phone: data.phone,
+        phone: data.phone.replace(/-/g, ""), // ← 하이픈 제거
         zipCode: data.zipCode,
         address: data.address,
         addressDetail: data.addressDetail,
@@ -234,18 +278,54 @@ export default function SignupPage({ isSeller = false }) {
             </div>
 
             {/* 휴대폰 번호 */}
+            {/* 휴대폰 번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>휴대폰 번호</label>
-              <input
-                type="tel"
-                placeholder="010-0000-0000"
-                className={`${styles.input} ${errors.phone ? styles.inputError : ""}`}
-                {...register("phone", {
-                  required: "휴대폰 번호를 입력해주세요",
-                  pattern: { value: /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/, message: "010-0000-0000 형식으로 입력해주세요" },
-                })}
-              />
+              <div className={styles.emailRow}>
+                <input
+                  type="tel"
+                  placeholder="010-0000-0000"
+                  className={`${styles.input} ${styles.emailInput} ${errors.phone ? styles.inputError : ""}`}
+                  {...register("phone", {
+                    required: "휴대폰 번호를 입력해주세요",
+                    pattern: { value: /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/, message: "010-0000-0000 형식으로 입력해주세요" },
+                  })}
+                  // onChange={() => { setPhoneVerified(false); setPhoneSent(false); }}
+                />
+                {/* <button
+                  type="button"
+                  onClick={handleSendSmsCode}
+                  disabled={sendingCode || phoneVerified}
+                  className={styles.checkBtn}
+                >
+                
+                  {sendingCode ? "발송 중..." : phoneSent ? "재발송" : "인증번호 발송"}
+                </button> */}
+              </div>
               {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
+
+              {/* 인증번호 입력 */}
+              {/*phoneSent && !phoneVerified && (
+                <div className={styles.emailRow} style={{ marginTop: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="인증번호 6자리"
+                    value={smsCode}
+                    onChange={(e) => setSmsCode(e.target.value)}
+                    className={`${styles.input} ${styles.emailInput}`}
+                    maxLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerifySmsCode}
+                    disabled={verifyingCode || smsCode.length !== 6}
+                    className={styles.checkBtn}
+                  >
+                    {verifyingCode ? "확인 중..." : "인증 확인"}
+                  </button>
+                </div>
+              )} )*/
+              }
             </div>
 
             {/* 우편번호 */}
