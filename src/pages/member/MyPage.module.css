@@ -74,6 +74,17 @@
 .userEmail {
   font-size: 12px;
   color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+.gradeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .tabNav {
@@ -557,6 +568,238 @@
   line-height: 1.6;
 }
 
+/* ─── 쿠폰함 ───────────────────────────── */
+.couponCount {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.couponCount strong {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.couponFilterWrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.couponFilterBtn {
+  padding: 7px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  background-color: #ffffff;
+  transition: all 0.15s;
+}
+
+.couponFilterBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.couponFilterActive {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.couponFilterActive:hover {
+  color: #ffffff;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.couponCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px dashed #2563eb;
+  border-radius: 10px;
+  padding: 16px 20px;
+  background-color: #fafcff;
+  gap: 12px;
+}
+
+.couponCardDisabled {
+  border-color: #e5e7eb;
+  background-color: #f9fafb;
+  opacity: 0.7;
+}
+
+.couponLeft {
+  flex: 1;
+}
+
+.couponDiscount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 4px;
+}
+
+.couponCardDisabled .couponDiscount {
+  color: #9ca3af;
+}
+
+.couponCode {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+
+.couponCondition {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.couponRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.couponAvailableBadge {
+  padding: 3px 10px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.couponUsedBadge {
+  padding: 3px 10px;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.couponExpiredBadge {
+  padding: 3px 10px;
+  background-color: #fee2e2;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.couponExpire {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ─── 멤버십 ───────────────────────────── */
+.gradeCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gradeCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gradeLabel {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.gradeName {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.gradeNotice {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.gradeCriteria {
+  margin-bottom: 24px;
+}
+
+.gradeCriteria .subSectionTitle,
+.gradeHistory .subSectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.gradeList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gradeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.gradeItemActive {
+  border-width: 1.5px;
+  background-color: #f9fafb;
+}
+
+.gradeItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gradeItemName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.currentBadge {
+  padding: 2px 8px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.gradeItemAmount {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.gradeHistory {
+  padding-top: 24px;
+  border-top: 1px solid #f3f4f6;
+}
+
 /* ─── 회원 탈퇴 ───────────────────────── */
 .withdrawalWrap {
   max-width: 480px;
@@ -646,4 +889,336 @@
 
 .withdrawalConfirmBtn:hover {
   background-color: #dc2626;
+}
+
+/* 판매자 신청 */
+.sellerApplyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 32px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.sellerApplyIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #eef2ff;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sellerApplyTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.sellerApplyDesc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.sellerApplyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sellerApplyList li {
+  font-size: 14px;
+  color: #374151;
+  padding-left: 20px;
+  position: relative;
+}
+
+.sellerApplyList li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.sellerApplyNotice {
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.sellerApplyBtn {
+  margin-top: 8px;
+  padding: 14px 48px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sellerApplyBtn:hover {
+  background-color: var(--color-primary-dark, #1d4ed8);
+}
+
+/* 쿠폰함 */
+.couponFilterWrap {
+  display: flex;
+  gap: 6px;
+}
+
+.filterBtn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filterBtnActive {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.couponList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.couponCard {
+  display: flex;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.couponCardUsed {
+  opacity: 0.5;
+}
+
+.couponLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 24px;
+  background-color: var(--color-primary);
+  color: #fff;
+  min-width: 100px;
+}
+
+.couponDiscount {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.couponCode {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 0;
+}
+
+.couponRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 20px;
+  flex: 1;
+}
+
+.couponCondition {
+  font-size: 13px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.couponExpiry {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.couponStatus {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.couponStatusUnused {
+  background-color: #eef2ff;
+  color: var(--color-primary);
+}
+
+.couponStatusUsed {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* 멤버십 */
+.gradeCard {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.gradeCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-primary);
+  min-width: 120px;
+}
+
+.gradeLabel {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.gradeName {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.gradeInfo {
+  flex: 1;
+}
+
+.gradeInfoText {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0 0 10px;
+}
+
+.gradeSteps {
+  display: flex;
+  gap: 6px;
+}
+
+.gradeStep {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+.gradeStepActive {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.gradeNormal { color: #6b7280; }
+.gradeSilver { color: #6b7280; }
+.gradeGold { color: #d97706; }
+.gradePlatinum { color: #7c3aed; }
+
+.gradeConditionWrap {
+  padding: 16px;
+  background-color: #f8faff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.gradeConditionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 10px;
+}
+
+.gradeConditionList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gradeConditionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gradeConditionBadge {
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  background-color: #f3f4f6;
+  min-width: 56px;
+  text-align: center;
+}
+
+.gradeConditionText {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.historyGrades {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.historyArrow {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.historyMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--color-muted);
 }
