@@ -1,15 +1,20 @@
 import { create } from "zustand"
+import { persist } from "zustand/middleware"
 
-const useAuthStore = create((set) => ({
-  // 상태
-  user: null,        // { id, name, email }
-  isLoggedIn: false,
+const useAuthStore = create(
+  persist(
+    (set) => ({
+      user: null,
+      isLoggedIn: false,
+      token: null,
 
-  // 로그인 (추후 API 연동)
-  setUser: (user) => set({ user, isLoggedIn: true }),
-
-  // 로그아웃
-  logout: () => set({ user: null, isLoggedIn: false }),
-}))
+      setUser: (user, token) => set({ user, isLoggedIn: true, token }),
+      logout: () => set({ user: null, isLoggedIn: false, token: null }),
+    }),
+    {
+      name: "auth-storage", // localStorage 키 이름
+    }
+  )
+)
 
 export default useAuthStore
