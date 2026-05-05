@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     AlertCircle, ChevronRight, ChevronLeft,
-    Package, RotateCcw, ArrowLeftRight, MapPin, Truck, X
+    Package, RotateCcw, ArrowLeftRight, MapPin, Truck, X, Camera
 } from "lucide-react";
 import styles from "./ReturnForm.module.css";
 import { createClaim } from "../../api/claimApi.js";
 import { getMyOrders } from "../../api/orderApi.js";
+import { uploadClaimAttachment } from "../../api/attachmentApi.js";
 
 const RETURN_REASONS = [
     { value: "", label: "사유를 선택해주세요" },
@@ -37,6 +38,8 @@ const REASON_LABEL = {
 
 const SIMPLE_REASON_CODES = ["CHANGE_MIND", "SIZE_COLOR", "SIZE_CHANGE", "COLOR_CHANGE"];
 
+const MAX_IMAGES = 5;
+
 const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -52,6 +55,7 @@ export default function ReturnForm({ onBack }) {
     const [detail, setDetail] = useState("");
     const [pickup, setPickup] = useState("COURIER");
     const [exchangeOption, setExchangeOption] = useState("");
+    const [images, setImages] = useState([]); // { file: File, url: string }[]
     const [submitting, setSubmitting] = useState(false);
     const [submittedClaim, setSubmittedClaim] = useState(null);
 
@@ -59,7 +63,24 @@ export default function ReturnForm({ onBack }) {
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
 
+    const fileInputRef = useRef(null);
+
     const reasons = type === "RETURN" ? RETURN_REASONS : EXCHANGE_REASONS;
+
+    const handleImageAdd = (e) => {
+        const files = Array.from(e.target.files);
+        const remaining = MAX_IMAGES - images.length;
+        const toAdd = files.slice(0, remaining).map(file => ({ file, url: URL.createObjectURL(file) }));
+        setImages(prev => [...prev, ...toAdd]);
+        e.target.value = "";
+    };
+
+    const handleImageRemove = (index) => {
+        setImages(prev => {
+            URL.revokeObjectURL(prev[index].url);
+            return prev.filter((_, i) => i !== index);
+        });
+    };
 
     const handleOpenOrderModal = async () => {
         setShowOrderModal(true);
@@ -96,7 +117,18 @@ export default function ReturnForm({ onBack }) {
                 ...(type === "EXCHANGE" && exchangeOption && { exchangeOption }),
             };
             const res = await createClaim(payload);
-            setSubmittedClaim(res.data?.data);
+            const created = res.data?.data;
+
+            if (images.length > 0 && created?.claimId) {
+                for (let i = 0; i < images.length; i++) {
+                    const formData = new FormData();
+                    formData.append("file", images[i].file);
+                    formData.append("sortOrder", i);
+                    await uploadClaimAttachment(created.claimId, formData);
+                }
+            }
+
+            setSubmittedClaim(created);
             setStep(3);
         } catch {
             alert("신청에 실패했습니다. 다시 시도해주세요.");
@@ -273,6 +305,37 @@ export default function ReturnForm({ onBack }) {
                                 <div><strong>직접 방문 반납</strong><span>지정 매장에 직접 반납</span></div>
                             </label>
                         </div>
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                        <label>사진 첨부 <span className={styles.labelSub}>(최대 {MAX_IMAGES}장)</span></label>
+                        <div className={styles.fileUploadArea}>
+                            <div className={styles.imagePreviewList}>
+                                {images.map((img, i) => (
+                                    <div key={i} className={styles.imagePreviewItem}>
+                                        <img src={img.url} alt={`첨부 ${i + 1}`} />
+                                        <button className={styles.imageRemoveBtn} onClick={() => handleImageRemove(i)}>
+                                            <X size={11} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {images.length < MAX_IMAGES && (
+                                    <button className={styles.uploadBtn} onClick={() => fileInputRef.current?.click()}>
+                                        <Camera size={20} />
+                                        <span>사진 추가</span>
+                                    </button>
+                                )}
+                            </div>
+                            <p className={styles.fileGuide}>JPG, PNG, GIF 파일만 가능합니다. (장당 최대 10MB)</p>
+                        </div>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            style={{ display: "none" }}
+                            onChange={handleImageAdd}
+                        />
                     </div>
 
                     {SIMPLE_REASON_CODES.includes(reason) && (

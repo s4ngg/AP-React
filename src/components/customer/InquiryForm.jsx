@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Search, X } from "lucide-react";
+import React, { useState, useRef } from 'react';
+import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Search, X, Camera } from "lucide-react";
 import styles from "./InquiryForm.module.css";
 import { createInquiry, getMyInquiries, cancelInquiry } from "../../api/inquiryApi.js";
 import { getMyOrders } from "../../api/orderApi.js";
+import { uploadInquiryAttachment } from "../../api/attachmentApi.js";
 
 const INQUIRY_TYPES = [
     { value: "", label: "유형을 선택해주세요" },
@@ -49,6 +50,8 @@ const ORDER_STATUS_STYLE = {
     CANCELLED: { bg: "#fef2f2", color: "#dc2626" },
 };
 
+const MAX_IMAGES = 5;
+
 const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -60,6 +63,7 @@ export default function InquiryForm() {
     const [inquiryType, setInquiryType] = useState("");
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+    const [images, setImages] = useState([]); // { file: File, url: string }[]
     const [submitting, setSubmitting] = useState(false);
     const [submittedInquiry, setSubmittedInquiry] = useState(null);
     const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
@@ -74,12 +78,30 @@ export default function InquiryForm() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [openInquiryId, setOpenInquiryId] = useState(null);
 
+    const fileInputRef = useRef(null);
+
     const resetForm = () => {
         setInquiryType("");
         setTitle("");
         setContent("");
+        setImages([]);
         setSelectedOrder(null);
         setSubmittedInquiry(null);
+    };
+
+    const handleImageAdd = (e) => {
+        const files = Array.from(e.target.files);
+        const remaining = MAX_IMAGES - images.length;
+        const toAdd = files.slice(0, remaining).map(file => ({ file, url: URL.createObjectURL(file) }));
+        setImages(prev => [...prev, ...toAdd]);
+        e.target.value = "";
+    };
+
+    const handleImageRemove = (index) => {
+        setImages(prev => {
+            URL.revokeObjectURL(prev[index].url);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const handleOpenOrderModal = async () => {
@@ -113,7 +135,18 @@ export default function InquiryForm() {
                 }),
             };
             const res = await createInquiry(payload);
-            setSubmittedInquiry(res.data?.data);
+            const created = res.data?.data;
+
+            if (images.length > 0 && created?.inquiryId) {
+                for (let i = 0; i < images.length; i++) {
+                    const formData = new FormData();
+                    formData.append("file", images[i].file);
+                    formData.append("sortOrder", i);
+                    await uploadInquiryAttachment(created.inquiryId, formData);
+                }
+            }
+
+            setSubmittedInquiry(created);
             setView("complete");
         } catch {
             alert("문의 등록에 실패했습니다. 다시 시도해주세요.");
@@ -245,6 +278,16 @@ export default function InquiryForm() {
                         <span>문의 내용</span>
                         <p>{submittedInquiry.content}</p>
                     </div>
+                    {images.length > 0 && (
+                        <div className={styles.summaryRowContent}>
+                            <span>첨부 이미지</span>
+                            <div className={styles.summaryImages}>
+                                {images.map((img, i) => (
+                                    <img key={i} src={img.url} alt={`첨부 ${i + 1}`} className={styles.summaryImg} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <div className={styles.summaryStatus}>
                         <span className={styles.statusBadge} style={{ backgroundColor: st.bg, color: st.color }}>
                             {INQUIRY_STATUS_LABEL[submittedInquiry.status]}
@@ -400,6 +443,37 @@ export default function InquiryForm() {
                     onChange={e => setContent(e.target.value)}
                 />
                 <p className={styles.charCount}>{content.length} / 1000</p>
+            </div>
+
+            <div className={styles.inputGroup}>
+                <label>사진 첨부 <span className={styles.labelSub}>(최대 {MAX_IMAGES}장)</span></label>
+                <div className={styles.fileUploadArea}>
+                    <div className={styles.imagePreviewList}>
+                        {images.map((img, i) => (
+                            <div key={i} className={styles.imagePreviewItem}>
+                                <img src={img.url} alt={`첨부 ${i + 1}`} />
+                                <button className={styles.imageRemoveBtn} onClick={() => handleImageRemove(i)}>
+                                    <X size={11} />
+                                </button>
+                            </div>
+                        ))}
+                        {images.length < MAX_IMAGES && (
+                            <button className={styles.uploadBtn} onClick={() => fileInputRef.current?.click()}>
+                                <Camera size={20} />
+                                <span>사진 추가</span>
+                            </button>
+                        )}
+                    </div>
+                    <p className={styles.fileGuide}>JPG, PNG, GIF 파일만 가능합니다. (장당 최대 10MB)</p>
+                </div>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={handleImageAdd}
+                />
             </div>
 
             <div className={styles.actionArea}>
