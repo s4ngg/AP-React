@@ -16,35 +16,28 @@ const VALID_TABS = ["home", "notice", "faq", "inquiry", "return"];
 export default function CustomerPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const tabParam = searchParams.get("tab");
-    const [currentTab, setCurrentTab] = useState(
-        VALID_TABS.includes(tabParam) ? tabParam : "home"
-    );
+    const currentTab = VALID_TABS.includes(tabParam) ? tabParam : "home";
     const [selectedNoticeId, setSelectedNoticeId] = useState(null);
     const [returnView, setReturnView] = useState("guide");
     const [notices, setNotices] = useState([]);
     const [noticesLoading, setNoticesLoading] = useState(false);
 
     useEffect(() => {
-        const tab = searchParams.get("tab");
-        if (VALID_TABS.includes(tab) && tab !== currentTab) {
-            setCurrentTab(tab);
-            setSelectedNoticeId(null);
-            setReturnView("guide");
-        }
-    }, [searchParams]);
-
-    useEffect(() => {
-        if (currentTab === "notice" && notices.length === 0) {
+        if (currentTab !== "notice" || notices.length > 0) return;
+        (async () => {
             setNoticesLoading(true);
-            getNotices()
-                .then(res => setNotices(res.data?.data || []))
-                .catch(() => setNotices([]))
-                .finally(() => setNoticesLoading(false));
-        }
-    }, [currentTab]);
+            try {
+                const res = await getNotices();
+                setNotices(res.data?.data || []);
+            } catch {
+                setNotices([]);
+            } finally {
+                setNoticesLoading(false);
+            }
+        })();
+    }, [currentTab, notices.length]);
 
     const handleTabChange = (tabId) => {
-        setCurrentTab(tabId);
         setSelectedNoticeId(null);
         setReturnView("guide");
         setSearchParams(tabId === "home" ? {} : { tab: tabId });
@@ -90,7 +83,7 @@ export default function CustomerPage() {
                     {/* 1. 고객센터 홈 */}
                     {currentTab === "home" && (
                         <div className={styles.homeGrid}>
-                            <div className={styles.quickCard} onClick={() => setCurrentTab("inquiry")}>
+                            <div className={styles.quickCard} onClick={() => handleTabChange("inquiry")}>
                                 <div className={styles.cardHeader}>
                                     <div className={styles.iconCircle}><MessageSquare size={24} /></div>
                                     <h4>1:1 문의하기</h4>
@@ -99,7 +92,7 @@ export default function CustomerPage() {
                                 <button className={styles.cardBtn}>문의 등록 <ChevronRight size={16} /></button>
                             </div>
 
-                            <div className={styles.quickCard} onClick={() => setCurrentTab("faq")}>
+                            <div className={styles.quickCard} onClick={() => handleTabChange("faq")}>
                                 <div className={styles.cardHeader}>
                                     <div className={styles.iconCircle}><Search size={24} /></div>
                                     <h4>자주 묻는 질문</h4>
