@@ -15,3 +15,7 @@ export const createOrder = (memberId, data) =>
 // 주문 조회
 export const getOrder = (orderId) =>
   api.get(`/orders/${orderId}`).then((res) => res.data.data)
+
+// 내 주문 목록 조회
+export const getMyOrders = () =>
+  api.get("/members/me/orders").then((res) => res.data.data)
