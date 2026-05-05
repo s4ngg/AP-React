@@ -1,32 +1,9 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Store, Ticket, Crown, Award } from "lucide-react"
-import { getMemberCoupons } from "../../api/couponApi"
-import { getMembershipHistory } from "../../api/membershipApi"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket } from "lucide-react"
 import styles from "./MyPage.module.css"
-
-const GRADE_LABEL = {
-  NORMAL: "일반",
-  SILVER: "실버",
-  GOLD: "골드",
-  PLATINUM: "플래티넘",
-}
-
-const GRADE_COLOR = {
-  NORMAL: styles.gradeNormal,
-  SILVER: styles.gradeSilver,
-  GOLD: styles.gradeGold,
-  PLATINUM: styles.gradePlatinum,
-}
-
-const GRADE_CONFIG = {
-  NORMAL:   { label: "일반",     color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
-  SILVER:   { label: "실버",     color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
-  GOLD:     { label: "골드",     color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
-  PLATINUM: { label: "플래티넘", color: "#0891b2", bg: "#ecfeff", minAmount: 3000000 },
-}
-
-const GRADE_ORDER = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
+import useAuthStore from "../../store/authStore"
+import { getMember } from "../../api/memberApi"
+import { getMembershipHistory } from "../../api/membershipApi"
 
 // 임시 사용자 데이터 (추후 API 연동)
 const mockUser = {
@@ -73,20 +50,6 @@ const mockOrders = [
       },
     ],
     totalPrice: 237000,
-  },
-  {
-    id: "AP-20250408003",
-    date: "2025-04-08",
-    status: "주문완료",
-    items: [
-      {
-        name: "[이니스프리] 그린티 씨드 세럼",
-        price: 35000,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&h=200&fit=crop",
-      },
-    ],
-    totalPrice: 35000,
   },
 ]
 
@@ -166,25 +129,47 @@ const STATUS_CLASS = {
   취소: "statusCancel",
 }
 
+const GRADE_CONFIG = {
+  NORMAL:   { label: "일반",     color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
+  SILVER:   { label: "실버",     color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
+  GOLD:     { label: "골드",     color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
+  PLATINUM: { label: "플래티넘", color: "#0891b2", bg: "#ecfeff", minAmount: 3000000 },
+}
+
+const GRADE_ORDER = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
+
+const GRADE_LABEL = {
+  NORMAL: "일반",
+  SILVER: "실버",
+  GOLD: "골드",
+  PLATINUM: "플래티넘",
+}
+
 const tabs = [
   { id: "info",       label: "내 정보 관리", icon: User },
   { id: "orders",     label: "주문 내역",    icon: Package },
   { id: "address",    label: "배송지 관리",  icon: MapPin },
   { id: "coupon",     label: "쿠폰함",       icon: Ticket },
-  { id: "membership", label: "멤버십",       icon: Crown },
-  { id: "seller",     label: "판매자 신청",  icon: Store },
+  { id: "membership", label: "멤버십",       icon: Award },
   { id: "withdrawal", label: "회원 탈퇴",    icon: AlertTriangle },
 ]
 
 export default function MyPage() {
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("info")
+  const [couponFilter, setCouponFilter] = useState("available")
   const [isEditing, setIsEditing] = useState(false)
   const [showPwForm, setShowPwForm] = useState(false)
   const [showPw, setShowPw] = useState(false)
   const [showNewPw, setShowNewPw] = useState(false)
   const [showConfirmPw, setShowConfirmPw] = useState(false)
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
+
+  // 멤버십 API 상태
+  const { user: authUser } = useAuthStore()
+  const user = authUser ?? { id: 1 }
+  const [memberGrade, setMemberGrade] = useState(mockUser.grade)
+  const [membershipHistory, setMembershipHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
 
   const [form, setForm] = useState({
     phone: mockUser.phone,
@@ -193,37 +178,20 @@ export default function MyPage() {
   })
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" })
 
-  // 쿠폰
-  const [coupons, setCoupons] = useState([])
-  const [couponFilter, setCouponFilter] = useState("available") // "available" | "used"
-  const [couponLoading, setCouponLoading] = useState(false)
-
-  // 멤버십
-  const [membershipHistory, setMembershipHistory] = useState([])
-  const [membershipLoading, setMembershipLoading] = useState(false)
-
-  // 임시 memberId (추후 authStore에서 가져오기)
-  const TEMP_MEMBER_ID = 1
-
+  // 멤버십 탭 진입 시 API 호출
   useEffect(() => {
-    if (activeTab === "coupon") {
-      setCouponLoading(true)
-      getMemberCoupons(TEMP_MEMBER_ID)
-        .then((data) => setCoupons(data ?? []))
-        .catch(() => setCoupons([]))
-        .finally(() => setCouponLoading(false))
-    }
-  }, [activeTab])
+    if (activeTab !== "membership" || !user?.id) return
 
-  useEffect(() => {
-    if (activeTab === "membership") {
-      setMembershipLoading(true)
-      getMembershipHistory(TEMP_MEMBER_ID)
-        .then((data) => setMembershipHistory(data ?? []))
-        .catch(() => setMembershipHistory([]))
-        .finally(() => setMembershipLoading(false))
-    }
-  }, [activeTab])
+    getMember(user.id)
+      .then((data) => setMemberGrade(data.grade))
+      .catch(() => {})
+
+    setHistoryLoading(true)
+    getMembershipHistory(user.id)
+      .then((data) => setMembershipHistory(data ?? []))
+      .catch(() => setMembershipHistory([]))
+      .finally(() => setHistoryLoading(false))
+  }, [activeTab, user.id])
 
   const handleFormChange = (e) => {
     const { name, value } = e.target
@@ -235,25 +203,14 @@ export default function MyPage() {
     setPwForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleInfoSave = () => {
-    // 추후 API 연동
-    setIsEditing(false)
-  }
-
+  const handleInfoSave = () => setIsEditing(false)
   const handlePwSave = () => {
-    // 추후 API 연동
     setPwForm({ current: "", next: "", confirm: "" })
     setShowPwForm(false)
   }
+  const handleWithdraw = () => setShowWithdrawConfirm(false)
 
-  const handleWithdraw = () => {
-    // 추후 API 연동
-    setShowWithdrawConfirm(false)
-  }
-
-  // 쿠폰 헬퍼 함수
-  const displayCoupons = coupons.length > 0 ? coupons : mockCoupons
-  const filteredCoupons = displayCoupons.filter((c) =>
+  const filteredCoupons = mockCoupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
   )
 
@@ -262,9 +219,10 @@ export default function MyPage() {
     return `${Number(coupon.discountValue).toLocaleString()}원 할인`
   }
 
-  const formatDate = (dateStr) => dateStr.slice(0, 10)
-
+  const formatDate = (dateStr) => dateStr?.slice(0, 10) ?? ""
   const isExpired = (dateStr) => new Date(dateStr) < new Date()
+
+  const currentGradeConfig = GRADE_CONFIG[memberGrade] ?? GRADE_CONFIG.NORMAL
 
   return (
     <div className={styles.page}>
@@ -280,12 +238,12 @@ export default function MyPage() {
             <div
               className={styles.gradeBadge}
               style={{
-                backgroundColor: GRADE_CONFIG[mockUser.grade].bg,
-                color: GRADE_CONFIG[mockUser.grade].color,
+                backgroundColor: currentGradeConfig.bg,
+                color: currentGradeConfig.color,
               }}
             >
               <Award size={12} />
-              {GRADE_CONFIG[mockUser.grade].label}
+              {currentGradeConfig.label}
             </div>
           </div>
           <nav className={styles.tabNav}>
@@ -471,10 +429,9 @@ export default function MyPage() {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>쿠폰함</h2>
                 <span className={styles.couponCount}>
-                  사용 가능 <strong>{displayCoupons.filter((c) => !c.isUsed).length}</strong>장
+                  사용 가능 <strong>{mockCoupons.filter((c) => !c.isUsed).length}</strong>장
                 </span>
               </div>
-
               <div className={styles.couponFilterWrap}>
                 <button
                   className={`${styles.couponFilterBtn} ${couponFilter === "available" ? styles.couponFilterActive : ""}`}
@@ -489,10 +446,7 @@ export default function MyPage() {
                   사용 완료
                 </button>
               </div>
-
-              {couponLoading ? (
-                <div className={styles.empty}><p>로딩 중...</p></div>
-              ) : filteredCoupons.length === 0 ? (
+              {filteredCoupons.length === 0 ? (
                 <div className={styles.empty}>
                   <Ticket size={40} color="#d1d5db" />
                   <p>{couponFilter === "available" ? "사용 가능한 쿠폰이 없습니다." : "사용한 쿠폰이 없습니다."}</p>
@@ -537,43 +491,40 @@ export default function MyPage() {
           {activeTab === "membership" && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>멤버십</h2>
-
-              {/* 현재 등급 카드 */}
               <div
                 className={styles.gradeCard}
                 style={{
-                  backgroundColor: GRADE_CONFIG[mockUser.grade].bg,
-                  borderColor: GRADE_CONFIG[mockUser.grade].color,
+                  backgroundColor: currentGradeConfig.bg,
+                  borderColor: currentGradeConfig.color,
                 }}
               >
                 <div className={styles.gradeCardLeft}>
-                  <Award size={32} color={GRADE_CONFIG[mockUser.grade].color} />
+                  <Award size={32} color={currentGradeConfig.color} />
                   <div>
                     <p className={styles.gradeLabel}>현재 등급</p>
-                    <p className={styles.gradeName} style={{ color: GRADE_CONFIG[mockUser.grade].color }}>
-                      {GRADE_CONFIG[mockUser.grade].label}
+                    <p className={styles.gradeName} style={{ color: currentGradeConfig.color }}>
+                      {currentGradeConfig.label}
                     </p>
                   </div>
                 </div>
                 <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
               </div>
 
-              {/* 등급 기준 */}
               <div className={styles.gradeCriteria}>
                 <h3 className={styles.subSectionTitle}>등급 기준</h3>
                 <div className={styles.gradeList}>
                   {GRADE_ORDER.map((grade) => (
                     <div
                       key={grade}
-                      className={`${styles.gradeItem} ${mockUser.grade === grade ? styles.gradeItemActive : ""}`}
-                      style={mockUser.grade === grade ? { borderColor: GRADE_CONFIG[grade].color } : {}}
+                      className={`${styles.gradeItem} ${memberGrade === grade ? styles.gradeItemActive : ""}`}
+                      style={memberGrade === grade ? { borderColor: GRADE_CONFIG[grade].color } : {}}
                     >
                       <div className={styles.gradeItemLeft}>
                         <Award size={16} color={GRADE_CONFIG[grade].color} />
                         <span className={styles.gradeItemName} style={{ color: GRADE_CONFIG[grade].color }}>
                           {GRADE_CONFIG[grade].label}
                         </span>
-                        {mockUser.grade === grade && (
+                        {memberGrade === grade && (
                           <span className={styles.currentBadge} style={{ backgroundColor: GRADE_CONFIG[grade].color }}>
                             현재
                           </span>
@@ -587,11 +538,10 @@ export default function MyPage() {
                 </div>
               </div>
 
-              {/* 등급 변경 이력 */}
               <div className={styles.gradeHistory}>
                 <h3 className={styles.subSectionTitle}>등급 변경 이력</h3>
-                {membershipLoading ? (
-                  <div className={styles.empty}><p>로딩 중...</p></div>
+                {historyLoading ? (
+                  <div className={styles.empty}><p>불러오는 중...</p></div>
                 ) : membershipHistory.length === 0 ? (
                   <div className={styles.empty}>
                     <Award size={40} color="#d1d5db" />
@@ -602,53 +552,22 @@ export default function MyPage() {
                     {membershipHistory.map((h) => (
                       <div key={h.historyId} className={styles.historyItem}>
                         <div className={styles.historyGrades}>
-                          <span className={`${styles.gradeStep} ${GRADE_COLOR[h.previousGrade]}`}>
-                            {GRADE_LABEL[h.previousGrade]}
+                          <span style={{ color: GRADE_CONFIG[h.previousGrade]?.color ?? "#6b7280" }}>
+                            {GRADE_LABEL[h.previousGrade] ?? h.previousGrade}
                           </span>
                           <span className={styles.historyArrow}>→</span>
-                          <span className={`${styles.gradeStep} ${GRADE_COLOR[h.newGrade]}`}>
-                            {GRADE_LABEL[h.newGrade]}
+                          <span style={{ color: GRADE_CONFIG[h.newGrade]?.color ?? "#6b7280" }}>
+                            {GRADE_LABEL[h.newGrade] ?? h.newGrade}
                           </span>
                         </div>
                         <div className={styles.historyMeta}>
-                          <span>전월 구매금액: {Number(h.monthlyAmount).toLocaleString()}원</span>
+                          <span>{Number(h.monthlyAmount).toLocaleString()}원</span>
                           <span>{h.changedAt?.slice(0, 10)}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
-            </div>
-          )}
-
-          {/* 판매자 신청 */}
-          {activeTab === "seller" && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>판매자 신청</h2>
-              <div className={styles.sellerApplyCard}>
-                <div className={styles.sellerApplyIcon}>
-                  <Store size={36} />
-                </div>
-                <h3 className={styles.sellerApplyTitle}>AllPick 판매자가 되어보세요</h3>
-                <p className={styles.sellerApplyDesc}>
-                  사업자 정보를 입력하고 신청하면 관리자 검토 후 판매자 기능이 활성화됩니다.
-                </p>
-                <ul className={styles.sellerApplyList}>
-                  <li>상품 등록 및 재고 관리</li>
-                  <li>주문 및 배송 처리</li>
-                  <li>정산 및 매출 확인</li>
-                </ul>
-                <p className={styles.sellerApplyNotice}>
-                  · 승인까지 영업일 기준 1~3일이 소요됩니다.<br />
-                  · 사업자등록증 및 통장 정보가 필요합니다.
-                </p>
-                <button
-                  className={styles.sellerApplyBtn}
-                  onClick={() => navigate("/seller-apply")}
-                >
-                  판매자 신청하기
-                </button>
               </div>
             </div>
           )}
