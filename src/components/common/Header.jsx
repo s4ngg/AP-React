@@ -4,13 +4,13 @@ import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones } 
 import useAuthStore from "../../store/authStore"
 import styles from "./Header.module.css"
 
-const categories = [
-  { name: "뷰티", href: "/products?category=beauty" },
-  { name: "패션", href: "/products?category=fashion" },
-  { name: "식품", href: "/products?category=food" },
-  { name: "주류", href: "/products?category=alcohol" },
-  { name: "리빙", href: "/products?category=living" },
-]
+const categoryData = {
+  뷰티: ["메이크업", "스킨케어", "남성화장품", "향수"],
+  패션: ["여성의류", "남성의류", "잡화·ACC"],
+  식품: ["과일·견과", "축산·수산", "디저트"],
+  주류: ["와인", "양주", "맥주·기타"],
+  리빙: ["캔들디퓨저 인센스", "조명·무드등", "가구·DIY", "침구·패브릭"],
+}
 
 const navLinks = [
   { name: "특별할인", href: "#" },
@@ -25,6 +25,8 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
+
+  const [hoveredCategory, setHoveredCategory] = useState("뷰티")
 
   const handleLogout = () => {
     logout()
@@ -114,45 +116,106 @@ export default function Header() {
 
         {/* 데스크탑 네비게이션 */}
         <div className={styles.navBottom}>
-          <div className={styles.categoryWrapper}>
+          <div
+            className={styles.categoryWrapper}
+            onMouseEnter={() => setCategoryOpen(true)}
+            onMouseLeave={() => setCategoryOpen(false)}
+          >
             <button
               className={styles.categoryTrigger}
-              onClick={() => setCategoryOpen(!categoryOpen)}
+              type="button"
+              onClick={() => navigate("/products")}
             >
               카테고리 <ChevronDown size={16} />
             </button>
+
             {categoryOpen && (
               <div className={styles.categoryDropdown}>
-                {categories.map((c) => (
-                  <Link key={c.name} to={c.href} onClick={() => setCategoryOpen(false)}>
-                    {c.name}
-                  </Link>
-                ))}
+                <div className={styles.mainCategoryList}>
+                  {Object.keys(categoryData).map((categoryName) => (
+                    <button
+                      key={categoryName}
+                      type="button"
+                      className={`${styles.mainCategoryItem} ${
+                        hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""
+                      }`}
+                      onMouseEnter={() => setHoveredCategory(categoryName)}
+                      onClick={() => {
+                        setCategoryOpen(false)
+                        navigate(`/products?category=${encodeURIComponent(categoryName)}`)
+                      }}
+                    >
+                      {categoryName}
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.subCategoryList}>
+                  {categoryData[hoveredCategory].map((subCategory) => (
+                    <button
+                      key={subCategory}
+                      type="button"
+                      className={styles.subCategoryItem}
+                      onClick={() => {
+                        setCategoryOpen(false)
+                        navigate(
+                          `/products?category=${encodeURIComponent(
+                            hoveredCategory
+                          )}&subCategory=${encodeURIComponent(subCategory)}`
+                        )
+                      }}
+                    >
+                      {subCategory}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
+
           {navLinks.map((item) => (
             <Link key={item.name} to={item.href} className={styles.navLink}>
               {item.name}
             </Link>
           ))}
         </div>
-      </nav>
-
+        </nav>
       {/* 모바일 메뉴 */}
       {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
           <p className={styles.mobileMenuLabel}>카테고리</p>
-          {categories.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={styles.mobileMenuItem}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
+          {Object.keys(categoryData).map((categoryName) => (
+  <div key={categoryName} className={styles.mobileCategoryGroup}>
+    <button
+      type="button"
+      className={styles.mobileMenuItemButton}
+      onClick={() => {
+        setMobileMenuOpen(false)
+        navigate(`/products?category=${encodeURIComponent(categoryName)}`)
+      }}
+    >
+      {categoryName}
+    </button>
+
+    <div className={styles.mobileSubCategoryList}>
+      {categoryData[categoryName].map((subCategory) => (
+        <button
+          key={subCategory}
+          type="button"
+          className={styles.mobileSubCategoryItem}
+          onClick={() => {
+            setMobileMenuOpen(false)
+            navigate(
+              `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
+            )
+          }}
+        >
+          {subCategory}
+        </button>
+      ))}
+    </div>
+  </div>
+))}
 
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
             <p className={styles.mobileMenuLabel}>메뉴</p>

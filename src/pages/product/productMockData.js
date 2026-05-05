@@ -2,6 +2,7 @@ const productMockData = [
     {
         id: 1,
         category: "뷰티",
+        subCategory: "스킨케어",
         name: "[에스티로더] 갈색병 세럼 50ml",
         price: 89000,
         originalPrice: 145000,
@@ -14,6 +15,7 @@ const productMockData = [
     {
         id: 2,
         category: "패션",
+        subCategory: "잡화·ACC",
         name: "[나이키] 에어맥스 97 화이트",
         price: 179000,
         originalPrice: 219000,
@@ -26,6 +28,7 @@ const productMockData = [
     {
         id: 3,
         category: "식품",
+        subCategory: "과일·견과",
         name: "[제주] 황금향 선물세트 3kg",
         price: 32000,
         originalPrice: 32000,
@@ -38,6 +41,7 @@ const productMockData = [
     {
         id: 4,
         category: "주류",
+        subCategory: "와인",
         name: "[샤또 마고] 2018 빈티지 750ml",
         price: 189000,
         originalPrice: 189000,
@@ -50,6 +54,7 @@ const productMockData = [
     {
         id: 5,
         category: "리빙",
+        subCategory: "침구·패브릭",
         name: "[모던하우스] 패브릭 소파 3인용",
         price: 329000,
         originalPrice: 399000,
@@ -62,6 +67,7 @@ const productMockData = [
     {
         id: 6,
         category: "뷰티",
+        subCategory: "남성화장품",
         name: "[아크네어] 수분 진정 크림",
         price: 24000,
         originalPrice: 30000,
@@ -74,6 +80,7 @@ const productMockData = [
     {
         id: 7,
         category: "패션",
+        subCategory: "남성의류",
         name: "[라코스테] 베이직 코튼 셔츠",
         price: 79000,
         originalPrice: 99000,
@@ -86,6 +93,7 @@ const productMockData = [
     {
         id: 8,
         category: "식품",
+        subCategory: "축산·수산",
         name: "[한우] 1++ 채끝 스테이크 300g",
         price: 42000,
         originalPrice: 52000,
@@ -98,6 +106,7 @@ const productMockData = [
     {
         id: 9,
         category: "주류",
+        subCategory: "양주",
         name: "[위스키] 싱글몰트 에디션",
         price: 128000,
         originalPrice: 149000,
@@ -110,6 +119,7 @@ const productMockData = [
     {
         id: 10,
         category: "리빙",
+        subCategory: "캔들디퓨저 인센스",
         name: "[Act&Acre] 프리미엄 디퓨저",
         price: 39000,
         originalPrice: 49000,
@@ -122,6 +132,7 @@ const productMockData = [
     {
         id: 11,
         category: "뷰티",
+        subCategory: "메이크업",
         name: "[헤라] 블랙 쿠션 21N",
         price: 54000,
         originalPrice: 62000,
@@ -134,6 +145,7 @@ const productMockData = [
     {
         id: 12,
         category: "패션",
+        subCategory: "여성의류",
         name: "[커버낫] 와이드 데님 팬츠",
         price: 59000,
         originalPrice: 69000,
@@ -146,6 +158,7 @@ const productMockData = [
     {
         id: 13,
         category: "리빙",
+        subCategory: "가구·DIY",
         name: "[이케아] 원목 사이드 테이블",
         price: 49000,
         originalPrice: 59000,
@@ -158,6 +171,7 @@ const productMockData = [
     {
         id: 14,
         category: "리빙",
+        subCategory: "조명·무드등",
         name: "[모던하우스] 세라믹 무드 조명",
         price: 35000,
         originalPrice: 45000,
@@ -170,6 +184,7 @@ const productMockData = [
     {
         id: 15,
         category: "리빙",
+        subCategory: "가구·DIY",
         name: "[한샘] 미니 수납 선반",
         price: 27000,
         originalPrice: 32000,
@@ -182,6 +197,7 @@ const productMockData = [
     {
         id: 16,
         category: "리빙",
+        subCategory: "조명·무드등",
         name: "[루메나] 무선 탁상용 선풍기",
         price: 42000,
         originalPrice: 52000,
@@ -194,6 +210,7 @@ const productMockData = [
     {
         id: 17,
         category: "리빙",
+        subCategory: "침구·패브릭",
         name: "[까사미아] 패브릭 쿠션 세트",
         price: 29000,
         originalPrice: 39000,
@@ -206,6 +223,7 @@ const productMockData = [
     {
         id: 18,
         category: "리빙",
+        subCategory: "가구·DIY",
         name: "[일룸] 화이트 수납장",
         price: 119000,
         originalPrice: 149000,
@@ -218,6 +236,7 @@ const productMockData = [
     {
         id: 19,
         category: "리빙",
+        subCategory: "가구·DIY",
         name: "[발뮤다] 프리미엄 토스터",
         price: 269000,
         originalPrice: 299000,
@@ -230,6 +249,7 @@ const productMockData = [
     {
         id: 20,
         category: "리빙",
+        subCategory: "캔들디퓨저 인센스",
         name: "[모던홈] 아로마 캔들 3종 세트",
         price: 19000,
         originalPrice: 25000,
@@ -242,6 +262,7 @@ const productMockData = [
     {
         id: 21,
         category: "뷰티",
+        subCategory: "스킨케어",
         name: "[설화수] 윤조 에센스 60ml",
         price: 98000,
         originalPrice: 120000,
@@ -254,6 +275,7 @@ const productMockData = [
     {
         id: 22,
         category: "뷰티",
+        subCategory: "스킨케어",
         name: "[라네즈] 워터뱅크 크림",
         price: 32000,
         originalPrice: 39000,
@@ -266,6 +288,7 @@ const productMockData = [
     {
         id: 23,
         category: "뷰티",
+        subCategory: "남성화장품",
         name: "[키엘] 울트라 훼이셜 토너",
         price: 29000,
         originalPrice: 35000,
@@ -278,6 +301,7 @@ const productMockData = [
     {
         id: 24,
         category: "뷰티",
+        subCategory: "메이크업",
         name: "[헤라] 센슈얼 누드 밤",
         price: 37000,
         originalPrice: 45000,
@@ -290,6 +314,7 @@ const productMockData = [
     {
         id: 25,
         category: "뷰티",
+        subCategory: "메이크업",
         name: "[롬앤] 쥬시 래스팅 틴트",
         price: 9800,
         originalPrice: 13000,
@@ -302,6 +327,7 @@ const productMockData = [
     {
         id: 26,
         category: "뷰티",
+        subCategory: "스킨케어",
         name: "[아누아] 어성초 토너 77%",
         price: 21000,
         originalPrice: 27000,
@@ -311,21 +337,23 @@ const productMockData = [
             "https://images.unsplash.com/photo-1625772452859-1c03d5bf1137?auto=format&fit=crop&w=800&q=80",
         shipping: "무료배송",
     },
-    {
+    {        
         id: 27,
         category: "뷰티",
-        name: "[메디힐] 데일리 마스크팩 10매",
-        price: 15000,
-        originalPrice: 19000,
-        discountRate: 21,
+        subCategory: "향수",
+        name: "[조말론] 잉글리쉬 페어 앤 프리지아 코롱 30ml",
+        price: 89000,
+        originalPrice: 109000,
+        discountRate: 18,
         badge: "오늘출발",
         image:
-            "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80",
         shipping: "무료배송",
     },
     {
         id: 28,
         category: "뷰티",
+        subCategory: "메이크업",
         name: "[클리오] 킬커버 쿠션 파운데이션",
         price: 27000,
         originalPrice: 33000,
@@ -335,7 +363,83 @@ const productMockData = [
             "https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?auto=format&fit=crop&w=800&q=80",
         shipping: "무료배송",
     },
-
+    {
+    id: 29,
+    category: "뷰티",
+    subCategory: "향수",
+    name: "[딥티크] 오 드 뚜왈렛 도손 50ml",
+    price: 129000,
+    originalPrice: 149000,
+    discountRate: 13,
+    badge: "베스트",
+    image:
+        "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80",
+    shipping: "무료배송",
+},
+{
+    id: 30,
+    category: "뷰티",
+    subCategory: "향수",
+    name: "[바이레도] 블랑쉬 오 드 퍼퓸 50ml",
+    price: 198000,
+    originalPrice: 219000,
+    discountRate: 9,
+    badge: "",
+    image:
+        "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=800&q=80",
+    shipping: "무료배송",
+},
+{
+    id: 31,
+    category: "식품",
+    subCategory: "디저트",
+    name: "[투썸플레이스] 스트로베리 생크림 케이크",
+    price: 32000,
+    originalPrice: 37000,
+    discountRate: 13,
+    badge: "인기",
+    image: 
+        "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=800&q=80",
+    shipping: "무료배송",
+},
+{
+    id: 32,
+    category: "식품",
+    subCategory: "디저트",
+    name: "[노티드] 우유 크림 도넛 6개입",
+    price: 15000,
+    originalPrice: 18000,
+    discountRate: 16,
+    badge: "오늘출발",
+    image:
+        "https://images.unsplash.com/photo-1603532648955-039310d9ed75?auto=format&fit=crop&w=800&q=80",
+    shipping: "무료배송",
+},
+{
+    id: 33,
+    category: "식품",
+    subCategory: "디저트",
+    name: "[베스킨라빈스] 파인트 아이스크림",
+    price: 9800,
+    originalPrice: 12000,
+    discountRate: 18,
+    badge: "",
+    image:
+        "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80",
+    shipping: "무료배송",
+},
+{
+    id: 34,
+    category: "주류",
+    subCategory: "맥주·기타",
+    name: "[하이네켄] 라거 330ml 6입",
+    price: 12900,
+    originalPrice: 15900,
+    discountRate: 19,
+    badge: "오늘출발",
+    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80",
+    shipping: "무료배송",
+}
 ];
 
 export default productMockData;

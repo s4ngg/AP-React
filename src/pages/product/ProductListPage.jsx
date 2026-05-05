@@ -1,21 +1,52 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import styles from "./ProductListPage.module.css";
 import productMockData from "./productMockData";
 
 function ProductListPage() {
-    const categories = ["뷰티", "패션", "식품", "주류", "리빙"];
+    const categoryData = {
+        뷰티: ["메이크업", "스킨케어", "남성화장품", "향수"],
+        패션: ["여성의류", "남성의류", "잡화·ACC"],
+        식품: ["과일·견과", "축산·수산", "디저트"],
+        주류: ["와인", "양주", "맥주·기타"],
+        리빙: ["캔들디퓨저 인센스", "조명·무드등", "가구·DIY", "침구·패브릭"],
+    };
+
     const sortOptions = ["최신순", "가격낮은순", "가격높은순", "인기순"];
 
+    const location = useLocation();
+
     const [selectedCategory, setSelectedCategory] = useState("뷰티");
+    const [selectedSubCategory, setSelectedSubCategory] = useState("");
     const [selectedSort, setSelectedSort] = useState("최신순");
     const [currentPage, setCurrentPage] = useState(1);
 
     const itemsPerPage = 8;
 
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const queryCategory = params.get("category");
+        const querySubCategory = params.get("subCategory");
+
+        if (queryCategory && categoryData[queryCategory]) {
+            setSelectedCategory(queryCategory);
+            setSelectedSubCategory(
+                querySubCategory && categoryData[queryCategory].includes(querySubCategory)
+                    ? querySubCategory
+                    : ""
+            );
+        }
+    }, [location.search]);
+
     const filteredProducts = useMemo(() => {
-        const categoryFiltered = productMockData.filter(
-            (product) => product.category === selectedCategory
-        );
+        const categoryFiltered = productMockData.filter((product) => {
+            const isMainCategoryMatch = product.category === selectedCategory;
+            const isSubCategoryMatch = selectedSubCategory
+                ? product.subCategory === selectedSubCategory
+                : true;
+
+            return isMainCategoryMatch && isSubCategoryMatch;
+        });
 
         const sortedProducts = [...categoryFiltered];
 
@@ -28,11 +59,11 @@ function ProductListPage() {
         }
 
         return sortedProducts;
-    }, [selectedCategory, selectedSort]);
+    }, [selectedCategory, selectedSubCategory, selectedSort]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedCategory, selectedSort]);
+    }, [selectedCategory, selectedSubCategory, selectedSort]);
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
@@ -46,32 +77,67 @@ function ProductListPage() {
             <div className={styles.layout}>
                 <aside className={styles.sidebar}>
                     <h3 className={styles.sidebarTitle}>카테고리</h3>
+
                     <div className={styles.categoryList}>
-                        {categories.map((category) => (
-                            <button
-                                key={category}
-                                type="button"
-                                className={`${styles.categoryButton} ${selectedCategory === category ? styles.activeCategory : ""
+                        {Object.keys(categoryData).map((category) => (
+                            <div key={category} className={styles.categoryGroup}>
+                                <button
+                                    type="button"
+                                    className={`${styles.categoryButton} ${
+                                        selectedCategory === category ? styles.activeCategory : ""
                                     }`}
-                                onClick={() => setSelectedCategory(category)}
-                            >
-                                {category}
-                            </button>
+                                    onClick={() => {
+                                        setSelectedCategory(category);
+                                        setSelectedSubCategory("");
+                                    }}
+                                >
+                                    {category}
+                                </button>
+
+                                {selectedCategory === category && (
+                                    <div className={styles.subCategoryList}>
+                                        {categoryData[category].map((subCategory) => (
+                                            <button
+                                                key={subCategory}
+                                                type="button"
+                                                className={`${styles.subCategoryButton} ${
+                                                    selectedSubCategory === subCategory
+                                                        ? styles.activeSubCategory
+                                                        : ""
+                                                }`}
+                                                onClick={() => setSelectedSubCategory(subCategory)}
+                                            >
+                                                {subCategory}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 </aside>
 
                 <section className={styles.content}>
                     <div className={styles.topBar}>
-                        <h2 className={styles.title}>{selectedCategory} 추천 상품</h2>
+                        <div>
+                            <h2 className={styles.title}>
+                                {selectedSubCategory || selectedCategory} 추천 상품
+                            </h2>
+                            {selectedSubCategory && (
+                                <p className={styles.subTitle}>
+                                    {selectedCategory} &gt; {selectedSubCategory}
+                                </p>
+                            )}
+                        </div>
 
                         <div className={styles.sortButtons}>
                             {sortOptions.map((option) => (
                                 <button
                                     key={option}
                                     type="button"
-                                    className={`${styles.sortButton} ${selectedSort === option ? styles.activeSort : ""
-                                        }`}
+                                    className={`${styles.sortButton} ${
+                                        selectedSort === option ? styles.activeSort : ""
+                                    }`}
                                     onClick={() => setSelectedSort(option)}
                                 >
                                     {option}
@@ -91,9 +157,11 @@ function ProductListPage() {
                                     {product.badge && (
                                         <span className={styles.badge}>{product.badge}</span>
                                     )}
+
                                     <button type="button" className={styles.likeButton}>
                                         ♡
                                     </button>
+
                                     <img
                                         src={product.image}
                                         alt={product.name}
@@ -102,6 +170,10 @@ function ProductListPage() {
                                 </div>
 
                                 <div className={styles.cardContent}>
+                                    <p className={styles.productSubCategory}>
+                                        {product.subCategory}
+                                    </p>
+
                                     <p className={styles.productName}>{product.name}</p>
 
                                     <div className={styles.priceArea}>
@@ -145,8 +217,9 @@ function ProductListPage() {
                             <button
                                 key={index + 1}
                                 type="button"
-                                className={`${styles.pageButton} ${currentPage === index + 1 ? styles.activePage : ""
-                                    }`}
+                                className={`${styles.pageButton} ${
+                                    currentPage === index + 1 ? styles.activePage : ""
+                                }`}
                                 onClick={() => setCurrentPage(index + 1)}
                             >
                                 {index + 1}
@@ -157,7 +230,7 @@ function ProductListPage() {
                             type="button"
                             className={styles.pageButton}
                             onClick={() => setCurrentPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === totalPages || totalPages === 0}
                         >
                             &gt;
                         </button>

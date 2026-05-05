@@ -6,8 +6,9 @@ const noticeData = [
     { id: 1, title: "[공지] AllPick 서비스 점검 안내 (4/20)", date: "2026-04-15", isFixed: true },
     { id: 2, title: "[이벤트] 신규 가입 시 5,000원 할인 쿠폰 즉시 지급!", date: "2026-04-10", isFixed: true },
     { id: 3, title: "개인정보 처리방침 개정 안내", date: "2026-04-05", isFixed: false },
-    { id: 4, title: "배송 업체 변경 안내 (CJ대한통운 -> 한진택배)", date: "2026-03-28", isFixed: false },
+    { id: 4, title: "배송 업체 변경 안내 (CJ대한통운 → 한진택배)", date: "2026-03-28", isFixed: false },
     { id: 5, title: "고객센터 운영 시간 변경 안내", date: "2026-03-20", isFixed: false },
+    { id: 6, title: "포인트 적립 정책 변경 안내", date: "2026-03-10", isFixed: false },
 ];
 
 // onSelect 프롭스를 받도록 수정
@@ -41,10 +42,11 @@ export default function NoticeList({ onSelect }) {
                 ))}
             </ul>
 
-            <div className={styles.pagination}>
-                <button className={styles.pageBtnActive}>1</button>
-                <button className={styles.pageBtn}>2</button>
-                <button className={styles.pageBtn}>3</button>
+            <div className={styles.bottomArea}>
+                <span className={styles.totalCount}>총 {noticeData.length}건</span>
+                <div className={styles.pagination}>
+                    <button className={styles.pageBtnActive}>1</button>
+                </div>
             </div>
         </div>
     );
