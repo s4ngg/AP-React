@@ -70,13 +70,15 @@
 
 /* 상품 카드 */
 .card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
   background-color: #ffffff;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
   transition: box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
 }
 
 .card:hover {
@@ -134,9 +136,6 @@
 
 .cardBody {
   padding: 12px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
 }
 
 .productName {
@@ -192,15 +191,10 @@
   font-size: 11px;
   border-radius: 4px;
 }
-.shippingArea {
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-}
 
 .cartBtn {
   width: 100%;
-  margin-top: auto;
+  margin-top: 10px;
   padding: 8px;
   display: flex;
   align-items: center;
@@ -231,4 +225,29 @@
 
 .moreBtn:hover {
   background-color: #f9fafb;
+}
+
+.toast {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #111827;
+  color: #ffffff;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  z-index: 10;
+  animation: fadeInOut 2s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
 }
