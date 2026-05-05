@@ -4,7 +4,7 @@ import styles from "./CustomerPage.module.css";
 
 // 1. 우리가 만든 컴포넌트들 임포트
 import NoticeList from "../../components/customer/NoticeList.jsx";
-import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
+// import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
 import FAQList from "../../components/customer/FAQList.jsx";
 import InquiryForm from "../../components/customer/InquiryForm.jsx";
 import ReturnGuide from "../../components/customer/ReturnGuide.jsx";
