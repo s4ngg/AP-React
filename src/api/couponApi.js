@@ -1,6 +1,10 @@
 import api from "./index"
 
-// 회원 미사용 쿠폰 목록
+// 회원 보유 쿠폰 전체 목록 (PathVariable)
+export const getMemberCoupons = (memberId) =>
+  api.get(`/coupons/members/${memberId}`).then((res) => res.data.data)
+
+// 회원 미사용 쿠폰 목록 (PathVariable)
 export const getUnusedCoupons = (memberId) =>
   api.get(`/coupons/members/${memberId}/unused`).then((res) => res.data.data)
 

@@ -3,6 +3,7 @@ import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award,
 import styles from "./MyPage.module.css"
 import useAuthStore from "../../store/authStore"
 import { getMember } from "../../api/memberApi"
+import { getMemberCoupons } from "../../api/couponApi"
 import { getMembershipHistory } from "../../api/membershipApi"
 
 // 임시 사용자 데이터 (추후 API 연동)
@@ -73,55 +74,6 @@ const mockAddresses = [
   },
 ]
 
-// 임시 쿠폰 데이터 (추후 API 연동)
-const mockCoupons = [
-  {
-    memberCouponId: 1,
-    memberId: 1,
-    coupon: {
-      couponId: 1,
-      couponCode: "WELCOME2026",
-      discountType: "PERCENT",
-      discountValue: 10,
-      minOrderAmount: 10000,
-      maxDiscount: 5000,
-      expiredAt: "2026-12-31T23:59:59",
-    },
-    isUsed: false,
-    usedAt: null,
-  },
-  {
-    memberCouponId: 2,
-    memberId: 1,
-    coupon: {
-      couponId: 2,
-      couponCode: "SILVER2026",
-      discountType: "AMOUNT",
-      discountValue: 3000,
-      minOrderAmount: 30000,
-      maxDiscount: null,
-      expiredAt: "2026-05-31T23:59:59",
-    },
-    isUsed: false,
-    usedAt: null,
-  },
-  {
-    memberCouponId: 3,
-    memberId: 1,
-    coupon: {
-      couponId: 3,
-      couponCode: "BIRTHDAY2026",
-      discountType: "PERCENT",
-      discountValue: 15,
-      minOrderAmount: 20000,
-      maxDiscount: 10000,
-      expiredAt: "2026-04-30T23:59:59",
-    },
-    isUsed: true,
-    usedAt: "2026-04-10T14:30:00",
-  },
-]
-
 const STATUS_CLASS = {
   주문완료: "statusOrder",
   배송중: "statusShipping",
@@ -164,12 +116,19 @@ export default function MyPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false)
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
 
-  // 멤버십 API 상태
   const { user: authUser } = useAuthStore()
-  const user = authUser ?? { id: 1 }
+
+  // memberId 상태 (쿠폰/멤버십 API에 필요)
+  const [memberId, setMemberId] = useState(null)
+
+  // 멤버십
   const [memberGrade, setMemberGrade] = useState(mockUser.grade)
   const [membershipHistory, setMembershipHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
+
+  // 쿠폰
+  const [coupons, setCoupons] = useState([])
+  const [couponLoading, setCouponLoading] = useState(false)
 
   const [form, setForm] = useState({
     phone: mockUser.phone,
@@ -178,20 +137,37 @@ export default function MyPage() {
   })
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" })
 
+  // 마운트 시 memberId 1회 로드 (쿠폰/멤버십 API에 필요)
+  useEffect(() => {
+    getMember()
+      .then((data) => setMemberId(data.id))
+      .catch(() => {})
+  }, [])
+
+  // 쿠폰 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "coupon" || !memberId) return
+    setCouponLoading(true)
+    getMemberCoupons(memberId)
+      .then((data) => setCoupons(data ?? []))
+      .catch(() => setCoupons([]))
+      .finally(() => setCouponLoading(false))
+  }, [activeTab, memberId])
+
   // 멤버십 탭 진입 시 API 호출
   useEffect(() => {
-    if (activeTab !== "membership" || !user?.id) return
+    if (activeTab !== "membership" || !memberId) return
 
-    getMember(user.id)
-      .then((data) => setMemberGrade(data.grade))
+    getMember()
+      .then((data) => setMemberGrade(data.grade ?? "NORMAL"))
       .catch(() => {})
 
     setHistoryLoading(true)
-    getMembershipHistory(user.id)
+    getMembershipHistory(memberId)
       .then((data) => setMembershipHistory(data ?? []))
       .catch(() => setMembershipHistory([]))
       .finally(() => setHistoryLoading(false))
-  }, [activeTab, user.id])
+  }, [activeTab, memberId])
 
   const handleFormChange = (e) => {
     const { name, value } = e.target
@@ -210,7 +186,7 @@ export default function MyPage() {
   }
   const handleWithdraw = () => setShowWithdrawConfirm(false)
 
-  const filteredCoupons = mockCoupons.filter((c) =>
+  const filteredCoupons = coupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
   )
 
@@ -237,10 +213,7 @@ export default function MyPage() {
             <p className={styles.userEmail}>{mockUser.email}</p>
             <div
               className={styles.gradeBadge}
-              style={{
-                backgroundColor: currentGradeConfig.bg,
-                color: currentGradeConfig.color,
-              }}
+              style={{ backgroundColor: currentGradeConfig.bg, color: currentGradeConfig.color }}
             >
               <Award size={12} />
               {currentGradeConfig.label}
@@ -429,7 +402,7 @@ export default function MyPage() {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>쿠폰함</h2>
                 <span className={styles.couponCount}>
-                  사용 가능 <strong>{mockCoupons.filter((c) => !c.isUsed).length}</strong>장
+                  사용 가능 <strong>{coupons.filter((c) => !c.isUsed).length}</strong>장
                 </span>
               </div>
               <div className={styles.couponFilterWrap}>
@@ -446,7 +419,9 @@ export default function MyPage() {
                   사용 완료
                 </button>
               </div>
-              {filteredCoupons.length === 0 ? (
+              {couponLoading ? (
+                <div className={styles.empty}><p>로딩 중...</p></div>
+              ) : filteredCoupons.length === 0 ? (
                 <div className={styles.empty}>
                   <Ticket size={40} color="#d1d5db" />
                   <p>{couponFilter === "available" ? "사용 가능한 쿠폰이 없습니다." : "사용한 쿠폰이 없습니다."}</p>
@@ -475,9 +450,7 @@ export default function MyPage() {
                           <span className={styles.couponAvailableBadge}>사용가능</span>
                         )}
                         <p className={styles.couponExpire}>
-                          {mc.isUsed
-                            ? `사용일: ${formatDate(mc.usedAt)}`
-                            : `만료일: ${formatDate(mc.coupon.expiredAt)}`}
+                          {mc.isUsed ? `사용일: ${formatDate(mc.usedAt)}` : `만료일: ${formatDate(mc.coupon.expiredAt)}`}
                         </p>
                       </div>
                     </div>
@@ -493,10 +466,7 @@ export default function MyPage() {
               <h2 className={styles.sectionTitle}>멤버십</h2>
               <div
                 className={styles.gradeCard}
-                style={{
-                  backgroundColor: currentGradeConfig.bg,
-                  borderColor: currentGradeConfig.color,
-                }}
+                style={{ backgroundColor: currentGradeConfig.bg, borderColor: currentGradeConfig.color }}
               >
                 <div className={styles.gradeCardLeft}>
                   <Award size={32} color={currentGradeConfig.color} />
