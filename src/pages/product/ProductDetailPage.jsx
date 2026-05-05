@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingCart, Truck, Star, MessageCircle, FileText, Info, Pencil, X, Check } from "lucide-react"
 import useCartStore from "../../store/cartStore"
@@ -323,7 +323,7 @@ export default function ProductDetailPage() {
                             <span className={styles.reviewAuthor}>{review.writerName}</span>
                             <span className={styles.reviewDate}>{review.reviewDate}</span>
                             {/* 본인 리뷰에만 수정 버튼 표시 */}
-                            {user?.name === review.writerName && (
+                            {String(user?.id) === String(review.memberId) && (
                               <button
                                 onClick={() => {
                                   setEditingReviewId(review.reviewId)
