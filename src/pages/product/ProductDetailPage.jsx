@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingCart, Truck, Star, MessageCircle, FileText, Info } from "lucide-react"
+import { ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingCart, Truck, Star, MessageCircle, FileText, Info, Pencil, X, Check } from "lucide-react"
 import useCartStore from "../../store/cartStore"
+import useAuthStore from "../../store/authStore"
 import { getProductDetail } from "../../api/productApi"
-import { getProductReviews } from "../../api/reviewApi"
+import { getProductReviews, updateReview } from "../../api/reviewApi"
 import { addCartItem } from "../../api/cartApi"
 import styles from "./ProductDetailPage.module.css"
 
@@ -40,6 +41,7 @@ export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const addItem = useCartStore((state) => state.addItem)
+  const { user } = useAuthStore()
 
   const [product, setProduct] = useState(null)
   const [reviews, setReviews] = useState([])
@@ -47,6 +49,13 @@ export default function ProductDetailPage() {
   const [reviewTotalPages, setReviewTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // 리뷰 수정 상태
+  const [editingReviewId, setEditingReviewId] = useState(null)
+  const [editRating, setEditRating] = useState(0)
+  const [editContent, setEditContent] = useState("")
+  const [editHoverRating, setEditHoverRating] = useState(0)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const [currentImg, setCurrentImg] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -242,16 +251,97 @@ export default function ProductDetailPage() {
                 <ul className={styles.reviewList}>
                   {reviews.map((review) => (
                     <li key={review.reviewId} className={styles.reviewItem}>
-                      <div className={styles.reviewHeader}>
-                        <StarRating rating={review.rating} size={14} />
-                        {/* Spring ReviewResponseDto 필드: writerName, selectedOption, reviewDate */}
-                        <span className={styles.reviewAuthor}>{review.writerName}</span>
-                        <span className={styles.reviewDate}>{review.reviewDate}</span>
-                      </div>
-                      {review.selectedOption && (
-                        <p className={styles.reviewOption}>옵션: {review.selectedOption}</p>
+                      {editingReviewId === review.reviewId ? (
+                        // 수정 모드
+                        <div>
+                          <div className={styles.reviewHeader}>
+                            {/* 별점 수정 */}
+                            <div style={{ display: "flex", gap: 4 }}>
+                              {[1,2,3,4,5].map((s) => (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onMouseEnter={() => setEditHoverRating(s)}
+                                  onMouseLeave={() => setEditHoverRating(0)}
+                                  onClick={() => setEditRating(s)}
+                                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                                >
+                                  <Star
+                                    size={18}
+                                    fill={(editHoverRating || editRating) >= s ? "#f59e0b" : "none"}
+                                    color={(editHoverRating || editRating) >= s ? "#f59e0b" : "#d1d5db"}
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                            <span className={styles.reviewAuthor}>{review.writerName}</span>
+                          </div>
+                          <textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            rows={3}
+                            style={{ width: "100%", marginTop: 8, padding: "8px", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 14, resize: "none" }}
+                          />
+                          <div style={{ display: "flex", gap: 8, marginTop: 8, justifyContent: "flex-end" }}>
+                            <button
+                              onClick={() => setEditingReviewId(null)}
+                              style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 6, border: "1px solid #e5e7eb", background: "white", cursor: "pointer", fontSize: 13 }}
+                            >
+                              <X size={14} /> 취소
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (editContent.trim().length < 10) { alert("10자 이상 입력해주세요."); return }
+                                setIsUpdating(true)
+                                try {
+                                  // PATCH /api/reviews/{reviewId} { rating, content }
+                                  const res = await updateReview(review.reviewId, { rating: editRating, content: editContent.trim() })
+                                  setReviews((prev) => prev.map((r) =>
+                                    r.reviewId === review.reviewId
+                                      ? { ...r, rating: res.data.rating, content: res.data.content }
+                                      : r
+                                  ))
+                                  setEditingReviewId(null)
+                                } catch {
+                                  alert("수정에 실패했습니다.")
+                                } finally {
+                                  setIsUpdating(false)
+                                }
+                              }}
+                              disabled={isUpdating}
+                              style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 6, border: "none", background: "#2563eb", color: "white", cursor: "pointer", fontSize: 13 }}
+                            >
+                              <Check size={14} /> {isUpdating ? "저장 중..." : "저장"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // 조회 모드
+                        <>
+                          <div className={styles.reviewHeader}>
+                            <StarRating rating={review.rating} size={14} />
+                            <span className={styles.reviewAuthor}>{review.writerName}</span>
+                            <span className={styles.reviewDate}>{review.reviewDate}</span>
+                            {/* 본인 리뷰에만 수정 버튼 표시 */}
+                            {user?.name === review.writerName && (
+                              <button
+                                onClick={() => {
+                                  setEditingReviewId(review.reviewId)
+                                  setEditRating(review.rating)
+                                  setEditContent(review.content)
+                                }}
+                                style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#6b7280", display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}
+                              >
+                                <Pencil size={14} /> 수정
+                              </button>
+                            )}
+                          </div>
+                          {review.selectedOption && (
+                            <p className={styles.reviewOption}>옵션: {review.selectedOption}</p>
+                          )}
+                          <p className={styles.reviewContent}>{review.content}</p>
+                        </>
                       )}
-                      <p className={styles.reviewContent}>{review.content}</p>
                     </li>
                   ))}
                 </ul>
