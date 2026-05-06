@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Headset, Megaphone, HelpCircle, MessageSquare, RotateCcw, ChevronRight, Search } from "lucide-react";
 import styles from "./CustomerPage.module.css";
 import NoticeList from "../../components/customer/NoticeList.jsx";
-import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
+// import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
 import FAQList from "../../components/customer/FAQList.jsx";
 import InquiryForm from "../../components/customer/InquiryForm.jsx";
 import ReturnGuide from "../../components/customer/ReturnGuide.jsx";
