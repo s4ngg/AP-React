@@ -106,7 +106,7 @@ export default function SignupPage({ isSeller = false }) {
     } finally {
       setCheckingEmail(false);
     }
-  };
+  }; 
 
   const handleAddressSearch = () => {
     const script = document.createElement("script");
