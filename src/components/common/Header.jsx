@@ -35,7 +35,7 @@ export default function Header() {
   }
 
   // 유저 이름 첫 글자 (아바타용)
-  const userInitial = user?.name?.charAt(0) || "U"
+  const userInitial = user?.name?.charAt(0) || "MY"
 
   return (
     <header className={styles.header}>
