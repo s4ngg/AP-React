@@ -8,7 +8,7 @@ import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
 import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
 // import { sendSmsCode, verifySmsCode } from "../../api/authApi"; // import 추가
-
+ 
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
   const { setFormData, setCurrentStep } = useSignupStore();
@@ -106,7 +106,7 @@ export default function SignupPage({ isSeller = false }) {
     } finally {
       setCheckingEmail(false);
     }
-  };
+  }; 
 
   const handleAddressSearch = () => {
   if (!window.daum || !window.daum.Postcode) {
