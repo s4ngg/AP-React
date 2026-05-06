@@ -5,10 +5,12 @@ import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { AuthLayout } from "../../components/common/AuthLayout";
 import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { login } from "../../api/authApi";
+import useAuthStore from "../../store/authStore";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { setUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,7 +26,11 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setError("");
     try {
-      await login({ email: data.email, password: data.password, autoLogin });
+      const res = await login({ email: data.email, password: data.password, autoLogin });
+
+      // ✅ 전역 상태에 유저 정보 저장
+      setUser(res.member, res.token);
+
       navigate("/");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다");
@@ -38,7 +44,6 @@ export default function LoginPage() {
       <div className={styles.wrapper}>
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
 
-          {/* 에러 메시지 */}
           {error && (
             <div className={styles.errorBox}>
               <AlertCircle size={20} />
@@ -46,7 +51,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* 이메일 */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>이메일</label>
             <input
@@ -64,7 +68,6 @@ export default function LoginPage() {
             {errors.email && <p className={styles.fieldError}>{errors.email.message}</p>}
           </div>
 
-          {/* 비밀번호 */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>비밀번호</label>
             <div className={styles.inputWrapper}>
@@ -85,7 +88,6 @@ export default function LoginPage() {
             {errors.password && <p className={styles.fieldError}>{errors.password.message}</p>}
           </div>
 
-          {/* 자동 로그인 */}
           <div className={styles.checkboxRow}>
             <label className={styles.checkboxLabel}>
               <input
@@ -98,7 +100,6 @@ export default function LoginPage() {
             </label>
           </div>
 
-          {/* 로그인 버튼 */}
           <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
@@ -110,7 +111,6 @@ export default function LoginPage() {
             )}
           </button>
 
-          {/* 링크 */}
           <div className={styles.links}>
             <Link to="/find-email" className={styles.link}>아이디 찾기</Link>
             <span className={styles.divider}>|</span>
@@ -119,7 +119,6 @@ export default function LoginPage() {
             <Link to="/signup" className={styles.link}>회원가입</Link>
           </div>
 
-          {/* 소셜 로그인 */}
           <SocialLoginButtons className={styles.socialButtons} />
 
         </form>

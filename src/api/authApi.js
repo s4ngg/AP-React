@@ -60,3 +60,37 @@ export const resetPassword = async (data) => {
   const response = await api.post("/auth/reset-password", data);
   return response.data;
 };
+
+export const sendSmsCode = async (phone) => {
+  const response = await api.post("/sms/send", { phone });
+  return response.data;
+};
+
+export const verifySmsCode = async (phone, code) => {
+  const response = await api.post("/sms/verify", { phone, code });
+  return response.data;
+};
+export const getTerms = async () => {
+  const response = await api.get("/terms");
+  return response.data;
+};
+// ==================== 사업자등록번호 검증 ====================
+
+export const validateBusinessNumber = async (businessNumber) => {
+  const cleaned = businessNumber.replaceAll("-", "");
+
+  const response = await fetch(
+    `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${import.meta.env.VITE_BUSINESS_API_KEY}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ b_no: [cleaned] })
+    }
+  );
+
+  const data = await response.json();
+  return data.data[0]?.b_stt_cd === "01";
+};

@@ -6,6 +6,7 @@ import useCartStore from "../../store/cartStore"
 import useAuthStore from "../../store/authStore"
 import { getDeliveryAddresses, createOrder, addDeliveryAddress } from "../../api/orderApi"
 import { getUnusedCoupons } from "../../api/couponApi"
+import { getMember } from "../../api/memberApi"
 import AddressSearch from "../../components/common/AddressSearch"
 
 const payMethods = [
@@ -28,7 +29,6 @@ export default function OrderPage() {
   const navigate = useNavigate()
   const { items = [], clearCart } = useCartStore()
   const { user: authUser } = useAuthStore()
-  const user = authUser ?? { id: 1, name: "테스트", email: "test@test.com" }
 
   const [selectedPay, setSelectedPay] = useState("CARD")
   const [isComplete, setIsComplete] = useState(false)
@@ -46,9 +46,8 @@ export default function OrderPage() {
   const [showCouponList, setShowCouponList] = useState(false)
 
   useEffect(() => {
-    if (!user?.id) return
-
-    getDeliveryAddresses(user.id)
+    // 배송지는 JWT로 조회
+    getDeliveryAddresses()
       .then((data) => {
         setAddresses(data ?? [])
         const defaultAddr = (data ?? []).find((a) => a.isDefault) || (data ?? [])[0]
@@ -56,10 +55,15 @@ export default function OrderPage() {
       })
       .catch(() => {})
 
-    getUnusedCoupons(user.id)
-      .then((data) => setCoupons(data ?? []))
+    // 쿠폰은 memberId PathVariable 필요 → getMember로 id 먼저 조회
+    getMember()
+      .then((data) => {
+        getUnusedCoupons(data.id)
+          .then((couponData) => setCoupons(couponData ?? []))
+          .catch(() => {})
+      })
       .catch(() => {})
-  }, [user.id])
+  }, [])
 
   const orderItems = items.filter((item) => item.isSelected)
 
@@ -82,12 +86,10 @@ export default function OrderPage() {
 
   const totalPrice = totalProductPrice + shippingFee - discountAmount
 
-  // 카카오 주소 검색 완료 콜백
   const handleAddressComplete = ({ zonecode, address }) => {
     setAddressForm((prev) => ({ ...prev, zipCode: zonecode, address }))
   }
 
-  // 배송지 추가 제출
   const handleAddAddress = async () => {
     if (!addressForm.recipientName || !addressForm.phone || !addressForm.address) {
       alert("필수 항목을 입력해주세요.")
@@ -95,8 +97,8 @@ export default function OrderPage() {
     }
     setIsAddingAddress(true)
     try {
-      await addDeliveryAddress(user.id, addressForm)
-      const data = await getDeliveryAddresses(user.id)
+      await addDeliveryAddress(addressForm)
+      const data = await getDeliveryAddresses()
       setAddresses(data ?? [])
       const newAddr = (data ?? []).find((a) => a.address === addressForm.address)
       if (newAddr) setSelectedAddressId(newAddr.addressId)
@@ -119,14 +121,15 @@ export default function OrderPage() {
         memberCouponId: selectedCouponId ?? null,
         paymentMethod: selectedPay,
         orderItems: orderItems.map((item) => ({
-          productId: item.product.id,
-          productName: item.product.name,
-          productPrice: item.product.price,
-          quantity: item.quantity,
-        })),
+        productId: item.product.id,
+        productName: item.product.name,
+        productPrice: item.product.price,
+        quantity: item.quantity,
+        optionId: Number(Object.keys(item.selectedOptions ?? {})[0]) || 1,
+})),
       }
 
-      const result = await createOrder(user.id, requestBody)
+      const result = await createOrder(requestBody)
       clearCart()
       setCompletedOrderNumber(result.orderNumber)
       setIsComplete(true)
@@ -191,7 +194,6 @@ export default function OrderPage() {
               </button>
             </div>
 
-            {/* 새 배송지 추가 폼 */}
             {showAddressForm && (
               <div className={styles.addressForm}>
                 <div className={styles.addressFormRow}>
@@ -203,7 +205,7 @@ export default function OrderPage() {
                   />
                   <input
                     className={styles.input}
-                    placeholder="연락처 * (010-0000-0000)"
+                    placeholder="연락처 * (01012345678)"
                     value={addressForm.phone}
                     onChange={(e) => setAddressForm((p) => ({ ...p, phone: e.target.value }))}
                   />
@@ -249,7 +251,6 @@ export default function OrderPage() {
               </div>
             )}
 
-            {/* 배송지 목록 */}
             {selectedAddress && !showAddressForm && (
               <div className={styles.addressInfo}>
                 <div className={styles.addressRow}>
@@ -383,7 +384,7 @@ export default function OrderPage() {
 
         </div>
 
-        {/* 오른쪽 */}
+        {/* 결제 금액 */}
         <div className={styles.rightArea}>
           <div className={styles.summarySection}>
             <h2 className={styles.summaryTitle}>결제 금액</h2>
