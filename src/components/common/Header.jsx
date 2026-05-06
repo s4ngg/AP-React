@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones } from "lucide-react"
+import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones, Store } from "lucide-react"
 import useAuthStore from "../../store/authStore"
 import styles from "./Header.module.css"
 
@@ -58,11 +58,15 @@ export default function Header() {
           {/* 오른쪽 아이콘 */}
           <div className={styles.rightIcons}>
             {isLoggedIn ? (
-              // ── 로그인 상태 ──
               <>
                 <Link to="/mypage" className={styles.userBtn}>
                   <div className={styles.userAvatar}>{userInitial}</div>
                   <span>{user?.name || "마이페이지"}</span>
+                </Link>
+                {/* ↓ 이 줄 추가 */}
+                <Link to="/seller" className={styles.iconBtn}>
+                  <Store size={20} />
+                  <span>셀러</span>
                 </Link>
                 <button className={styles.logoutBtn} onClick={handleLogout}>
                   <LogOut size={20} />
@@ -136,9 +140,8 @@ export default function Header() {
                     <button
                       key={categoryName}
                       type="button"
-                      className={`${styles.mainCategoryItem} ${
-                        hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""
-                      }`}
+                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""
+                        }`}
                       onMouseEnter={() => setHoveredCategory(categoryName)}
                       onClick={() => {
                         setCategoryOpen(false)
@@ -179,43 +182,43 @@ export default function Header() {
             </Link>
           ))}
         </div>
-        </nav>
+      </nav>
       {/* 모바일 메뉴 */}
       {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
           <p className={styles.mobileMenuLabel}>카테고리</p>
           {Object.keys(categoryData).map((categoryName) => (
-  <div key={categoryName} className={styles.mobileCategoryGroup}>
-    <button
-      type="button"
-      className={styles.mobileMenuItemButton}
-      onClick={() => {
-        setMobileMenuOpen(false)
-        navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-      }}
-    >
-      {categoryName}
-    </button>
+            <div key={categoryName} className={styles.mobileCategoryGroup}>
+              <button
+                type="button"
+                className={styles.mobileMenuItemButton}
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  navigate(`/products?category=${encodeURIComponent(categoryName)}`)
+                }}
+              >
+                {categoryName}
+              </button>
 
-    <div className={styles.mobileSubCategoryList}>
-      {categoryData[categoryName].map((subCategory) => (
-        <button
-          key={subCategory}
-          type="button"
-          className={styles.mobileSubCategoryItem}
-          onClick={() => {
-            setMobileMenuOpen(false)
-            navigate(
-              `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
-            )
-          }}
-        >
-          {subCategory}
-        </button>
-      ))}
-    </div>
-  </div>
-))}
+              <div className={styles.mobileSubCategoryList}>
+                {categoryData[categoryName].map((subCategory) => (
+                  <button
+                    key={subCategory}
+                    type="button"
+                    className={styles.mobileSubCategoryItem}
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      navigate(
+                        `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
+                      )
+                    }}
+                  >
+                    {subCategory}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
 
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
             <p className={styles.mobileMenuLabel}>메뉴</p>

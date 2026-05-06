@@ -296,3 +296,17 @@
   font-weight: 500;
   flex: 1;
 }
+.rejectTextarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.rejectTextarea:focus {
+  border-color: #2563eb;
+}

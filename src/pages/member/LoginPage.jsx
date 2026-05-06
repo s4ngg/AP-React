@@ -26,10 +26,12 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setError("");
     try {
-      const res = await login({ email: data.email, password: data.password, autoLogin });
+      // 백엔드 응답: { message: "로그인 성공", data: { token, email, name } }
+      const res = await login({ email: data.email, password: data.password });
+      const { token, email, name } = res.data;
 
-      // ✅ 전역 상태에 유저 정보 저장
-      setUser(res.member, res.token);
+      // zustand authStore에 유저 정보 + 토큰 저장
+      setUser({ email, name }, token);
 
       navigate("/");
     } catch {

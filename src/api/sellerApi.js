@@ -1,8 +1,57 @@
 import api from "./index";
 
 /**
- * 판매자 신청 (구매자 → 판매자 전환 요청)
+ * 판매자 신청 (일반회원 → 판매자 전환 요청)
  * POST /api/sellers/apply
+ * Body: { businessName, businessNumber(10자리 숫자), representativeName, bankName, bankAccount }
  */
 export const applyForSeller = (data) =>
-  api.post("/api/sellers/apply", data);
+  api.post("/sellers/apply", data);
+
+/**
+ * 판매자 신청 상태 조회
+ * GET /api/sellers/apply/status
+ */
+export const getSellerApplyStatus = () =>
+  api.get("/sellers/apply/status").then((res) => res.data.data);
+
+/**
+ * 판매자 로그인
+ * POST /api/seller/auth/login
+ * Body: { email, password }
+ */
+export const sellerLogin = (data) =>
+  api.post("/seller/auth/login", data).then((res) => res.data);
+
+/**
+ * 판매자 정보 수정
+ * PATCH /api/seller/auth/{sellerId}
+ */
+export const updateSeller = (sellerId, data) =>
+  api.patch(`/seller/auth/${sellerId}`, data).then((res) => res.data);
+
+/**
+ * 판매자 탈퇴
+ * DELETE /api/seller/auth/{sellerId}
+ */
+export const deleteSeller = (sellerId) =>
+  api.delete(`/seller/auth/${sellerId}`).then((res) => res.data);
+export const getSellerClaims = () =>
+  api.get("/claims/seller").then((res) => res.data.data)
+
+export const approveClaim = (claimId) =>
+  api.patch(`/claims/${claimId}/approve`).then((res) => res.data)
+
+export const rejectClaim = (claimId, rejectReason) =>
+  api.patch(`/claims/${claimId}/seller-reject`, { rejectReason }).then((res) => res.data)
+
+// 문의 목록 조회 (판매자용 API 확인 필요)
+export const getSellerInquiries = () =>
+  api.get("/inquiries/my").then((res) => res.data.data)
+
+/**
+ * 판매자 본인 상품 목록 조회
+ * GET /api/products/seller
+ */
+export const getSellerProducts = () =>
+  api.get("/products/seller").then((res) => res.data.data)
