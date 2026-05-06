@@ -109,7 +109,6 @@ export default function SignupPage({ isSeller = false }) {
   };
 
   const handleAddressSearch = () => {
-<<<<<<< Updated upstream
   if (!window.daum || !window.daum.Postcode) {
     alert("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
     return;
@@ -139,7 +138,6 @@ export default function SignupPage({ isSeller = false }) {
     } finally {
       setCheckingBusiness(false);
     }
-=======
     const script = document.createElement("script");
     script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
     script.onload = () => {
@@ -151,7 +149,6 @@ export default function SignupPage({ isSeller = false }) {
       }).open();
     };
     document.head.appendChild(script);
->>>>>>> Stashed changes
   };
 
   const onSubmit = async (data) => {
@@ -197,10 +194,8 @@ export default function SignupPage({ isSeller = false }) {
   return (
     <AuthLayout showSteps currentStep={1} title="회원가입" description="AllPick 회원이 되어 다양한 혜택을 누리세요">
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
+
         <div className={isSeller ? styles.twoColumn : styles.singleColumn}>
           <div className={styles.column}>
             <p className={styles.columnTitle}>기본 정보</p>
@@ -372,11 +367,6 @@ export default function SignupPage({ isSeller = false }) {
               <label className={styles.label}>주소</label>
               <input
                 type="text"
-<<<<<<< Updated upstream
-                placeholder="주소 검색 버튼을 눌러주세요"
-=======
-                placeholder="주소 검색을 이용해주세요"
->>>>>>> Stashed changes
                 readOnly
                 className={`${styles.input} ${errors.address ? styles.inputError : ""}`}
                 {...register("address", { required: "주소를 입력해주세요" })}
@@ -384,11 +374,6 @@ export default function SignupPage({ isSeller = false }) {
               {errors.address && <p className={styles.fieldError}>{errors.address.message}</p>}
             </div>
           </div>
-
-<<<<<<< Updated upstream
-          {/* 판매자일 때만 */}
-=======
->>>>>>> Stashed changes
           {isSeller && (
             <>
               <div className={styles.columnDivider} />

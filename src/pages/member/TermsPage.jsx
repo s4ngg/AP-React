@@ -45,21 +45,12 @@ export default function TermsPage() {
     setIsSubmitting(true);
     setError("");
     try {
-<<<<<<< Updated upstream
-      const { email, password, name, phone, address } = formData;
-      await signup({ email, password, name, phone, address });
-      setCurrentStep(5);
-      navigate("/signup/complete");
-    } catch {
-      setError("회원가입에 실패했습니다. 다시 시도해주세요.");
-=======
       await signup({ ...formData });
       setCurrentStep(5);
       navigate("/signup/complete");  // ← 성공할 때만 이동
     } catch (err) {
       // 실패하면 에러 메시지 표시
       setError(err.response?.data?.message || "회원가입에 실패했습니다. 다시 시도해주세요.");
->>>>>>> Stashed changes
     } finally {
       setIsSubmitting(false);
     }
