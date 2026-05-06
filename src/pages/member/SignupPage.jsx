@@ -109,6 +109,35 @@ export default function SignupPage({ isSeller = false }) {
   }; 
 
   const handleAddressSearch = () => {
+  if (!window.daum || !window.daum.Postcode) {
+    alert("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+    return;
+  }
+  new window.daum.Postcode({
+    oncomplete: (data) => {
+      setValue("zipCode", data.zonecode);
+      setValue("address", data.address);
+    },
+  }).open();
+};
+
+  const handleValidateBusiness = async () => {
+    const businessNumber = watch("business_number");
+    if (!businessNumber) return;
+    setCheckingBusiness(true);
+    try {
+      const isValid = await validateBusinessNumber(businessNumber);
+      setBusinessChecked(true);
+      setBusinessValid(isValid);
+      if (!isValid) {
+        setError("business_number", { message: "유효하지 않은 사업자등록번호입니다." });
+      }
+    } catch {
+      setBusinessChecked(true);
+      setBusinessValid(false);
+    } finally {
+      setCheckingBusiness(false);
+    }
     const script = document.createElement("script");
     script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
     script.onload = () => {
@@ -165,6 +194,8 @@ export default function SignupPage({ isSeller = false }) {
   return (
     <AuthLayout showSteps currentStep={1} title="회원가입" description="AllPick 회원이 되어 다양한 혜택을 누리세요">
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+
+
         <div className={isSeller ? styles.twoColumn : styles.singleColumn}>
           <div className={styles.column}>
             <p className={styles.columnTitle}>기본 정보</p>
@@ -336,7 +367,6 @@ export default function SignupPage({ isSeller = false }) {
               <label className={styles.label}>주소</label>
               <input
                 type="text"
-                placeholder="주소 검색을 이용해주세요"
                 readOnly
                 className={`${styles.input} ${errors.address ? styles.inputError : ""}`}
                 {...register("address", { required: "주소를 입력해주세요" })}
@@ -344,7 +374,6 @@ export default function SignupPage({ isSeller = false }) {
               {errors.address && <p className={styles.fieldError}>{errors.address.message}</p>}
             </div>
           </div>
-
           {isSeller && (
             <>
               <div className={styles.columnDivider} />
