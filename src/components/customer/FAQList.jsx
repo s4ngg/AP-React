@@ -1,66 +1,86 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { getFaqs, getFaqsByCategory } from "../../api/faqApi.js";
 import styles from "./FAQList.module.css";
 
-const faqData = [
-    { id: 1, category: "배송", question: "배송은 얼마나 걸리나요?", answer: "주문 결제 완료 후 영업일 기준 2~3일 이내에 배송됩니다. 도서산간 지역은 1~2일 더 소요될 수 있습니다." },
-    { id: 2, category: "결제", question: "결제 수단 변경이 가능한가요?", answer: "이미 결제가 완료된 주문의 경우 결제 수단 변경이 불가능합니다. 취소 후 재결제를 진행해 주세요." },
-    { id: 3, category: "취소/환불", question: "환불은 언제쯤 처리되나요?", answer: "상품 회수 및 검수가 완료된 후 영업일 기준 3~5일 이내에 결제하셨던 수단으로 환불됩니다." },
-    { id: 4, category: "회원", question: "비밀번호를 잊어버렸어요.", answer: "로그인 페이지 하단의 '비밀번호 찾기' 기능을 통해 이메일 인증 후 임시 비밀번호를 발급받으실 수 있습니다." },
+const CATEGORY_MAP = {
+    DELIVERY: "배송",
+    PAYMENT: "결제",
+    CANCEL_REFUND: "취소/환불",
+    MEMBER: "회원",
+};
+
+const CATEGORIES = [
+    { label: "전체", value: null },
+    { label: "배송", value: "DELIVERY" },
+    { label: "결제", value: "PAYMENT" },
+    { label: "취소/환불", value: "CANCEL_REFUND" },
+    { label: "회원", value: "MEMBER" },
 ];
 
-const categories = ["전체", "배송", "결제", "취소/환불", "회원"];
-
 export default function FAQList() {
-    const [activeTab, setActiveTab] = useState("전체");
-    const [openId, setOpenId] = useState(null); // 어떤 질문이 열려있는지 상태 관리
+    const [activeCategory, setActiveCategory] = useState(null);
+    const [openId, setOpenId] = useState(null);
+    const [faqs, setFaqs] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const toggleAccordion = (id) => {
-        setOpenId(openId === id ? null : id); // 이미 열린 걸 누르면 닫고, 아니면 열기
-    };
-
-    const filteredFaq = activeTab === "전체"
-        ? faqData
-        : faqData.filter(item => item.category === activeTab);
+    useEffect(() => {
+        setLoading(true);
+        const request = activeCategory
+            ? getFaqsByCategory(activeCategory)
+            : getFaqs();
+        request
+            .then(res => setFaqs((res.data?.data || []).filter(f => f.isVisible !== false)))
+            .catch(() => setFaqs([]))
+            .finally(() => setLoading(false));
+        setOpenId(null);
+    }, [activeCategory]);
 
     return (
         <div className={styles.faqContainer}>
-            {/* 카테고리 필터 */}
             <div className={styles.categoryBar}>
-                {categories.map(cat => (
+                {CATEGORIES.map(cat => (
                     <button
-                        key={cat}
-                        className={activeTab === cat ? styles.catBtnActive : styles.catBtn}
-                        onClick={() => setActiveTab(cat)}
+                        key={cat.label}
+                        className={activeCategory === cat.value ? styles.catBtnActive : styles.catBtn}
+                        onClick={() => setActiveCategory(cat.value)}
                     >
-                        {cat}
+                        {cat.label}
                     </button>
                 ))}
             </div>
 
-            {/* FAQ 리스트 (아코디언) */}
-            <div className={styles.accordionList}>
-                {filteredFaq.map((item) => (
-                    <div key={item.id} className={styles.faqItem}>
-                        <div
-                            className={`${styles.questionBox} ${openId === item.id ? styles.open : ""}`}
-                            onClick={() => toggleAccordion(item.id)}
-                        >
-                            <span className={styles.categoryTag}>[{item.category}]</span>
-                            <span className={styles.questionText}>{item.question}</span>
-                            {openId === item.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                        </div>
+            {loading && (
+                <p style={{ padding: "40px 0", textAlign: "center", color: "#6b7280" }}>불러오는 중...</p>
+            )}
 
-                        {openId === item.id && (
-                            <div className={styles.answerBox}>
-                                <div className={styles.answerContent}>
-                                    <p>{item.answer}</p>
-                                </div>
+            {!loading && faqs.length === 0 && (
+                <p style={{ padding: "40px 0", textAlign: "center", color: "#6b7280" }}>등록된 FAQ가 없습니다.</p>
+            )}
+
+            {!loading && (
+                <div className={styles.accordionList}>
+                    {faqs.map((item) => (
+                        <div key={item.faqId} className={styles.faqItem}>
+                            <div
+                                className={`${styles.questionBox} ${openId === item.faqId ? styles.open : ""}`}
+                                onClick={() => setOpenId(openId === item.faqId ? null : item.faqId)}
+                            >
+                                <span className={styles.categoryTag}>[{CATEGORY_MAP[item.category] ?? item.category}]</span>
+                                <span className={styles.questionText}>{item.title}</span>
+                                {openId === item.faqId ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                             </div>
-                        )}
-                    </div>
-                ))}
-            </div>
+                            {openId === item.faqId && (
+                                <div className={styles.answerBox}>
+                                    <div className={styles.answerContent}>
+                                        <p>{item.content}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

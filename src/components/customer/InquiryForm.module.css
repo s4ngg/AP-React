@@ -602,3 +602,56 @@
     .completeActions { flex-direction: column; width: 100%; max-width: 500px; }
     .cancelBtn, .viewBtn { justify-content: center; }
 }
+
+/* ── 내 문의 내역 화면 ── */
+.backBtn {
+    display: flex; align-items: center; gap: 4px;
+    background: none; border: none; color: #6b7280;
+    font-size: 14px; cursor: pointer; padding: 0;
+    margin-bottom: 20px; transition: color 0.15s;
+}
+.backBtn:hover { color: #111827; }
+
+.historyTitle { font-size: 17px; font-weight: 700; color: #111827; margin: 0 0 20px; }
+
+.historyItem { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+
+.historyHeader {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; cursor: pointer; background-color: #fff;
+    transition: background-color 0.15s; gap: 12px;
+}
+.historyHeader:hover { background-color: #f9fafb; }
+
+.historyMeta { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.historyType { font-size: 12px; color: #2563eb; font-weight: 600; white-space: nowrap; }
+
+.historyItemTitle {
+    font-size: 14px; color: #111827; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.historyRight { display: flex; align-items: center; gap: 10px; flex-shrink: 0; color: #9ca3af; }
+
+.historyDate { font-size: 12px; color: #9ca3af; }
+
+.historyBody { padding: 16px 18px; border-top: 1px solid #f3f4f6; background-color: #fafafa; }
+
+.historyContent { font-size: 14px; color: #374151; line-height: 1.7; white-space: pre-wrap; margin: 0 0 16px; }
+
+.answerList { display: flex; flex-direction: column; gap: 10px; }
+
+.answerItem {
+    background-color: #eff6ff; border-left: 3px solid #2563eb;
+    border-radius: 0 6px 6px 0; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 6px;
+}
+
+.answerLabel { font-size: 12px; font-weight: 700; color: #2563eb; }
+
+.answerContent { font-size: 14px; color: #1e3a5f; line-height: 1.7; margin: 0; white-space: pre-wrap; }
+
+.answerDate { font-size: 12px; color: #93c5fd; text-align: right; }
+
+.noAnswer { font-size: 13px; color: #9ca3af; margin: 0; }

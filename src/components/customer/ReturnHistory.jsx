@@ -1,97 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronDown, ChevronUp, Package, RotateCcw, ArrowLeftRight } from "lucide-react";
 import styles from "./ReturnHistory.module.css";
+import { getMyClaims } from "../../api/claimApi.js";
 
-const DUMMY_HISTORY = [
-    {
-        id: "RET-20260418-001",
-        type: "return",
-        status: "처리완료",
-        appliedAt: "2026.04.18",
-        orderId: "AP-20260410002",
-        product: {
-            name: "[뷰티스타일샵] 수분 세럼 30ml",
-            option: "30ml / 1개",
-            qty: 1,
-            price: 34000,
-            image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=80&h=80&fit=crop",
-        },
-        reason: "단순 변심",
-        detail: "다른 제품으로 구매 예정이라 반품 원합니다.",
-        pickup: "택배 수거",
-        refundAmount: 34000,
-        refundMethod: "신용카드 취소",
-        completedAt: "2026.04.20",
-    },
-    {
-        id: "EXC-20260415-003",
-        type: "exchange",
-        status: "처리중",
-        appliedAt: "2026.04.15",
-        orderId: "AP-20260405003",
-        product: {
-            name: "[아넬로] 미니 크로스백",
-            option: "블랙 / 1개",
-            qty: 1,
-            price: 45000,
-            image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=80&h=80&fit=crop",
-        },
-        reason: "색상 변경",
-        detail: "브라운 색상으로 교환 원합니다.",
-        pickup: "택배 수거",
-        exchangeOption: "브라운 / 1개",
-        completedAt: null,
-    },
-    {
-        id: "RET-20260401-002",
-        type: "return",
-        status: "신청완료",
-        appliedAt: "2026.04.01",
-        orderId: "AP-20260325005",
-        product: {
-            name: "[나이키] 에어맥스 270",
-            option: "270mm / 화이트",
-            qty: 1,
-            price: 139000,
-            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=80&h=80&fit=crop",
-        },
-        reason: "상품 불량/파손",
-        detail: "박스 개봉 시 밑창 접착 불량 발견했습니다.",
-        pickup: "택배 수거",
-        refundAmount: 139000,
-        refundMethod: "신용카드 취소",
-        completedAt: null,
-    },
-    {
-        id: "EXC-20260320-005",
-        type: "exchange",
-        status: "반려",
-        appliedAt: "2026.03.20",
-        orderId: "AP-20260310004",
-        product: {
-            name: "[클래식 화이트 티셔츠]",
-            option: "M / 화이트",
-            qty: 1,
-            price: 29900,
-            image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=80&h=80&fit=crop",
-        },
-        reason: "사이즈 변경",
-        detail: "",
-        pickup: "직접 방문 반납",
-        exchangeOption: "L / 화이트",
-        rejectReason: "교환 가능 기간(7일)이 초과되었습니다.",
-        completedAt: "2026.03.22",
-    },
-];
+const CLAIM_TYPE_LABEL = { RETURN: "반품", EXCHANGE: "교환" };
+
+const REASON_LABEL = {
+    CHANGE_MIND: "단순 변심", SIZE_COLOR: "사이즈/색상 불만족",
+    DESCRIPTION_DIFF: "상품 설명과 다름", SIZE_CHANGE: "사이즈 변경",
+    COLOR_CHANGE: "색상 변경", DEFECT: "상품 불량/파손",
+    WRONG_ITEM: "오배송 (다른 상품 수령)", MISSING_ITEM: "구성품 누락", ETC: "기타",
+};
+
+const PICKUP_LABEL = { COURIER: "택배 수거", VISIT: "직접 방문 반납" };
 
 const STATUS_CONFIG = {
-    신청완료: { bg: "#eff6ff", color: "#2563eb", step: 1 },
-    처리중:   { bg: "#fefce8", color: "#ca8a04", step: 2 },
-    처리완료: { bg: "#f0fdf4", color: "#16a34a", step: 3 },
-    반려:     { bg: "#fef2f2", color: "#dc2626", step: -1 },
+    SUBMITTED:   { label: "신청완료", bg: "#eff6ff", color: "#2563eb", step: 1 },
+    IN_PROGRESS: { label: "처리중",   bg: "#fefce8", color: "#ca8a04", step: 2 },
+    COMPLETED:   { label: "처리완료", bg: "#f0fdf4", color: "#16a34a", step: 3 },
+    REJECTED:    { label: "반려",     bg: "#fef2f2", color: "#dc2626", step: -1 },
+    CANCELLED:   { label: "취소됨",   bg: "#f3f4f6", color: "#6b7280", step: -1 },
 };
 
 const PROGRESS_STEPS = ["신청완료", "처리중", "처리완료"];
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+};
 
 function ProgressBar({ status }) {
     const currentStep = STATUS_CONFIG[status]?.step ?? 0;
@@ -120,15 +57,25 @@ function ProgressBar({ status }) {
 }
 
 export default function ReturnHistory({ onBack }) {
+    const [claims, setClaims] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [expandedId, setExpandedId] = useState(null);
     const [filter, setFilter] = useState("전체");
 
     const FILTERS = ["전체", "반품", "교환"];
 
-    const filtered = DUMMY_HISTORY.filter(item => {
+    useEffect(() => {
+        setLoading(true);
+        getMyClaims()
+            .then(res => setClaims(res.data?.data || []))
+            .catch(() => setClaims([]))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const filtered = claims.filter(item => {
         if (filter === "전체") return true;
-        if (filter === "반품") return item.type === "return";
-        if (filter === "교환") return item.type === "exchange";
+        if (filter === "반품") return item.claimType === "RETURN";
+        if (filter === "교환") return item.claimType === "EXCHANGE";
         return true;
     });
 
@@ -146,85 +93,76 @@ export default function ReturnHistory({ onBack }) {
                             key={f}
                             className={`${styles.filterBtn} ${filter === f ? styles.filterBtnActive : ""}`}
                             onClick={() => setFilter(f)}
-                        >
-                            {f}
-                        </button>
+                        >{f}</button>
                     ))}
                 </div>
             </div>
 
-            {filtered.length === 0 ? (
+            {loading && (
+                <p style={{ padding: "40px 0", textAlign: "center", color: "#6b7280" }}>불러오는 중...</p>
+            )}
+
+            {!loading && filtered.length === 0 && (
                 <div className={styles.empty}>
                     <Package size={40} />
                     <p>신청 내역이 없습니다.</p>
                 </div>
-            ) : (
+            )}
+
+            {!loading && (
                 <div className={styles.list}>
                     {filtered.map(item => {
-                        const st = STATUS_CONFIG[item.status] ?? { bg: "#f3f4f6", color: "#6b7280" };
-                        const isOpen = expandedId === item.id;
+                        const st = STATUS_CONFIG[item.status] ?? { label: item.status, bg: "#f3f4f6", color: "#6b7280" };
+                        const isOpen = expandedId === item.claimId;
                         return (
-                            <div key={item.id} className={`${styles.card} ${isOpen ? styles.cardOpen : ""}`}>
-                                {/* 카드 헤더 */}
-                                <button className={styles.cardHeader} onClick={() => toggle(item.id)}>
+                            <div key={item.claimId} className={`${styles.card} ${isOpen ? styles.cardOpen : ""}`}>
+                                <button className={styles.cardHeader} onClick={() => toggle(item.claimId)}>
                                     <div className={styles.cardHeaderLeft}>
                                         <div className={styles.typeIcon}>
-                                            {item.type === "return"
-                                                ? <RotateCcw size={16} />
-                                                : <ArrowLeftRight size={16} />
-                                            }
+                                            {item.claimType === "RETURN" ? <RotateCcw size={16} /> : <ArrowLeftRight size={16} />}
                                         </div>
                                         <div className={styles.cardMeta}>
-                                            <span className={styles.cardId}>{item.id}</span>
-                                            <span className={styles.cardDate}>{item.appliedAt} 신청</span>
+                                            <span className={styles.cardId}>CLM-{String(item.claimId).padStart(6, "0")}</span>
+                                            <span className={styles.cardDate}>{formatDate(item.createdAt)} 신청</span>
                                         </div>
                                     </div>
                                     <div className={styles.cardHeaderRight}>
-                                        <span
-                                            className={styles.statusBadge}
-                                            style={{ backgroundColor: st.bg, color: st.color }}
-                                        >
-                                            {item.status}
+                                        <span className={styles.statusBadge} style={{ backgroundColor: st.bg, color: st.color }}>
+                                            {st.label}
                                         </span>
                                         {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                     </div>
                                 </button>
 
-                                {/* 상품 미리보기 (항상 표시) */}
                                 <div className={styles.productRow}>
-                                    <img src={item.product.image} alt={item.product.name} className={styles.productImg} />
+                                    <div className={styles.productImgPlaceholder}><Package size={24} /></div>
                                     <div className={styles.productInfo}>
                                         <span className={styles.typeBadge} style={{ backgroundColor: st.bg, color: st.color }}>
-                                            {item.type === "return" ? "반품" : "교환"}
+                                            {CLAIM_TYPE_LABEL[item.claimType]}
                                         </span>
-                                        <p className={styles.productName}>{item.product.name}</p>
-                                        <p className={styles.productOption}>{item.product.option} / {item.product.qty}개</p>
-                                        <p className={styles.productPrice}>{item.product.price.toLocaleString()}원</p>
+                                        <p className={styles.productName}>주문 상품 #{item.orderItemId}</p>
+                                        <p className={styles.productOption}>{REASON_LABEL[item.reasonCode] ?? item.reasonCode}</p>
+                                        {item.refundAmount && (
+                                            <p className={styles.productPrice}>{Number(item.refundAmount).toLocaleString()}원</p>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* 펼침 상세 */}
                                 {isOpen && (
                                     <div className={styles.detail}>
-                                        {/* 진행 상태 바 */}
-                                        {item.status !== "반려" && <ProgressBar status={item.status} />}
-
-                                        {/* 반려 안내 */}
-                                        {item.status === "반려" && (
+                                        {item.status !== "REJECTED" && item.status !== "CANCELLED" && (
+                                            <ProgressBar status={item.status} />
+                                        )}
+                                        {item.status === "REJECTED" && (
                                             <div className={styles.rejectBox}>
                                                 <p className={styles.rejectLabel}>반려 사유</p>
                                                 <p className={styles.rejectText}>{item.rejectReason}</p>
                                             </div>
                                         )}
-
                                         <div className={styles.infoTable}>
                                             <div className={styles.infoRow}>
-                                                <span>주문번호</span>
-                                                <strong>{item.orderId}</strong>
-                                            </div>
-                                            <div className={styles.infoRow}>
                                                 <span>신청 사유</span>
-                                                <strong>{item.reason}</strong>
+                                                <strong>{REASON_LABEL[item.reasonCode] ?? item.reasonCode}</strong>
                                             </div>
                                             {item.detail && (
                                                 <div className={styles.infoRow}>
@@ -234,30 +172,24 @@ export default function ReturnHistory({ onBack }) {
                                             )}
                                             <div className={styles.infoRow}>
                                                 <span>수거 방법</span>
-                                                <strong>{item.pickup}</strong>
+                                                <strong>{PICKUP_LABEL[item.pickupMethod] ?? item.pickupMethod}</strong>
                                             </div>
-                                            {item.type === "exchange" && item.exchangeOption && (
+                                            {item.claimType === "EXCHANGE" && item.exchangeOption && (
                                                 <div className={styles.infoRow}>
                                                     <span>교환 옵션</span>
                                                     <strong>{item.exchangeOption}</strong>
                                                 </div>
                                             )}
-                                            {item.type === "return" && item.refundAmount && (
-                                                <>
-                                                    <div className={styles.infoRow}>
-                                                        <span>환불 금액</span>
-                                                        <strong className={styles.refundAmount}>{item.refundAmount.toLocaleString()}원</strong>
-                                                    </div>
-                                                    <div className={styles.infoRow}>
-                                                        <span>환불 수단</span>
-                                                        <strong>{item.refundMethod}</strong>
-                                                    </div>
-                                                </>
+                                            {item.claimType === "RETURN" && item.refundAmount && (
+                                                <div className={styles.infoRow}>
+                                                    <span>환불 금액</span>
+                                                    <strong className={styles.refundAmount}>{Number(item.refundAmount).toLocaleString()}원</strong>
+                                                </div>
                                             )}
                                             {item.completedAt && (
                                                 <div className={styles.infoRow}>
                                                     <span>처리 완료일</span>
-                                                    <strong>{item.completedAt}</strong>
+                                                    <strong>{formatDate(item.completedAt)}</strong>
                                                 </div>
                                             )}
                                         </div>
