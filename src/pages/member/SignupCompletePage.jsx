@@ -19,7 +19,7 @@ export default function SignupCompletePage() {
   };
 
   return (
-    <AuthLayout showSteps currentStep={5}>
+    <AuthLayout showSteps currentStep={6}>
       <div className={styles.container}>
         <div className={styles.iconCircle}>
           <CheckCircle size={48} color="#16a34a" />
