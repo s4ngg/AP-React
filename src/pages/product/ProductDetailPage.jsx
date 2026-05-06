@@ -50,7 +50,6 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // 리뷰 수정 상태
   const [editingReviewId, setEditingReviewId] = useState(null)
   const [editRating, setEditRating] = useState(0)
   const [editContent, setEditContent] = useState("")
@@ -59,15 +58,10 @@ export default function ProductDetailPage() {
 
   const [currentImg, setCurrentImg] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  // 선택된 옵션: { optionId, optionValue, optionName, additionalPrice, stockQuantity }
   const [selectedOption, setSelectedOption] = useState(null)
   const [isLiked, setIsLiked] = useState(false)
   const [activeTab, setActiveTab] = useState("description")
 
-  // 상품 상세 조회
-  // Spring 응답 필드: productId, parentCategoryName, brand, productName,
-  //                   thumbnailUrl, price, description, manufacturer, origin,
-  //                   precaution, optionList, productImagesList, reviewList
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true)
@@ -75,7 +69,6 @@ export default function ProductDetailPage() {
         const res = await getProductDetail(id, 0)
         const data = res.data
         setProduct(data)
-        // reviewList는 상품 상세에 포함되어 있음
         if (data?.reviewList) {
           setReviews(data.reviewList.content || [])
           setReviewTotalPages(data.reviewList.totalPages || 0)
@@ -89,7 +82,6 @@ export default function ProductDetailPage() {
     fetchProduct()
   }, [id])
 
-  // 리뷰 페이지 변경 시
   useEffect(() => {
     if (reviewPage === 0) return
     const fetchReviews = async () => {
@@ -98,7 +90,6 @@ export default function ProductDetailPage() {
         setReviews(res.data?.content || [])
         setReviewTotalPages(res.data?.totalPages || 0)
       } catch {
-        // 무시
       }
     }
     fetchReviews()
@@ -114,7 +105,6 @@ export default function ProductDetailPage() {
     )
   }
 
-  // Spring ProductDetailResponseDto 필드명 사용
   const images = product.productImagesList?.length > 0
     ? product.productImagesList.map((img) => img.imageUrl)
     : [product.thumbnailUrl].filter(Boolean)
@@ -131,23 +121,20 @@ export default function ProductDetailPage() {
     if (next >= 1 && next <= maxStock) setQuantity(next)
   }
 
-  // 장바구니 추가: productId + productOptionId + quantity 필요
   const handleAddToCart = async () => {
     if (options.length > 0 && !selectedOption) {
       alert("옵션을 선택해주세요.")
       return
     }
     try {
-      // Spring CartItemRequestDto: { productId, productOptionId, quantity }
       await addCartItem({
         productId: product.productId,
         productOptionId: selectedOption?.optionId || null,
         quantity,
       })
     } catch {
-      // 비로그인 시 로컬 store만
+      // 비로그인 시 로컬 store만 업데이트
     }
-    // 로컬 store에도 추가 (CartPage 표시용)
     addItem(
       {
         id: product.productId,
@@ -173,7 +160,7 @@ export default function ProductDetailPage() {
         quantity,
       })
     } catch {
-      // 비로그인 시 로컬 store만
+      // 비로그인 시 로컬 store만 업데이트
     }
     addItem(
       {
@@ -237,7 +224,7 @@ export default function ProductDetailPage() {
                 <p className={styles.reviewCountText}>총 {reviews.length}개의 후기</p>
               </div>
               <div className={styles.reviewSummaryRight}>
-                {/* 후기 작성은 주문 내역에서 orderItemId를 받아 이동해야 함 */}
+                {/* TODO: 주문 내역에서 orderItemId를 받아 리뷰 작성 페이지로 이동 구현 필요 */}
                 <p style={{ fontSize: 13, color: "#9ca3af" }}>구매 후 마이페이지에서 후기를 작성할 수 있습니다.</p>
               </div>
             </div>
@@ -252,10 +239,8 @@ export default function ProductDetailPage() {
                   {reviews.map((review) => (
                     <li key={review.reviewId} className={styles.reviewItem}>
                       {editingReviewId === review.reviewId ? (
-                        // 수정 모드
                         <div>
                           <div className={styles.reviewHeader}>
-                            {/* 별점 수정 */}
                             <div style={{ display: "flex", gap: 4 }}>
                               {[1,2,3,4,5].map((s) => (
                                 <button
@@ -294,7 +279,6 @@ export default function ProductDetailPage() {
                                 if (editContent.trim().length < 10) { alert("10자 이상 입력해주세요."); return }
                                 setIsUpdating(true)
                                 try {
-                                  // PATCH /api/reviews/{reviewId} { rating, content }
                                   const res = await updateReview(review.reviewId, { rating: editRating, content: editContent.trim() })
                                   setReviews((prev) => prev.map((r) =>
                                     r.reviewId === review.reviewId
@@ -316,14 +300,12 @@ export default function ProductDetailPage() {
                           </div>
                         </div>
                       ) : (
-                        // 조회 모드
                         <>
                           <div className={styles.reviewHeader}>
                             <StarRating rating={review.rating} size={14} />
                             <span className={styles.reviewAuthor}>{review.writerName}</span>
                             <span className={styles.reviewDate}>{review.reviewDate}</span>
-                            {/* 본인 리뷰에만 수정 버튼 표시 */}
-                            {String(user?.id) === String(review.memberId) && (
+                            {user?.name === review.writerName && (
                               <button
                                 onClick={() => {
                                   setEditingReviewId(review.reviewId)
@@ -451,7 +433,6 @@ export default function ProductDetailPage() {
             <span>무료배송</span>
           </div>
 
-          {/* 옵션 선택 - Spring ProductOptionResponseDto: { optionId, optionName, optionValue, additionalPrice, stockQuantity } */}
           {options.length > 0 && (
             <div className={styles.optionGroup}>
               <label className={styles.optionLabel}>옵션 선택</label>
