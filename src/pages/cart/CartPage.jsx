@@ -6,7 +6,6 @@ import useAuthStore from "../../store/authStore"
 import { getCartItems, deleteCartItem, deleteSelectedCartItems, clearCart } from "../../api/cartApi"
 import styles from "./CartPage.module.css"
 
-// Spring CartItemResponseDto: { cartItemId, brandName, productName, price, option, quantity }
 
 function CartItemCard({ item }) {
   const { updateQuantity, removeItem, toggleSelect } = useCartStore()
@@ -21,13 +20,11 @@ function CartItemCard({ item }) {
       try {
         await deleteCartItem(item.cartItemId)
       } catch {
-        // 실패해도 로컬에서 제거
       }
     }
     removeItem(item.product.id, item.selectedOptions)
   }
 
-  // Spring 응답 기준 필드명 처리 (서버에서 온 경우 brandName/productName, 로컬은 name)
   const displayName = item.product.productName || item.product.name
   const displayBrand = item.product.brandName || item.product.brand
   const displayOption = item.product.option || Object.values(item.selectedOptions || {}).join(" / ")
@@ -87,8 +84,6 @@ export default function CartPage() {
   const { items, toggleSelectAll, getSelectedTotalPrice, clearCart: clearLocalCart, addItem } = useCartStore()
   const { user, isLoggedIn } = useAuthStore()
 
-  // 로그인 상태면 서버 장바구니 동기화
-  // Spring CartItemResponseDto: { cartItemId, brandName, productName, price, option, quantity }
   useEffect(() => {
     if (!isLoggedIn || !user?.id) return
     const syncCart = async () => {
@@ -99,7 +94,6 @@ export default function CartPage() {
         serverItems.forEach((serverItem) => {
           addItem(
             {
-              id: serverItem.cartItemId, // 장바구니 식별용 임시 ID
               productId: serverItem.cartItemId,
               productName: serverItem.productName,
               brandName: serverItem.brandName,
@@ -112,7 +106,6 @@ export default function CartPage() {
           )
         })
       } catch {
-        // 실패 시 기존 로컬 데이터 유지
       }
     }
     syncCart()
@@ -131,7 +124,6 @@ export default function CartPage() {
       try {
         await deleteSelectedCartItems(cartItemIds)
       } catch {
-        // 실패해도 로컬에서 제거
       }
     }
     selectedItems.forEach((item) => {
@@ -144,7 +136,6 @@ export default function CartPage() {
     try {
       await clearCart()
     } catch {
-      // 실패해도 로컬은 비우기
     }
     clearLocalCart()
   }

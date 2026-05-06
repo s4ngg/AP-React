@@ -4,10 +4,6 @@ import styles from "./ProductListPage.module.css";
 import { getProductList, getParentCategories, getChildCategories } from "../../api/productApi";
 import useCartStore from "../../store/cartStore";
 
-// Spring 응답 필드명
-// ParentCategoryResponseDto: { parentCategoryId, categoryName, sortOrder, isActive, slug }
-// ChildCategoryResponseDto:  { childCategoryId, parentCategoryId, categoryName, sortOrder, isActive, slug }
-// ProductListResponseDto:    { productId, parentCategoryName, brand, productName, thumbnailUrl, price }
 
 function ProductListPage() {
   const location = useLocation();
@@ -29,26 +25,22 @@ function ProductListPage() {
   const [selectedSort, setSelectedSort] = useState("최신순");
   const [loading, setLoading] = useState(false);
 
-  // 부모 카테고리 로드
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await getParentCategories();
-        // Spring: { status, message, data: List<ParentCategoryResponseDto> }
         const cats = res.data || [];
         setParentCategories(cats);
         if (cats.length > 0) {
-          setSelectedParentId(cats[0].parentCategoryId); // ← parentCategoryId
-          setSelectedParentName(cats[0].categoryName);   // ← categoryName
+          setSelectedParentId(cats[0].parentCategoryId);
+          setSelectedParentName(cats[0].categoryName);
         }
       } catch {
-        // 무시
       }
     };
     fetchCategories();
   }, []);
 
-  // 자식 카테고리 로드
   useEffect(() => {
     if (!selectedParentId) return;
     const fetchChildCategories = async () => {
@@ -64,7 +56,6 @@ function ProductListPage() {
     fetchChildCategories();
   }, [selectedParentId]);
 
-  // URL 쿼리로 카테고리 초기화
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const queryCategory = params.get("category");
@@ -77,7 +68,6 @@ function ProductListPage() {
     }
   }, [location.search, parentCategories]);
 
-  // 상품 목록 로드
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);

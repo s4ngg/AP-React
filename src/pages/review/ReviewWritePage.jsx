@@ -5,19 +5,14 @@ import { getProductDetail } from "../../api/productApi"
 import { createReview } from "../../api/reviewApi"
 import styles from "./ReviewWritePage.module.css"
 
-// Spring ReviewRequestDto: { orderItemId, rating, content, selectedOption }
-// ※ 리뷰는 반드시 주문한 상품(orderItemId)에 대해서만 작성 가능
-// 라우터 경로: /products/:id/review/write?orderItemId=1&selectedOption=L/White
 
 const RATING_LABELS = { 1: "별로예요", 2: "그저그래요", 3: "보통이에요", 4: "좋아요", 5: "최고예요!" }
 
 export default function ReviewWritePage() {
-  const { id } = useParams()               // productId (상품 정보 표시용)
+  const { id } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  // 주문 상품 ID와 선택 옵션 - URL 쿼리로 받음
-  // ex) /products/1/review/write?orderItemId=5&selectedOption=L%2FWhite
   const orderItemId = searchParams.get("orderItemId")
   const selectedOption = searchParams.get("selectedOption") || ""
 
@@ -30,7 +25,6 @@ export default function ReviewWritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
 
-  // orderItemId 없으면 접근 불가
   useEffect(() => {
     if (!orderItemId) {
       alert("주문 내역에서 후기를 작성해주세요.")
@@ -38,14 +32,12 @@ export default function ReviewWritePage() {
     }
   }, [orderItemId, navigate])
 
-  // 상품 정보 조회 (이름/이미지 표시용)
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await getProductDetail(id)
         setProduct(res.data)
       } catch {
-        // 상품 정보 없어도 작성은 가능
       }
     }
     fetchProduct()
@@ -75,7 +67,6 @@ export default function ReviewWritePage() {
     setIsSubmitting(true)
     setError("")
     try {
-      // Spring ReviewRequestDto: { orderItemId, rating, content, selectedOption }
       await createReview({
         orderItemId: Number(orderItemId),
         rating,
