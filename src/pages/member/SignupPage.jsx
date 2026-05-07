@@ -8,7 +8,7 @@ import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
 import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
 // import { sendSmsCode, verifySmsCode } from "../../api/authApi"; // import 추가
- 
+
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
   const { setFormData, setCurrentStep } = useSignupStore();
@@ -34,6 +34,7 @@ export default function SignupPage({ isSeller = false }) {
     handleSubmit,
     watch,
     setError,
+    clearErrors,
     setValue,
     formState: { errors },
   } = useForm({ mode: "onChange" });
@@ -72,6 +73,12 @@ export default function SignupPage({ isSeller = false }) {
   //     setVerifyingCode(false);
   //   }
   // };
+  const formatPhone = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11)
+    if (digits.length < 4) return digits
+    if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+  }
   const passwordValidation = {
     hasLength: password?.length >= 8,
     hasLetter: /[a-zA-Z]/.test(password || ""),
@@ -100,26 +107,28 @@ export default function SignupPage({ isSeller = false }) {
       const response = await checkEmailDuplicate(email);
       setEmailChecked(true);
       setEmailAvailable(response.data?.available ?? true);
+      clearErrors("email");
     } catch {
       setEmailChecked(true);
       setEmailAvailable(true);
+      clearErrors("email");
     } finally {
       setCheckingEmail(false);
     }
-  }; 
+  };
 
   const handleAddressSearch = () => {
-  if (!window.daum || !window.daum.Postcode) {
-    alert("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
-    return;
-  }
-  new window.daum.Postcode({
-    oncomplete: (data) => {
-      setValue("zipCode", data.zonecode);
-      setValue("address", data.address);
-    },
-  }).open();
-};
+    if (!window.daum || !window.daum.Postcode) {
+      alert("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    new window.daum.Postcode({
+      oncomplete: (data) => {
+        setValue("zipCode", data.zonecode);
+        setValue("address", data.address);
+      },
+    }).open();
+  };
 
   const handleValidateBusiness = async () => {
     const businessNumber = watch("business_number");
@@ -306,8 +315,12 @@ export default function SignupPage({ isSeller = false }) {
                     required: "휴대폰 번호를 입력해주세요",
                     pattern: { value: /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/, message: "010-0000-0000 형식으로 입력해주세요" },
                   })}
-                  // onChange={() => { setPhoneVerified(false); setPhoneSent(false); }}
+                  onChange={(e) => {
+                    const formatted = formatPhone(e.target.value)
+                    setValue("phone", formatted, { shouldValidate: true, shouldDirty: true })
+                  }}
                 />
+
                 {/* <button
                   type="button"
                   onClick={handleSendSmsCode}

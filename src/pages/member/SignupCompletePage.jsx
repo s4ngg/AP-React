@@ -10,12 +10,14 @@ export default function SignupCompletePage() {
   const { formData, resetForm } = useSignupStore();
 
   useEffect(() => {
-    if (!formData.email || !formData.name) navigate("/signup", { replace: true });
-  }, [formData.email, formData.name, navigate]);
+  if (!formData.email || !formData.name) {
+    navigate("/signup", { replace: true });
+  }
+}, []);
 
   const handleGoToLogin = () => {
-    resetForm();
     navigate("/login");
+    resetForm();
   };
 
   return (

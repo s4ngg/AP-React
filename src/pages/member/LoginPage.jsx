@@ -26,10 +26,15 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setError("");
     try {
-      const res = await login({ email: data.email, password: data.password, autoLogin });
+      const res = await login({ email: data.email, password: data.password });
+      const { token, email, name, sellerToken } = res.data;  // ← sellerToken 추가
 
-      // ✅ 전역 상태에 유저 정보 저장
-      setUser(res.member, res.token);
+      setUser({ email, name }, token);
+
+      // 셀러 토큰이 있으면 저장
+      if (sellerToken) {
+        useAuthStore.getState().setSellerToken(sellerToken)
+      }
 
       navigate("/");
     } catch {

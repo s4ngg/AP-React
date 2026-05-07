@@ -1,0 +1,316 @@
+.sellerLayout {
+    display: flex;
+    min-height: calc(100vh - 120px);
+}
+
+.content {
+    flex: 1;
+    padding: 32px;
+    background-color: #f8fafc;
+}
+
+.pageTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 24px;
+}
+
+.section {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.countBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.countText {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.pendingBadge {
+    background-color: #fef3c7;
+    color: #b45309;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+
+.emptyText {
+    color: #9ca3af;
+    font-size: 14px;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 48px 0;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+/* 테이블 */
+.tableWrap {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 14px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.clickableRow {
+    cursor: pointer;
+}
+
+.clickableRow:hover td {
+    background-color: #f9fafb;
+}
+
+.claimId {
+    font-family: monospace;
+    font-size: 13px;
+    color: #2563eb;
+}
+
+/* 상태 배지 */
+.statusBadge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.statusPaid {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.statusPreparing {
+    background-color: #fefce8;
+    color: #ca8a04;
+}
+
+.statusDone {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.statusCancel {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+/* 승인/거부 버튼 */
+.actionButtons {
+    display: flex;
+    gap: 6px;
+}
+
+.approveBtn {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.approveBtn:hover {
+    background-color: #1d4ed8;
+}
+
+.rejectBtn {
+    background-color: #ffffff;
+    color: #dc2626;
+    border: 1px solid #dc2626;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.rejectBtn:hover {
+    background-color: #fef2f2;
+}
+
+/* 확장 행 */
+.expandedRow {
+    background-color: #f8fafc;
+    padding: 0 !important;
+}
+
+.expandedContent {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detailRow {
+    display: flex;
+    gap: 12px;
+}
+
+.detailLabel {
+    width: 80px;
+    font-size: 13px;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.detailValue {
+    font-size: 13px;
+    color: #111827;
+}
+
+/* 모달 */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.modal {
+    background-color: #ffffff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modalTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.modalCloseBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.modalCloseBtn:hover {
+    background-color: #f3f4f6;
+}
+
+.modalBody {
+    padding: 20px 24px;
+}
+
+.rejectTextarea {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.rejectTextarea:focus {
+    border-color: #2563eb;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.cancelBtn {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancelBtn:hover {
+    background-color: #e5e7eb;
+}
+
+.submitBtn {
+    background-color: #dc2626;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submitBtn:hover {
+    background-color: #b91c1c;
+}
+
+.submitBtn:disabled {
+    background-color: #fca5a5;
+    cursor: not-allowed;
+}

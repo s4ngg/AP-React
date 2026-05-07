@@ -706,3 +706,26 @@
   background-color: #93c5fd;
   cursor: not-allowed;
 }
+
+.optionRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.addOptionBtn {
+  background: none;
+  border: 1px dashed #d1d5db;
+  color: #6b7280;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.addOptionBtn:hover {
+  background: #f9fafb;
+}

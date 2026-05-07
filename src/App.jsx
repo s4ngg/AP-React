@@ -38,6 +38,12 @@ import OrderSuccessPage from "./pages/order/OrderSuccessPage"
 import OrderFailPage from "./pages/order/OrderFailPage"
 import "./index.css"
 
+const PrivateRoute = ({ children }) => {
+  const { isLoggedIn } = useAuthStore()
+  return isLoggedIn ? children : <Navigate to="/login" replace />
+}
+
+
 function App() {
   return (
     <BrowserRouter>
