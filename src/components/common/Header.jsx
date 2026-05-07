@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones, Store } from "lucide-react"
 import useAuthStore from "../../store/authStore"
+import useCartStore from "../../store/cartStore"
 import styles from "./Header.module.css"
 
 const categoryData = {
@@ -16,16 +17,16 @@ const navLinks = [
   { name: "특별할인" },
   { name: "이벤트" },
   { name: "베스트셀러" },
-
 ]
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isLoggedIn, logout, sellerToken } = useAuthStore()
+  const { user, isLoggedIn, logout } = useAuthStore()
+  const { items } = useCartStore()
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
-
   const [hoveredCategory, setHoveredCategory] = useState("뷰티")
 
   const handleLogout = () => {
@@ -50,14 +51,12 @@ export default function Header() {
         <div className={styles.navTop}>
           <Link to="/" className={styles.logo}>AllPick</Link>
 
-
           <div className={styles.searchBar}>
             <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
             <button className={styles.searchBtn} aria-label="검색">
               <Search size={18} />
             </button>
           </div>
-
 
           <div className={styles.rightIcons}>
             {isLoggedIn ? (
@@ -67,7 +66,6 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-                {/* 셀러 권한 있을 때만 셀러 버튼 표시 */}
                 {user?.isSeller && (
                   <Link to="/seller" className={styles.iconBtn}>
                     <Store size={20} />
@@ -81,7 +79,6 @@ export default function Header() {
                 </button>
               </>
             ) : (
-
               <>
                 <Link to="/login" className={styles.iconBtn}>
                   <User size={20} />
@@ -94,17 +91,18 @@ export default function Header() {
               </>
             )}
 
-
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20} />
               <span>장바구니</span>
+              {cartCount > 0 && (
+                <span className={styles.cartBadge}>{cartCount}</span>
+              )}
             </Link>
 
             <Link to="/customer" className={styles.iconBtn}>
               <Headphones size={20} />
               <span>고객센터</span>
             </Link>
-
 
             <button
               className={styles.mobileMenuBtn}
@@ -116,14 +114,12 @@ export default function Header() {
           </div>
         </div>
 
-
         <div className={styles.mobileSearch}>
           <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
           <button className={styles.searchBtn} aria-label="검색">
             <Search size={18} />
           </button>
         </div>
-
 
         <div className={styles.navBottom}>
           <div
@@ -146,8 +142,7 @@ export default function Header() {
                     <button
                       key={categoryName}
                       type="button"
-                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""
-                        }`}
+                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""}`}
                       onMouseEnter={() => setHoveredCategory(categoryName)}
                       onClick={() => {
                         setCategoryOpen(false)
@@ -169,8 +164,6 @@ export default function Header() {
                         setCategoryOpen(false)
                         navigate(
                           `/products?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`
-
-
                         )
                       }}
                     >
@@ -235,7 +228,6 @@ export default function Header() {
             {navLinks.map((item) => (
               <button
                 key={item.name}
-
                 className={styles.mobileMenuItem}
                 onClick={() => {
                   setMobileMenuOpen(false)
