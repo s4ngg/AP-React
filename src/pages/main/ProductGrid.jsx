@@ -11,17 +11,6 @@ const sortOptions = [
   { label: "인기순",    value: "popular" },
 ]
 
-const products = [
-  { id: 1, name: "[에스티로더] 갈색병 세럼 50ml",   price: 89000,  originalPrice: 145000, badge: "베스트",  freeShipping: true,  image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop" },
-  { id: 2, name: "[나이키] 에어맥스 97 화이트",      price: 179000, originalPrice: 219000, badge: null,      freeShipping: true,  image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop" },
-  { id: 3, name: "[제주] 황금향 선물세트 3kg",       price: 32900,  originalPrice: null,   badge: "산지직송", freeShipping: true,  image: "https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=400&h=400&fit=crop" },
-  { id: 4, name: "[샤또 마고] 2018 빈티지 750ml",   price: 189000, originalPrice: null,   badge: null,      freeShipping: false, image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=400&fit=crop" },
-  { id: 5, name: "[이케아] 말름 서랍장 6칸",         price: 249000, originalPrice: 299000, badge: "특가",    freeShipping: true,  image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop" },
-  { id: 6, name: "[설화수] 자음생크림 60ml",         price: 112000, originalPrice: 140000, badge: null,      freeShipping: true,  image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&h=400&fit=crop" },
-  { id: 7, name: "[한우] 1++ 등심 500g",            price: 54900,  originalPrice: null,   badge: "오늘출발", freeShipping: true,  image: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=400&h=400&fit=crop" },
-  { id: 8, name: "[자라] 오버사이즈 울 코트",         price: 159000, originalPrice: null,   badge: null,      freeShipping: true,  image: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=400&h=400&fit=crop" },
-]
-
 function ProductCard({ product }) {
   const [liked, setLiked] = useState(false)
   const [toastVisible, setToastVisible] = useState(false)
@@ -57,9 +46,7 @@ function ProductCard({ product }) {
         </button>
       </div>
       <div className={styles.cardBody}>
-        <span className={styles.productName}>
-          {product.name}
-        </span>
+        <span className={styles.productName}>{product.name}</span>
         <div className={styles.priceRow}>
           {discount && <span className={styles.discount}>{discount}%</span>}
           <span className={styles.price}>{product.price.toLocaleString()}원</span>
@@ -72,7 +59,6 @@ function ProductCard({ product }) {
             <Truck size={11} />무료배송
           </div>
         )}
-        
       </div>
     </Link>
   )
@@ -80,6 +66,9 @@ function ProductCard({ product }) {
 
 export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
+
+  // 추후 API 데이터로 교체
+  const displayProducts = []
 
   return (
     <section className={styles.section}>
@@ -98,9 +87,15 @@ export default function ProductGrid() {
             ))}
           </div>
         </div>
-        <div className={styles.grid}>
-          {products.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        {displayProducts.length === 0 ? (
+          <p style={{ textAlign: "center", color: "#9ca3af", padding: "40px 0" }}>
+            상품 준비 중입니다.
+          </p>
+        ) : (
+          <div className={styles.grid}>
+            {displayProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        )}
         <button className={styles.moreBtn}>더보기</button>
       </div>
     </section>
