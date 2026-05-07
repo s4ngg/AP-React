@@ -1,46 +1,18 @@
-// api/adminApi.js
-// 관리자 API 함수 (추후 axiosInstance 연동 예정)
-// 현재: 구조만 정의 (백엔드 연동 전)
-// 실제 연동 시 주석 해제 후 axiosInstance import 추가
+import api from "./index"
 
-// import axiosInstance from "./axiosInstance"
+// ─── 구매자 회원 ─────────────────────────────────────────────────
+export const getMembers = () =>
+  api.get("/api/admin/members").then((res) => res.data.data)
 
-// ─── 통계 ────────────────────────────────────────────────────────
-export const getAdminStats = () =>
-  // axiosInstance.get("/api/v1/admin/stats")
-  Promise.resolve({})
+export const toggleMemberStatus = (memberId) =>
+  api.patch(`/api/admin/members/${memberId}/status`).then((res) => res.data)
 
-// ─── 회원 ────────────────────────────────────────────────────────
-export const getMembers = (params) =>
-  // axiosInstance.get("/api/v1/admin/members", { params })
-  Promise.resolve([])
+// ─── 판매자 ──────────────────────────────────────────────────────
+export const getSellers = () =>
+  api.get("/api/admin/sellers").then((res) => res.data.data)
 
-export const updateMemberStatus = (memberId, status) =>
-  // axiosInstance.patch(`/api/v1/admin/members/${memberId}/status`, { status })
-  Promise.resolve({ memberId, status })
+export const getPendingSellers = () =>
+  api.get("/api/admin/sellers/pending").then((res) => res.data.data)
 
-// ─── 상품 ────────────────────────────────────────────────────────
-export const getAdminProducts = (params) =>
-  // axiosInstance.get("/api/v1/admin/products", { params })
-  Promise.resolve([])
-
-export const createProduct = (data) =>
-  // axiosInstance.post("/api/v1/admin/products", data)
-  Promise.resolve(data)
-
-export const updateProduct = (productId, data) =>
-  // axiosInstance.put(`/api/v1/admin/products/${productId}`, data)
-  Promise.resolve({ id: productId, ...data })
-
-export const deleteProduct = (productId) =>
-  // axiosInstance.delete(`/api/v1/admin/products/${productId}`)
-  Promise.resolve({ productId })
-
-// ─── 주문 ────────────────────────────────────────────────────────
-export const getAdminOrders = (params) =>
-  // axiosInstance.get("/api/v1/admin/orders", { params })
-  Promise.resolve([])
-
-export const updateOrderStatus = (orderId, status) =>
-  // axiosInstance.patch(`/api/v1/admin/orders/${orderId}/status`, { status })
-  Promise.resolve({ orderId, status })
+export const toggleSellerStatus = (sellerId) =>
+  api.patch(`/api/admin/sellers/${sellerId}/status`).then((res) => res.data)
