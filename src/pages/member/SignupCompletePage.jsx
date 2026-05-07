@@ -14,8 +14,8 @@ export default function SignupCompletePage() {
   }, [formData.email, formData.name, navigate]);
 
   const handleGoToLogin = () => {
-    resetForm();
     navigate("/login");
+    resetForm();
   };
 
   return (

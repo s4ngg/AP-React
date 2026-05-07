@@ -7,7 +7,7 @@ import MyPage from "./pages/member/MyPage"
 import CartPage from "./pages/cart/CartPage"
 import ProductDetailPage from "./pages/product/ProductDetailPage"
 import ProductListPage from "./pages/product/ProductListPage"
-import ReviewWritePage from "./pages/product/ReviewWritePage"
+import ReviewWritePage from "./pages/review/ReviewWritePage"
 import CustomerPage from "./pages/customer/CustomerPage"
 import LoginPage from "./pages/member/LoginPage"
 import SignupPage from "./pages/member/SignupPage"
@@ -35,6 +35,12 @@ import SellerOrdersPage from "./pages/seller/SellerOrdersPage"
 import SellerRefundPage from "./pages/seller/SellerRefundPage"
 import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
 import "./index.css"
+
+const PrivateRoute = ({ children }) => {
+  const { isLoggedIn } = useAuthStore()
+  return isLoggedIn ? children : <Navigate to="/login" replace />
+}
+
 
 function App() {
   return (

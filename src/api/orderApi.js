@@ -8,6 +8,10 @@ export const createOrder = (data) =>
 export const getOrder = (orderId) =>
   api.get(`/orders/${orderId}`).then((res) => res.data.data)
 
+// 내 주문 목록 조회
+export const getMyOrders = () =>
+  api.get("/members/me/orders").then((res) => res.data.data)
+
 // 배송지 목록 조회 (JWT)
 export const getDeliveryAddresses = () =>
   api.get(`/orders/addresses`).then((res) => res.data.data)

@@ -1,35 +1,47 @@
-import { useState } from "react"
-import { Link, useParams, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom"
 import { Star, ChevronLeft, Upload, X } from "lucide-react"
+import { getProductDetail } from "../../api/productApi"
+import { createReview } from "../../api/reviewApi"
 import styles from "./ReviewWritePage.module.css"
 
-// 임시 상품 데이터 (ProductDetailPage와 동일하게 맞춤)
-const mockProducts = {
-  1: { name: "[에스티로더] 갈색병 세럼 50ml", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=120&h=120&fit=crop", category: "뷰티" },
-  2: { name: "[나이키] 에어맥스 97 화이트", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&h=120&fit=crop", category: "패션" },
-}
 
 const RATING_LABELS = { 1: "별로예요", 2: "그저그래요", 3: "보통이에요", 4: "좋아요", 5: "최고예요!" }
 
 export default function ReviewWritePage() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const product = mockProducts[Number(id)]
 
+  const orderItemId = searchParams.get("orderItemId")
+  const selectedOption = searchParams.get("selectedOption") || ""
+
+  const [product, setProduct] = useState(null)
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [content, setContent] = useState("")
-  const [images, setImages] = useState([])  // { preview, file }
+  const [images, setImages] = useState([])
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
-  if (!product) {
-    return (
-      <div className={styles.notFound}>
-        <p>상품을 찾을 수 없습니다.</p>
-        <button onClick={() => navigate("/")}>홈으로</button>
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!orderItemId) {
+      alert("주문 내역에서 후기를 작성해주세요.")
+      navigate(-1)
+    }
+  }, [orderItemId, navigate])
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await getProductDetail(id)
+        setProduct(res.data)
+      } catch {
+      }
+    }
+    fetchProduct()
+  }, [id])
 
   const handleImageAdd = (e) => {
     const files = Array.from(e.target.files)
@@ -48,11 +60,25 @@ export default function ReviewWritePage() {
     setImages((prev) => prev.filter((_, i) => i !== idx))
   }
 
-  const handleSubmit = () => {
-    if (rating === 0) { alert("별점을 선택해주세요."); return }
-    if (content.trim().length < 10) { alert("후기를 10자 이상 작성해주세요."); return }
-    // 백엔드 연동 시 API 호출 위치
-    setSubmitted(true)
+  const handleSubmit = async () => {
+    if (rating === 0) { setError("별점을 선택해주세요."); return }
+    if (content.trim().length < 10) { setError("후기를 10자 이상 작성해주세요."); return }
+
+    setIsSubmitting(true)
+    setError("")
+    try {
+      await createReview({
+        orderItemId: Number(orderItemId),
+        rating,
+        content: content.trim(),
+        selectedOption,
+      })
+      setSubmitted(true)
+    } catch (err) {
+      setError(err.response?.data?.message || "후기 등록에 실패했습니다. 다시 시도해주세요.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (submitted) {
@@ -77,7 +103,6 @@ export default function ReviewWritePage() {
 
   return (
     <div className={styles.page}>
-      {/* 상단 뒤로가기 */}
       <div className={styles.topBar}>
         <Link to={`/products/${id}`} className={styles.backLink}>
           <ChevronLeft size={20} />
@@ -89,13 +114,20 @@ export default function ReviewWritePage() {
         <h1 className={styles.pageTitle}>후기 작성</h1>
 
         {/* 상품 정보 */}
-        <div className={styles.productCard}>
-          <img src={product.image} alt={product.name} className={styles.productImg} />
-          <div>
-            <p className={styles.productCategory}>{product.category}</p>
-            <p className={styles.productName}>{product.name}</p>
+        {product && (
+          <div className={styles.productCard}>
+            {product.thumbnailUrl && (
+              <img src={product.thumbnailUrl} alt={product.productName} className={styles.productImg} />
+            )}
+            <div>
+              <p className={styles.productCategory}>{product.parentCategoryName}</p>
+              <p className={styles.productName}>{product.productName}</p>
+              {selectedOption && (
+                <p className={styles.productOption}>옵션: {selectedOption}</p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 별점 선택 */}
         <div className={styles.section}>
@@ -147,7 +179,6 @@ export default function ReviewWritePage() {
             사진 첨부 <span className={styles.optional}>(선택, 최대 5장)</span>
           </label>
           <div className={styles.imageUploadRow}>
-            {/* 업로드 버튼 */}
             {images.length < 5 && (
               <label className={styles.uploadBox}>
                 <Upload size={22} color="#9ca3af" />
@@ -162,15 +193,10 @@ export default function ReviewWritePage() {
                 />
               </label>
             )}
-            {/* 미리보기 */}
             {images.map((img, idx) => (
               <div key={idx} className={styles.previewBox}>
                 <img src={img.preview} alt={`첨부 ${idx + 1}`} className={styles.previewImg} />
-                <button
-                  className={styles.removeBtn}
-                  onClick={() => handleImageRemove(idx)}
-                  aria-label="삭제"
-                >
+                <button className={styles.removeBtn} onClick={() => handleImageRemove(idx)} aria-label="삭제">
                   <X size={14} />
                 </button>
               </div>
@@ -178,23 +204,22 @@ export default function ReviewWritePage() {
           </div>
         </div>
 
-        {/* 안내 사항 */}
+        {error && <p style={{ color: "#ef4444", fontSize: 14, marginBottom: 8 }}>{error}</p>}
+
         <div className={styles.notice}>
           <p>• 구매한 상품과 관련 없는 내용은 삭제될 수 있습니다.</p>
           <p>• 타인의 개인정보가 포함된 내용은 작성하지 마세요.</p>
           <p>• 욕설, 비방, 광고성 내용은 제재를 받을 수 있습니다.</p>
         </div>
 
-        {/* 제출 버튼 */}
         <div className={styles.btnRow}>
-          <Link to={`/products/${id}`} className={styles.cancelBtn}>
-            취소
-          </Link>
+          <Link to={`/products/${id}`} className={styles.cancelBtn}>취소</Link>
           <button
             className={`${styles.submitBtn} ${rating > 0 && content.length >= 10 ? styles.submitBtnActive : ""}`}
             onClick={handleSubmit}
+            disabled={isSubmitting}
           >
-            후기 등록
+            {isSubmitting ? "등록 중..." : "후기 등록"}
           </button>
         </div>
       </div>

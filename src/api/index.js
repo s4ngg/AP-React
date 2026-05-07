@@ -1,15 +1,6 @@
 import axios from "axios"
 import useAuthStore from "../store/authStore"
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
-  timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-})
-
 // zustand persist가 "auth-storage" 키에 { state: { token, user, ... } } 형태로 저장
 const getToken = () => {
   try {
@@ -19,6 +10,15 @@ const getToken = () => {
     return null
   }
 }
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+})
 
 api.interceptors.request.use(
   (config) => {
