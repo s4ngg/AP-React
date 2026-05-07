@@ -34,6 +34,8 @@ import SellerProductsPage from "./pages/seller/SellerProductsPage"
 import SellerOrdersPage from "./pages/seller/SellerOrdersPage"
 import SellerRefundPage from "./pages/seller/SellerRefundPage"
 import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
+import OrderSuccessPage from "./pages/order/OrderSuccessPage"
+import OrderFailPage from "./pages/order/OrderFailPage"
 import "./index.css"
 
 const PrivateRoute = ({ children }) => {
@@ -52,6 +54,8 @@ function App() {
             <Route path="/" element={<MainPage />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/order" element={<OrderPage />} />
+            <Route path="/order/success" element={<OrderSuccessPage />} />
+            <Route path="/order/fail" element={<OrderFailPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/products" element={<ProductListPage />} />

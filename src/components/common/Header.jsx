@@ -13,10 +13,9 @@ const categoryData = {
 }
 
 const navLinks = [
-  { name: "특별할인", href: "#" },
-  { name: "이벤트", href: "#" },
-  { name: "쿠폰", href: "#" },
-  { name: "베스트셀러", href: "#" },
+  { name: "특별할인" },
+  { name: "이벤트" },
+  { name: "베스트셀러" },
 ]
 
 export default function Header() {
@@ -167,9 +166,13 @@ export default function Header() {
           </div>
 
           {navLinks.map((item) => (
-            <Link key={item.name} to={item.href} className={styles.navLink}>
+            <button
+              key={item.name}
+              className={styles.navLink}
+              onClick={handleNavClick}
+            >
               {item.name}
-            </Link>
+            </button>
           ))}
         </div>
       </nav>
@@ -211,14 +214,16 @@ export default function Header() {
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
             <p className={styles.mobileMenuLabel}>메뉴</p>
             {navLinks.map((item) => (
-              <Link
+              <button
                 key={item.name}
-                to={item.href}
                 className={styles.mobileMenuItem}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  handleNavClick()
+                }}
               >
                 {item.name}
-              </Link>
+              </button>
             ))}
           </div>
 

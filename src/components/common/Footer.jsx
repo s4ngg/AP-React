@@ -11,6 +11,7 @@ const quickLinks = [
 ]
 
 const customerLinks = [
+  { name: "공지사항", href: "/customer?tab=notice" },
   { name: "자주 묻는 질문", href: "/customer?tab=faq" },
   { name: "1:1 문의", href: "/customer?tab=inquiry" },
   { name: "교환/반품", href: "/customer?tab=return" },
