@@ -1,30 +1,42 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Plus, Trash2 } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminFAQPage.module.css"
+import { getFaqs, createFaq, deleteFaq } from "../../api/faqApi"
 
 const CATEGORIES = ["전체", "주문/결제", "배송", "교환/반품", "회원"]
 const FAQ_CATEGORIES = CATEGORIES.slice(1)
 
-// 임시 FAQ 데이터 (추후 API 연동 예정)
-const mockFAQs = [
-  { id: 1, category: "주문/결제", question: "주문 취소는 어떻게 하나요?", answer: "마이페이지 > 주문 내역에서 취소 신청이 가능합니다.", createdAt: "2026-04-01" },
-  { id: 2, category: "주문/결제", question: "결제 수단은 어떤 것이 있나요?", answer: "신용카드, 체크카드, 카카오페이, 네이버페이 등을 지원합니다.", createdAt: "2026-04-01" },
-  { id: 3, category: "배송", question: "배송 기간은 얼마나 걸리나요?", answer: "평균 2-3일 소요되며, 도서/산간 지역은 추가 1-2일이 소요됩니다.", createdAt: "2026-04-02" },
-  { id: 4, category: "교환/반품", question: "반품 신청 기간은 언제까지인가요?", answer: "상품 수령 후 7일 이내에 반품 신청이 가능합니다.", createdAt: "2026-04-03" },
-  { id: 5, category: "회원", question: "비밀번호를 잊어버렸어요.", answer: "로그인 페이지에서 '비밀번호 찾기'를 이용해주세요.", createdAt: "2026-04-05" },
-]
+const CATEGORY_MAP = {
+  "주문/결제": "PAYMENT",
+  "배송": "DELIVERY",
+  "교환/반품": "CANCEL_REFUND",
+  "회원": "MEMBER",
+}
+
+const CATEGORY_LABEL = {
+  PAYMENT: "주문/결제",
+  DELIVERY: "배송",
+  CANCEL_REFUND: "교환/반품",
+  MEMBER: "회원",
+}
 
 export default function AdminFAQPage() {
-  const [faqs, setFAQs] = useState(mockFAQs)
+  const [faqs, setFAQs] = useState([])
   const [selectedCategory, setSelectedCategory] = useState("전체")
   const [newQuestion, setNewQuestion] = useState("")
   const [newAnswer, setNewAnswer] = useState("")
   const [newCategory, setNewCategory] = useState(FAQ_CATEGORIES[0])
 
+  useEffect(() => {
+    getFaqs()
+      .then((data) => setFAQs(data ?? []))
+      .catch(() => alert("FAQ를 불러오지 못했습니다."))
+  }, [])
+
   const filteredFAQs = useMemo(() => {
     if (selectedCategory === "전체") return faqs
-    return faqs.filter((f) => f.category === selectedCategory)
+    return faqs.filter((f) => CATEGORY_LABEL[f.category] === selectedCategory)
   }, [faqs, selectedCategory])
 
   const handleAdd = (e) => {
@@ -32,21 +44,25 @@ export default function AdminFAQPage() {
     const question = newQuestion.trim()
     const answer = newAnswer.trim()
     if (!question || !answer) return
-    const newItem = {
-      id: Date.now(),
-      category: newCategory,
-      question,
-      answer,
-      createdAt: new Date().toISOString().slice(0, 10),
-    }
-    setFAQs((prev) => [newItem, ...prev])
-    setNewQuestion("")
-    setNewAnswer("")
+    createFaq({
+      category: CATEGORY_MAP[newCategory],
+      title: question,
+      content: answer,
+      displayOrder: 0,
+    })
+      .then((data) => {
+        setFAQs((prev) => [data, ...prev])
+        setNewQuestion("")
+        setNewAnswer("")
+      })
+      .catch(() => alert("FAQ 등록에 실패했습니다."))
   }
 
   const handleDelete = (id) => {
     if (!window.confirm("FAQ를 삭제하시겠습니까?")) return
-    setFAQs((prev) => prev.filter((f) => f.id !== id))
+    deleteFaq(id)
+      .then(() => setFAQs((prev) => prev.filter((f) => f.faqId !== id)))
+      .catch(() => alert("삭제에 실패했습니다."))
   }
 
   return (
@@ -124,18 +140,20 @@ export default function AdminFAQPage() {
                   </tr>
                 ) : (
                   filteredFAQs.map((faq) => (
-                    <tr key={faq.id}>
-                      <td className={styles.idCell}>{faq.id}</td>
+                    <tr key={faq.faqId}>
+                      <td className={styles.idCell}>{faq.faqId}</td>
                       <td>
-                        <span className={styles.categoryBadge}>{faq.category}</span>
+                        <span className={styles.categoryBadge}>
+                          {CATEGORY_LABEL[faq.category] ?? faq.category}
+                        </span>
                       </td>
-                      <td className={styles.questionCell}>{faq.question}</td>
-                      <td className={styles.answerCell}>{faq.answer}</td>
-                      <td>{faq.createdAt}</td>
+                      <td className={styles.questionCell}>{faq.title}</td>
+                      <td className={styles.answerCell}>{faq.content}</td>
+                      <td>{faq.createdAt?.slice(0, 10)}</td>
                       <td>
                         <button
                           className={styles.deleteBtn}
-                          onClick={() => handleDelete(faq.id)}
+                          onClick={() => handleDelete(faq.faqId)}
                           aria-label="삭제"
                         >
                           <Trash2 size={14} />
