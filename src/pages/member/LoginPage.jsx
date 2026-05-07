@@ -27,15 +27,9 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await login({ email: data.email, password: data.password });
-      const { token, email, name, sellerToken } = res.data;  // ← sellerToken 추가
+      const { token, email, name, seller } = res.data;  // ← isSeller → seller로 변경
 
-      setUser({ email, name }, token);
-
-      // 셀러 토큰이 있으면 저장
-      if (sellerToken) {
-        useAuthStore.getState().setSellerToken(sellerToken)
-      }
-
+      setUser({ email, name, isSeller: seller }, token);  // ← 이건 그대로
       navigate("/");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다");

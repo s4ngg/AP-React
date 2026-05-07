@@ -37,8 +37,10 @@ import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
 import "./index.css"
 
 const PrivateRoute = ({ children }) => {
-  const { isLoggedIn } = useAuthStore()
-  return isLoggedIn ? children : <Navigate to="/login" replace />
+  const { isLoggedIn, user } = useAuthStore()
+  if (!isLoggedIn) return <Navigate to="/login" replace />
+  if (!user?.isSeller) return <Navigate to="/" replace />
+  return children
 }
 
 

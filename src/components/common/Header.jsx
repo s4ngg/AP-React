@@ -21,7 +21,7 @@ const navLinks = [
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isLoggedIn, logout, sellerToken } = useAuthStore()  // ← sellerToken 추가
+  const { user, isLoggedIn, logout } = useAuthStore()  // ← sellerToken 추가
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
@@ -60,8 +60,8 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-                {/* 판매자 토큰 있을 때만 셀러 버튼 표시 */}
-                {sellerToken && (
+
+                {user?.isSeller && (
                   <Link to="/seller" className={styles.iconBtn}>
                     <Store size={20} />
                     <span>셀러</span>

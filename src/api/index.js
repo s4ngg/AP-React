@@ -10,14 +10,7 @@ const getToken = () => {
   }
 }
 
-const getSellerToken = () => {
-  try {
-    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
-    return authStorage?.state?.sellerToken ?? null
-  } catch {
-    return null
-  }
-}
+// getSellerToken 함수 삭제
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",
@@ -30,12 +23,8 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const sellerToken = getSellerToken()
     const token = getToken()
-
-    if (config.url?.includes("/products") && sellerToken) {
-      config.headers.Authorization = `Bearer ${sellerToken}`
-    } else if (token) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
