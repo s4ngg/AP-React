@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Sparkles, RefreshCw, Heart, ShoppingCart } from "lucide-react"
 import styles from "./AiRecommendSection.module.css"
+import useAuthStore from "../../store/authStore"
 
 // 임시 Mock 데이터 (추후 OpenAI API + FakeStore API 연동 예정)
 const mockRecommendations = {
@@ -43,9 +44,6 @@ const mockRecommendations = {
     },
   ],
 }
-
-// 임시 로그인 상태 (추후 authStore 연동 예정)
-const MOCK_IS_LOGGED_IN = true
 
 function SkeletonCard() {
   return (
@@ -106,9 +104,9 @@ function ProductCard({ product }) {
 }
 
 export default function AiRecommendSection() {
+  const { isLoggedIn, user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [data, setData] = useState(mockRecommendations)
-  const isLoggedIn = MOCK_IS_LOGGED_IN
 
   // 추천 새로고침 (추후 OpenAI API 호출로 교체)
   const handleRefresh = () => {
