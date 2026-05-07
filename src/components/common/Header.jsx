@@ -13,10 +13,9 @@ const categoryData = {
 }
 
 const navLinks = [
-  { name: "특별할인", href: "#" },
-  { name: "이벤트", href: "#" },
-  { name: "쿠폰", href: "#" },
-  { name: "베스트셀러", href: "#" },
+  { name: "특별할인" },
+  { name: "이벤트" },
+  { name: "베스트셀러" },
 ]
 
 export default function Header() {
@@ -25,7 +24,6 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
-
   const [hoveredCategory, setHoveredCategory] = useState("뷰티")
 
   const handleLogout = () => {
@@ -34,7 +32,10 @@ export default function Header() {
     navigate("/")
   }
 
-  // 유저 이름 첫 글자 (아바타용)
+  const handleNavClick = () => {
+    alert("아직 준비중인 기능입니다.")
+  }
+
   const userInitial = user?.name?.charAt(0) || "MY"
 
   return (
@@ -47,7 +48,6 @@ export default function Header() {
         <div className={styles.navTop}>
           <Link to="/" className={styles.logo}>AllPick</Link>
 
-          {/* 검색바 */}
           <div className={styles.searchBar}>
             <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
             <button className={styles.searchBtn} aria-label="검색">
@@ -55,10 +55,8 @@ export default function Header() {
             </button>
           </div>
 
-          {/* 오른쪽 아이콘 */}
           <div className={styles.rightIcons}>
             {isLoggedIn ? (
-              // ── 로그인 상태 ──
               <>
                 <Link to="/mypage" className={styles.userBtn}>
                   <div className={styles.userAvatar}>{userInitial}</div>
@@ -70,7 +68,6 @@ export default function Header() {
                 </button>
               </>
             ) : (
-              // ── 비로그인 상태 ──
               <>
                 <Link to="/login" className={styles.iconBtn}>
                   <User size={20} />
@@ -83,7 +80,6 @@ export default function Header() {
               </>
             )}
 
-            {/* 장바구니 - 공통 */}
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20} />
               <span>장바구니</span>
@@ -95,7 +91,6 @@ export default function Header() {
               <span>고객센터</span>
             </Link>
 
-            {/* 모바일 메뉴 버튼 */}
             <button
               className={styles.mobileMenuBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -106,7 +101,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* 모바일 검색 */}
         <div className={styles.mobileSearch}>
           <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
           <button className={styles.searchBtn} aria-label="검색">
@@ -114,7 +108,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* 데스크탑 네비게이션 */}
         <div className={styles.navBottom}>
           <div
             className={styles.categoryWrapper}
@@ -159,9 +152,7 @@ export default function Header() {
                       onClick={() => {
                         setCategoryOpen(false)
                         navigate(
-                          `/products?category=${encodeURIComponent(
-                            hoveredCategory
-                          )}&subCategory=${encodeURIComponent(subCategory)}`
+                          `/products?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`
                         )
                       }}
                     >
@@ -174,60 +165,66 @@ export default function Header() {
           </div>
 
           {navLinks.map((item) => (
-            <Link key={item.name} to={item.href} className={styles.navLink}>
+            <button
+              key={item.name}
+              className={styles.navLink}
+              onClick={handleNavClick}
+            >
               {item.name}
-            </Link>
+            </button>
           ))}
         </div>
-        </nav>
-      {/* 모바일 메뉴 */}
+      </nav>
+
       {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
           <p className={styles.mobileMenuLabel}>카테고리</p>
           {Object.keys(categoryData).map((categoryName) => (
-  <div key={categoryName} className={styles.mobileCategoryGroup}>
-    <button
-      type="button"
-      className={styles.mobileMenuItemButton}
-      onClick={() => {
-        setMobileMenuOpen(false)
-        navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-      }}
-    >
-      {categoryName}
-    </button>
+            <div key={categoryName} className={styles.mobileCategoryGroup}>
+              <button
+                type="button"
+                className={styles.mobileMenuItemButton}
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  navigate(`/products?category=${encodeURIComponent(categoryName)}`)
+                }}
+              >
+                {categoryName}
+              </button>
 
-    <div className={styles.mobileSubCategoryList}>
-      {categoryData[categoryName].map((subCategory) => (
-        <button
-          key={subCategory}
-          type="button"
-          className={styles.mobileSubCategoryItem}
-          onClick={() => {
-            setMobileMenuOpen(false)
-            navigate(
-              `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
-            )
-          }}
-        >
-          {subCategory}
-        </button>
-      ))}
-    </div>
-  </div>
-))}
+              <div className={styles.mobileSubCategoryList}>
+                {categoryData[categoryName].map((subCategory) => (
+                  <button
+                    key={subCategory}
+                    type="button"
+                    className={styles.mobileSubCategoryItem}
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      navigate(
+                        `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
+                      )
+                    }}
+                  >
+                    {subCategory}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
 
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
             <p className={styles.mobileMenuLabel}>메뉴</p>
             {navLinks.map((item) => (
-              <Link
+              <button
                 key={item.name}
-                to={item.href}
                 className={styles.mobileMenuItem}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  handleNavClick()
+                }}
               >
                 {item.name}
-              </Link>
+              </button>
             ))}
           </div>
 
@@ -238,6 +235,7 @@ export default function Header() {
           >
             고객센터
           </Link>
+
           <div className={styles.mobileBtns}>
             {isLoggedIn ? (
               <>
