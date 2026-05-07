@@ -4,7 +4,7 @@ import emailjs from "@emailjs/browser"
 // ==================== 회원가입 관련 API ====================
 
 export const checkEmailDuplicate = async (email) => {
-  const response = await api.get(`/auth/check-email?email=${encodeURIComponent(email)}`);
+  const response = await api.get(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
   return response.data;
 };
 
@@ -29,61 +29,61 @@ export const verifyEmailCode = async (email, inputCode) => {
 }
 
 export const signup = async (data) => {
-  const response = await api.post("/auth/signup", data);
+  const response = await api.post("/api/auth/signup", data);
   return response.data;
 };
 
 // ==================== 로그인 관련 API ====================
 
 export const login = async (data) => {
-  const response = await api.post("/auth/login", data);
+  const response = await api.post("/api/auth/login", data);
   return response.data;
 };
 
 export const logout = async () => {
-  const response = await api.post("/auth/logout");
+  const response = await api.post("/api/auth/logout");
   return response.data;
 };
 
 export const getSocialLoginUrl = (provider) => {
-  const baseUrl = import.meta.env.VITE_API_URL || "/api";
+  const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api";
   return `${baseUrl}/oauth2/authorization/${provider}`;
 };
 
 // ==================== 계정 찾기/복구 API ====================
 
 export const findEmail = async (data) => {
-  const response = await api.post("/auth/find-email", data);
+  const response = await api.post("/api/auth/find-email", data);
   return response.data;
 };
 
 export const sendPasswordResetCode = async (email) => {
-  const response = await api.post("/auth/send-password-reset", { email });
+  const response = await api.post("/api/auth/send-password-reset", { email });
   return response.data;
 };
 
 export const verifyPasswordResetCode = async (email, code) => {
-  const response = await api.post("/auth/verify-password-reset", { email, code });
+  const response = await api.post("/api/auth/verify-password-reset", { email, code });
   return response.data;
 };
 
 export const resetPassword = async (data) => {
-  const response = await api.post("/auth/reset-password", data);
+  const response = await api.post("/api/auth/reset-password", data);
   return response.data;
 };
 
 export const sendSmsCode = async (phone) => {
-  const response = await api.post("/sms/send", { phone });
+  const response = await api.post("/api/sms/send", { phone });
   return response.data;
 };
 
 export const verifySmsCode = async (phone, code) => {
-  const response = await api.post("/sms/verify", { phone, code });
+  const response = await api.post("/api/sms/verify", { phone, code });
   return response.data;
 };
 
 export const getTerms = async () => {
-  const response = await api.get("/terms");
+  const response = await api.get("/api/terms");
   return response.data;
 };
 
