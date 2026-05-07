@@ -92,7 +92,6 @@ export default function Header() {
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20} />
               <span>장바구니</span>
-              <span className={styles.cartBadge}>3</span>
             </Link>
 
             <Link to="/customer" className={styles.iconBtn}>
