@@ -83,10 +83,10 @@ function App() {
             <Route path="/admin/notices" element={<AdminNoticePage />} />
             <Route path="/admin/faqs" element={<AdminFAQPage />} />
             <Route path="/seller" element={<SellerDashboardPage />} />
-            <Route path="/seller/products" element={<SellerProductsPage />} />
-            <Route path="/seller/orders" element={<SellerOrdersPage />} />
-            <Route path="/seller/refunds" element={<SellerRefundPage />} />
-            <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
+              <Route path="/seller/products" element={<SellerProductsPage />} />
+              <Route path="/seller/orders" element={<SellerOrdersPage />} />
+              <Route path="/seller/refunds" element={<SellerRefundPage />} />
+              <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
           </Routes>
         </div>
         <Footer />
@@ -94,5 +94,4 @@ function App() {
     </BrowserRouter>
   )
 }
-
 export default App

@@ -70,3 +70,9 @@ export const approveSeller = (sellerId) =>
  */
 export const rejectSeller = (sellerId, rejectReason) =>
   api.patch(`/api/admin/sellers/${sellerId}/reject`, { rejectReason }).then((res) => res.data)
+
+export const getClaimDetail = (claimId) =>
+  api.get(`/api/claims/${claimId}`).then((res) => res.data.data)
+
+export const getClaimAttachments = (claimId) =>
+  api.get(`/api/attachments/claim/${claimId}`).then((res) => res.data.data)
