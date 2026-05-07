@@ -4,9 +4,9 @@ import emailjs from "@emailjs/browser"
 // ==================== 회원가입 관련 API ====================
 
 export const checkEmailDuplicate = async (email) => {
-  const response = await api.get(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
+  const response = await api.get(`/members/check-email?email=${encodeURIComponent(email)}`);
   return response.data;
-};
+}
 
 let storedCode = ""
 

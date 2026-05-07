@@ -109,9 +109,9 @@ export default function SignupPage({ isSeller = false }) {
       setEmailAvailable(response.data?.available ?? true);
       clearErrors("email");
     } catch {
-      setEmailChecked(true);
-      setEmailAvailable(true);
-      clearErrors("email");
+      setEmailChecked(false)   // ← 변경
+      setEmailAvailable(false) // ← 변경
+      setError("email", { message: "이메일 확인 중 오류가 발생했습니다. 다시 시도해주세요." }) // ← 추가
     } finally {
       setCheckingEmail(false);
     }
