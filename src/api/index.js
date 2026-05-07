@@ -1,11 +1,19 @@
 import axios from "axios"
 import useAuthStore from "../store/authStore"
 
-// zustand persist가 "auth-storage" 키에 { state: { token, user, ... } } 형태로 저장
 const getToken = () => {
   try {
     const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
     return authStorage?.state?.token ?? null
+  } catch {
+    return null
+  }
+}
+
+const getSellerToken = () => {
+  try {
+    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
+    return authStorage?.state?.sellerToken ?? null
   } catch {
     return null
   }
@@ -22,8 +30,12 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    const sellerToken = getSellerToken()
     const token = getToken()
-    if (token) {
+
+    if (config.url?.includes("/products") && sellerToken) {
+      config.headers.Authorization = `Bearer ${sellerToken}`
+    } else if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
