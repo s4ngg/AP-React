@@ -16,20 +16,26 @@ const navLinks = [
   { name: "특별할인" },
   { name: "이벤트" },
   { name: "베스트셀러" },
+
 ]
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isLoggedIn, logout, sellerToken } = useAuthStore()  // ← sellerToken 추가
+  const { user, isLoggedIn, logout, sellerToken } = useAuthStore()
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
+
   const [hoveredCategory, setHoveredCategory] = useState("뷰티")
 
   const handleLogout = () => {
     logout()
     setMobileMenuOpen(false)
     navigate("/")
+  }
+
+  const handleNavClick = () => {
+    alert("아직 준비중인 기능입니다.")
   }
 
   const userInitial = user?.name?.charAt(0) || "MY"
@@ -44,12 +50,14 @@ export default function Header() {
         <div className={styles.navTop}>
           <Link to="/" className={styles.logo}>AllPick</Link>
 
+
           <div className={styles.searchBar}>
             <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
             <button className={styles.searchBtn} aria-label="검색">
               <Search size={18} />
             </button>
           </div>
+
 
           <div className={styles.rightIcons}>
             {isLoggedIn ? (
@@ -59,8 +67,8 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-                {/* 판매자 토큰 있을 때만 셀러 버튼 표시 */}
-                {sellerToken && (
+                {/* 셀러 권한 있을 때만 셀러 버튼 표시 */}
+                {user?.isSeller && (
                   <Link to="/seller" className={styles.iconBtn}>
                     <Store size={20} />
                     <span>셀러</span>
@@ -73,6 +81,7 @@ export default function Header() {
                 </button>
               </>
             ) : (
+
               <>
                 <Link to="/login" className={styles.iconBtn}>
                   <User size={20} />
@@ -85,6 +94,7 @@ export default function Header() {
               </>
             )}
 
+
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20} />
               <span>장바구니</span>
@@ -96,6 +106,7 @@ export default function Header() {
               <span>고객센터</span>
             </Link>
 
+
             <button
               className={styles.mobileMenuBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -106,12 +117,14 @@ export default function Header() {
           </div>
         </div>
 
+
         <div className={styles.mobileSearch}>
           <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
           <button className={styles.searchBtn} aria-label="검색">
             <Search size={18} />
           </button>
         </div>
+
 
         <div className={styles.navBottom}>
           <div
@@ -134,7 +147,8 @@ export default function Header() {
                     <button
                       key={categoryName}
                       type="button"
-                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""}`}
+                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""
+                        }`}
                       onMouseEnter={() => setHoveredCategory(categoryName)}
                       onClick={() => {
                         setCategoryOpen(false)
@@ -154,7 +168,11 @@ export default function Header() {
                       className={styles.subCategoryItem}
                       onClick={() => {
                         setCategoryOpen(false)
-                        navigate(`/products?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`)
+                        navigate(
+                          `/products?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`
+
+
+                        )
                       }}
                     >
                       {subCategory}
@@ -201,7 +219,9 @@ export default function Header() {
                     className={styles.mobileSubCategoryItem}
                     onClick={() => {
                       setMobileMenuOpen(false)
-                      navigate(`/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`)
+                      navigate(
+                        `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
+                      )
                     }}
                   >
                     {subCategory}
@@ -216,6 +236,7 @@ export default function Header() {
             {navLinks.map((item) => (
               <button
                 key={item.name}
+
                 className={styles.mobileMenuItem}
                 onClick={() => {
                   setMobileMenuOpen(false)
@@ -227,14 +248,22 @@ export default function Header() {
             ))}
           </div>
 
-          <Link to="/customer" className={styles.mobileMenuItem} onClick={() => setMobileMenuOpen(false)}>
+          <Link
+            to="/customer"
+            className={styles.mobileMenuItem}
+            onClick={() => setMobileMenuOpen(false)}
+          >
             고객센터
           </Link>
 
           <div className={styles.mobileBtns}>
             {isLoggedIn ? (
               <>
-                <Link to="/mypage" className={styles.mobileLoginBtn} onClick={() => setMobileMenuOpen(false)}>
+                <Link
+                  to="/mypage"
+                  className={styles.mobileLoginBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <User size={15} /> {user?.name || "마이페이지"}
                 </Link>
                 <button className={styles.mobileLogoutBtn} onClick={handleLogout}>
@@ -243,10 +272,18 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link to="/login" className={styles.mobileLoginBtn} onClick={() => setMobileMenuOpen(false)}>
+                <Link
+                  to="/login"
+                  className={styles.mobileLoginBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   로그인
                 </Link>
-                <Link to="/signup" className={styles.mobileSignupBtn} onClick={() => setMobileMenuOpen(false)}>
+                <Link
+                  to="/signup"
+                  className={styles.mobileSignupBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   회원가입
                 </Link>
               </>
