@@ -2,6 +2,7 @@ import { useState, useMemo } from "react"
 import { Search, CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminMemberPage.module.css"
+import { approveSeller, rejectSeller } from "../../api/sellerApi"
 
 const TABS = ["구매자", "판매자", "판매자 승인"]
 
@@ -132,14 +133,22 @@ export default function AdminMemberPage() {
   }
 
   const handleSellerApprove = (sellerId) => {
-    const target = pendingSellers.find((s) => s.id === sellerId)
-    if (!target) return
-    setSellers((prev) => [...prev, { ...target, status: "APPROVED" }])
-    setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
+    if (!window.confirm("승인하시겠습니까?")) return
+    approveSeller(sellerId)
+      .then(() => {
+        const target = pendingSellers.find((s) => s.id === sellerId)
+        if (target) setSellers((prev) => [...prev, { ...target, status: "APPROVED" }])
+        setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
+      })
+      .catch(() => alert("승인에 실패했습니다."))
   }
 
   const handleSellerReject = (sellerId) => {
-    setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId))
+    const rejectReason = window.prompt("거절 사유를 입력해주세요.")
+    if (rejectReason === null) return
+    rejectSeller(sellerId, rejectReason)
+      .then(() => setPendingSellers((prev) => prev.filter((s) => s.id !== sellerId)))
+      .catch(() => alert("거절 처리에 실패했습니다."))
   }
 
   return (
