@@ -1,13 +1,34 @@
 import axios from "axios"
+import useAuthStore from "../store/authStore"
+
+const decodeToken = (token) => {
+  try {
+    const payload = token.split(".")[1]
+    return JSON.parse(atob(payload))
+  } catch {
+    return null
+  }
+}
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: import.meta.env.VITE_API_URL || "",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
   withCredentials: true,
 })
+
+const token = localStorage.getItem("token")
+if (token) {
+  const decoded = decodeToken(token)
+  if (decoded) {
+    useAuthStore.getState().setUser({
+      id: decoded.sub,
+      email: decoded.email,
+    })
+  }
+}
 
 api.interceptors.request.use(
   (config) => {
@@ -24,6 +45,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      localStorage.removeItem("token")
+      useAuthStore.getState().logout()
       window.location.href = "/login"
     }
     return Promise.reject(error)

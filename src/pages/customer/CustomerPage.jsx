@@ -1,26 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from "react-router-dom";
 import { Headset, Megaphone, HelpCircle, MessageSquare, RotateCcw, ChevronRight, Search } from "lucide-react";
 import styles from "./CustomerPage.module.css";
 import NoticeList from "../../components/customer/NoticeList.jsx";
-import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
+// import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
 import FAQList from "../../components/customer/FAQList.jsx";
 import InquiryForm from "../../components/customer/InquiryForm.jsx";
 import ReturnGuide from "../../components/customer/ReturnGuide.jsx";
 import ReturnForm from "../../components/customer/ReturnForm.jsx";
 import ReturnHistory from "../../components/customer/ReturnHistory.jsx";
+import { getNotices } from "../../api/noticeApi.js";
+
+const VALID_TABS = ["home", "notice", "faq", "inquiry", "return"];
 
 export default function CustomerPage() {
-    const [currentTab, setCurrentTab] = useState("home");
-    // 상세보기를 위한 상태 추가 (null이면 리스트, id가 있으면 상세화면)
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const currentTab = VALID_TABS.includes(tabParam) ? tabParam : "home";
     const [selectedNoticeId, setSelectedNoticeId] = useState(null);
-    // 교환/반품 탭 내 뷰 상태: "guide" | "form"
     const [returnView, setReturnView] = useState("guide");
+    const [notices, setNotices] = useState([]);
+    const [noticesLoading, setNoticesLoading] = useState(false);
 
-    // 탭이 바뀌면 상세보기도 초기화
+    useEffect(() => {
+        if (currentTab !== "notice" || notices.length > 0) return;
+        (async () => {
+            setNoticesLoading(true);
+            try {
+                const res = await getNotices();
+                setNotices(res.data?.data || []);
+            } catch {
+                setNotices([]);
+            } finally {
+                setNoticesLoading(false);
+            }
+        })();
+    }, [currentTab, notices.length]);
+
     const handleTabChange = (tabId) => {
-        setCurrentTab(tabId);
         setSelectedNoticeId(null);
         setReturnView("guide");
+        setSearchParams(tabId === "home" ? {} : { tab: tabId });
     };
 
     const sideMenus = [
@@ -63,7 +83,7 @@ export default function CustomerPage() {
                     {/* 1. 고객센터 홈 */}
                     {currentTab === "home" && (
                         <div className={styles.homeGrid}>
-                            <div className={styles.quickCard} onClick={() => setCurrentTab("inquiry")}>
+                            <div className={styles.quickCard} onClick={() => handleTabChange("inquiry")}>
                                 <div className={styles.cardHeader}>
                                     <div className={styles.iconCircle}><MessageSquare size={24} /></div>
                                     <h4>1:1 문의하기</h4>
@@ -72,7 +92,7 @@ export default function CustomerPage() {
                                 <button className={styles.cardBtn}>문의 등록 <ChevronRight size={16} /></button>
                             </div>
 
-                            <div className={styles.quickCard} onClick={() => setCurrentTab("faq")}>
+                            <div className={styles.quickCard} onClick={() => handleTabChange("faq")}>
                                 <div className={styles.cardHeader}>
                                     <div className={styles.iconCircle}><Search size={24} /></div>
                                     <h4>자주 묻는 질문</h4>
@@ -88,11 +108,16 @@ export default function CustomerPage() {
                         selectedNoticeId ? (
                             <NoticeDetail
                                 noticeId={selectedNoticeId}
+                                notices={notices}
                                 onBack={() => setSelectedNoticeId(null)}
                                 onSelect={(id) => setSelectedNoticeId(id)}
                             />
                         ) : (
-                            <NoticeList onSelect={(id) => setSelectedNoticeId(id)} />
+                            <NoticeList
+                                notices={notices}
+                                loading={noticesLoading}
+                                onSelect={(id) => setSelectedNoticeId(id)}
+                            />
                         )
                     )}
 
