@@ -1,50 +1,56 @@
-import api from "./index";
+import api from "./index"
 
-export const createProduct = async (productSaveRequestDto) => {
-  const response = await api.post("/api/products", productSaveRequestDto);
-  return response.data;
-};
+// ─── 상품 ───────────────────────────────────────────
+
+export const getProducts = (page = 0, size = 20) =>
+  api
+    .get("/products", { params: { page, size, sort: "createdAt,desc" } })
+    .then((res) => res.data.data)
 
 export const getProductList = async (page = 0) => {
-  const response = await api.get("/api/products", {
+  const response = await api.get("/products", {
     params: { page, size: 8, sort: "createdAt,desc" },
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 export const getProductDetail = async (productId, page = 0) => {
-  const response = await api.get(`/api/products/${productId}`, {
+  const response = await api.get(`/products/${productId}`, {
     params: { page, size: 5, sort: "createdAt,desc" },
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
-export const updateProduct = async (productId, productUpdateRequestDto) => {
-  const response = await api.patch(`/api/products/${productId}`, productUpdateRequestDto);
-  return response.data;
-};
+export const createProduct = (data) =>
+  api.post("/products", data).then((res) => res.data.data)
 
-export const deleteProduct = async (productId) => {
-  const response = await api.delete(`/api/products/${productId}`);
-  return response.data;
-};
+export const updateProduct = (productId, data) =>
+  api.patch(`/products/${productId}`, data).then((res) => res.data.data)
+
+export const deleteProduct = (productId) =>
+  api.delete(`/products/${productId}`).then((res) => res.data)
+
+export const getSellerProducts = () =>
+  api.get("/products/seller").then((res) => res.data.data)
+
+// ─── 카테고리 ─────────────────────────────────────────
 
 export const getParentCategories = async () => {
-  const response = await api.get("/api/categories");
-  return response.data;
-};
+  const response = await api.get("/categories")
+  return response.data
+}
 
 export const getParentCategoryBySlug = async (slug) => {
-  const response = await api.get(`/api/categories/${slug}`);
-  return response.data;
-};
+  const response = await api.get(`/categories/${slug}`)
+  return response.data
+}
 
 export const getChildCategories = async (parentCategoryId) => {
-  const response = await api.get(`/api/categories/${parentCategoryId}/child-categories`);
-  return response.data;
-};
+  const response = await api.get(`/categories/${parentCategoryId}/child-categories`)
+  return response.data
+}
 
 export const getChildCategoryBySlug = async (slug) => {
-  const response = await api.get(`/api/categories/child-categories/${slug}`);
-  return response.data;
-};
+  const response = await api.get(`/categories/child-categories/${slug}`)
+  return response.data
+}

@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import styles from "./ProductGrid.module.css"
 import useCartStore from "../../store/cartStore"
+import { getProductList } from "../../api/productApi"
 
 const sortOptions = [
   { label: "최신순",    value: "latest" },
@@ -15,6 +16,7 @@ function ProductCard({ product }) {
   const [liked, setLiked] = useState(false)
   const [toastVisible, setToastVisible] = useState(false)
   const { addItem } = useCartStore()
+
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null
@@ -28,14 +30,14 @@ function ProductCard({ product }) {
   }
 
   return (
-    <Link to={`/products/${product.id}`} className={styles.card}>
+    <Link to={`/products/${product.productId}`} className={styles.card}>
       {toastVisible && (
         <div className={styles.toast}>
           <ShoppingCart size={13} /> 장바구니에 담겼습니다!
         </div>
       )}
       <div className={styles.imageBox}>
-        <img src={product.image} alt={product.name} />
+        <img src={product.thumbnailUrl} alt={product.productName} />
         {product.badge && <span className={styles.badge}>{product.badge}</span>}
         <button
           className={styles.wishBtn}
@@ -46,10 +48,10 @@ function ProductCard({ product }) {
         </button>
       </div>
       <div className={styles.cardBody}>
-        <span className={styles.productName}>{product.name}</span>
+        <span className={styles.productName}>{product.productName}</span>
         <div className={styles.priceRow}>
           {discount && <span className={styles.discount}>{discount}%</span>}
-          <span className={styles.price}>{product.price.toLocaleString()}원</span>
+          <span className={styles.price}>{Number(product.price).toLocaleString()}원</span>
         </div>
         {product.originalPrice && (
           <div className={styles.originalPrice}>{product.originalPrice.toLocaleString()}원</div>
@@ -66,9 +68,25 @@ function ProductCard({ product }) {
 
 export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
+  const [displayProducts, setDisplayProducts] = useState([])
 
-  // 추후 API 데이터로 교체
-  const displayProducts = []
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await getProductList(0)
+        setDisplayProducts(res.data?.content || [])
+      } catch {
+        setDisplayProducts([])
+      }
+    }
+    fetchProducts()
+  }, [])
+
+  const sortedProducts = [...displayProducts].sort((a, b) => {
+    if (activeSort === "price_asc") return Number(a.price) - Number(b.price)
+    if (activeSort === "price_desc") return Number(b.price) - Number(a.price)
+    return 0
+  })
 
   return (
     <section className={styles.section}>
@@ -87,13 +105,13 @@ export default function ProductGrid() {
             ))}
           </div>
         </div>
-        {displayProducts.length === 0 ? (
+        {sortedProducts.length === 0 ? (
           <p style={{ textAlign: "center", color: "#9ca3af", padding: "40px 0" }}>
             상품 준비 중입니다.
           </p>
         ) : (
           <div className={styles.grid}>
-            {displayProducts.map((p) => <ProductCard key={p.id} product={p} />)}
+            {sortedProducts.map((p) => <ProductCard key={p.productId} product={p} />)}
           </div>
         )}
         <button className={styles.moreBtn}>더보기</button>

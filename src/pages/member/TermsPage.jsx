@@ -19,13 +19,18 @@ export default function TermsPage() {
   }, [formData.emailVerified, navigate]);
 
   useEffect(() => {
+    // 백엔드 응답: { message: "약관 조회 성공", data: [...] }
+    // getTerms()는 response.data를 반환하므로 res = { message, data: [...] }
     getTerms().then((res) => {
-      setTermItems(res.data.map((term) => ({
+      const terms = res.data ?? [];
+      setTermItems(terms.map((term) => ({
         id: term.termsType,
         label: term.title,
-        required: term.required ?? term.isRequired,
+        required: term.required ?? term.isRequired ?? false,
         content: term.content,
       })));
+    }).catch(() => {
+      setError("약관 정보를 불러오는데 실패했습니다.");
     });
   }, []);
 
@@ -45,11 +50,15 @@ export default function TermsPage() {
     setIsSubmitting(true);
     setError("");
     try {
-      await signup({ ...formData });
+      // 백엔드 SignupRequestDto: { email, password, name, phone, address }
+      // address는 zipCode + address + addressDetail 합쳐서 전송
+      const { email, password, name, phone, zipCode, address, addressDetail } = formData;
+      const fullAddress = [zipCode, address, addressDetail].filter(Boolean).join(" ");
+
+      await signup({ email, password, name, phone, address: fullAddress });
       setCurrentStep(5);
-      navigate("/signup/complete");  // ← 성공할 때만 이동
+      navigate("/signup/complete");
     } catch (err) {
-      // 실패하면 에러 메시지 표시
       setError(err.response?.data?.message || "회원가입에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);

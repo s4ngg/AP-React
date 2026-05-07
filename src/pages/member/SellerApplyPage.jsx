@@ -68,16 +68,17 @@ export default function SellerApplyPage() {
 
     setIsLoading(true)
     try {
+      // 백엔드 SellerApplyRequestDto: businessNumber는 10자리 숫자만 (하이픈 제거)
       await applyForSeller({
         businessName: form.businessName,
-        businessNumber: form.businessNumber,
+        businessNumber: form.businessNumber.replace(/-/g, ""), // 하이픈 제거
         representativeName: form.representativeName,
         bankName: form.bankName,
-        bankAccount: form.bankAccount,
+        bankAccount: form.bankAccount.replace(/-/g, ""),
       })
       navigate("/seller-apply/complete")
     } catch (err) {
-      setSubmitError(err.message || "판매자 신청 중 오류가 발생했습니다.")
+      setSubmitError(err.response?.data?.message || "판매자 신청 중 오류가 발생했습니다.")
     } finally {
       setIsLoading(false)
     }

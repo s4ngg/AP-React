@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket } from "lucide-react"
 import styles from "./MyPage.module.css"
 import useAuthStore from "../../store/authStore"
 import { getMember, updateMember, changePassword, deleteMember } from "../../api/memberApi"
 import { getMemberCoupons } from "../../api/couponApi"
 import { getMembershipHistory } from "../../api/membershipApi"
-import { getMyOrders, getDeliveryAddresses, addDeliveryAddress, updateDeliveryAddress, deleteDeliveryAddress } from "../../api/orderApi"
+import { getMyOrders, getDeliveryAddresses, deleteDeliveryAddress } from "../../api/orderApi"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket, Store } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 // 백엔드 OrderStatus enum → 한글 라벨 매핑
 const STATUS_LABEL = {
@@ -25,9 +26,9 @@ const STATUS_CLASS = {
 }
 
 const GRADE_CONFIG = {
-  NORMAL:   { label: "일반",     color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
-  SILVER:   { label: "실버",     color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
-  GOLD:     { label: "골드",     color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
+  NORMAL: { label: "일반", color: "#6b7280", bg: "#f3f4f6", minAmount: 0 },
+  SILVER: { label: "실버", color: "#6366f1", bg: "#eef2ff", minAmount: 300000 },
+  GOLD: { label: "골드", color: "#d97706", bg: "#fffbeb", minAmount: 1000000 },
   PLATINUM: { label: "플래티넘", color: "#0891b2", bg: "#ecfeff", minAmount: 3000000 },
 }
 
@@ -41,15 +42,16 @@ const GRADE_LABEL = {
 }
 
 const tabs = [
-  { id: "info",       label: "내 정보 관리", icon: User },
-  { id: "orders",     label: "주문 내역",    icon: Package },
-  { id: "address",    label: "배송지 관리",  icon: MapPin },
-  { id: "coupon",     label: "쿠폰함",       icon: Ticket },
-  { id: "membership", label: "멤버십",       icon: Award },
-  { id: "withdrawal", label: "회원 탈퇴",    icon: AlertTriangle },
+  { id: "info", label: "내 정보 관리", icon: User },
+  { id: "orders", label: "주문 내역", icon: Package },
+  { id: "address", label: "배송지 관리", icon: MapPin },
+  { id: "coupon", label: "쿠폰함", icon: Ticket },
+  { id: "membership", label: "멤버십", icon: Award },
+  { id: "seller", label: "판매자 신청", icon: Store },
+  { id: "withdrawal", label: "회원 탈퇴", icon: AlertTriangle },
 ]
-
 export default function MyPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("info")
   const [couponFilter, setCouponFilter] = useState("available")
   const [isEditing, setIsEditing] = useState(false)
@@ -563,7 +565,29 @@ export default function MyPage() {
               </div>
             </div>
           )}
-
+          {/* 판매자 신청 */}
+          {activeTab === "seller" && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>판매자 신청</h2>
+              <div className={styles.withdrawalWrap}>
+                <div className={styles.withdrawalWarning}>
+                  <Store size={20} color="#6366f1" />
+                  <p className={styles.withdrawalWarningText}>판매자로 전환하면 상품을 등록하고 판매할 수 있어요.</p>
+                </div>
+                <ul className={styles.withdrawalList}>
+                  <li>상품 등록 및 관리</li>
+                  <li>주문 및 배송 관리</li>
+                  <li>정산 및 매출 확인</li>
+                </ul>
+                <button
+                  className={styles.saveBtn}
+                  onClick={() => navigate("/seller-apply")}
+                >
+                  판매자 신청하기
+                </button>
+              </div>
+            </div>
+          )}
           {/* 회원 탈퇴 */}
           {activeTab === "withdrawal" && (
             <div className={styles.section}>
