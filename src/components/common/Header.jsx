@@ -32,6 +32,10 @@ export default function Header() {
     navigate("/")
   }
 
+  const handleNavClick = () => {
+    alert("아직 준비중인 기능입니다.")
+  }
+
   const userInitial = user?.name?.charAt(0) || "MY"
 
   return (
