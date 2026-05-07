@@ -83,6 +83,11 @@ export default function MyPage() {
   // 배송지
   const [addresses, setAddresses] = useState([])
   const [addressLoading, setAddressLoading] = useState(false)
+  const [showAddressModal, setShowAddressModal] = useState(false)
+  const [editingAddress, setEditingAddress] = useState(null)
+  const [addressForm, setAddressForm] = useState({
+    recipientName: "", phone: "", zipCode: "", address: "", addressDetail: "", isDefault: false,
+  })
 
   // 내 정보 수정 폼
   const [form, setForm] = useState({ phone: "", address: "", addressDetail: "" })
@@ -183,6 +188,61 @@ export default function MyPage() {
         window.location.href = "/"
       })
       .catch(() => alert("탈퇴 처리에 실패했습니다."))
+  }
+
+  // 배송지 추가 모달 열기
+  const handleOpenAddModal = () => {
+    setEditingAddress(null)
+    setAddressForm({ recipientName: "", phone: "", zipCode: "", address: "", addressDetail: "", isDefault: false })
+    setShowAddressModal(true)
+  }
+
+  // 배송지 수정 모달 열기
+  const handleOpenEditModal = (addr) => {
+    setEditingAddress(addr)
+    setAddressForm({
+      recipientName: addr.recipientName,
+      phone: addr.phone,
+      zipCode: addr.zipCode,
+      address: addr.address,
+      addressDetail: addr.addressDetail,
+      isDefault: addr.isDefault,
+    })
+    setShowAddressModal(true)
+  }
+
+  // 배송지 폼 입력 변경
+  const handleAddressFormChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setAddressForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }))
+  }
+
+  // 배송지 저장 (추가 or 수정)
+  const handleAddressSave = () => {
+    if (editingAddress) {
+      updateDeliveryAddress(editingAddress.addressId, addressForm)
+        .then((data) => {
+          setAddresses((prev) => prev.map((a) => a.addressId === data.addressId ? data : a))
+          setShowAddressModal(false)
+        })
+        .catch(() => alert("수정에 실패했습니다."))
+    } else {
+      addDeliveryAddress(addressForm)
+        .then((data) => {
+          setAddresses((prev) => [...prev, data])
+          setShowAddressModal(false)
+        })
+        .catch(() => alert("추가에 실패했습니다."))
+    }
+  }
+
+  // 기본 배송지 설정
+  const handleSetDefault = (addr) => {
+    updateDeliveryAddress(addr.addressId, { ...addr, isDefault: true })
+      .then((data) => {
+        setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.addressId === data.addressId })))
+      })
+      .catch(() => alert("기본 설정에 실패했습니다."))
   }
 
   // 배송지 삭제
@@ -379,7 +439,7 @@ export default function MyPage() {
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>배송지 관리</h2>
-                <button className={styles.addBtn}>+ 배송지 추가</button>
+                <button className={styles.addBtn} onClick={handleOpenAddModal}>+ 배송지 추가</button>
               </div>
               {addressLoading ? (
                 <div className={styles.empty}><p>불러오는 중...</p></div>
@@ -398,8 +458,8 @@ export default function MyPage() {
                           {addr.isDefault && <span className={styles.defaultBadge}>기본 배송지</span>}
                         </div>
                         <div className={styles.addressActions}>
-                          {!addr.isDefault && <button className={styles.addressActionBtn}>기본 설정</button>}
-                          <button className={styles.addressActionBtn}>수정</button>
+                          {!addr.isDefault && <button className={styles.addressActionBtn} onClick={() => handleSetDefault(addr)}>기본 설정</button>}
+                          <button className={styles.addressActionBtn} onClick={() => handleOpenEditModal(addr)}>수정</button>
                           {!addr.isDefault && (
                             <button
                               className={`${styles.addressActionBtn} ${styles.addressDeleteBtn}`}
@@ -417,6 +477,30 @@ export default function MyPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 배송지 추가/수정 모달 */}
+          {showAddressModal && (
+            <div className={styles.modalOverlay} onClick={() => setShowAddressModal(false)}>
+              <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <h3 className={styles.modalTitle}>{editingAddress ? "배송지 수정" : "배송지 추가"}</h3>
+                <div className={styles.modalForm}>
+                  <input className={styles.input} name="recipientName" value={addressForm.recipientName} onChange={handleAddressFormChange} placeholder="받는 분" />
+                  <input className={styles.input} name="phone" value={addressForm.phone} onChange={handleAddressFormChange} placeholder="연락처 (01012345678)" />
+                  <input className={styles.input} name="zipCode" value={addressForm.zipCode} onChange={handleAddressFormChange} placeholder="우편번호" />
+                  <input className={styles.input} name="address" value={addressForm.address} onChange={handleAddressFormChange} placeholder="주소" />
+                  <input className={styles.input} name="addressDetail" value={addressForm.addressDetail} onChange={handleAddressFormChange} placeholder="상세 주소" />
+                  <label className={styles.modalCheckLabel}>
+                    <input type="checkbox" name="isDefault" checked={addressForm.isDefault} onChange={handleAddressFormChange} />
+                    기본 배송지로 설정
+                  </label>
+                </div>
+                <div className={styles.actionRow}>
+                  <button className={styles.cancelBtn} onClick={() => setShowAddressModal(false)}>취소</button>
+                  <button className={styles.saveBtn} onClick={handleAddressSave}>저장</button>
+                </div>
+              </div>
             </div>
           )}
 
