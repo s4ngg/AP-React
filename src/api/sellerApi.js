@@ -36,6 +36,7 @@ export const updateSeller = (sellerId, data) =>
  */
 export const deleteSeller = (sellerId) =>
   api.delete(`/seller/auth/${sellerId}`).then((res) => res.data);
+
 export const getSellerClaims = () =>
   api.get("/claims/seller").then((res) => res.data.data)
 
@@ -55,3 +56,17 @@ export const getSellerInquiries = () =>
  */
 export const getSellerProducts = () =>
   api.get("/products/seller").then((res) => res.data.data)
+
+/**
+ * 어드민 - 판매자 승인
+ * PATCH /api/admin/sellers/{sellerId}/approve
+ */
+export const approveSeller = (sellerId) =>
+  api.patch(`/api/admin/sellers/${sellerId}/approve`).then((res) => res.data)
+
+/**
+ * 어드민 - 판매자 거절
+ * PATCH /api/admin/sellers/{sellerId}/reject
+ */
+export const rejectSeller = (sellerId, rejectReason) =>
+  api.patch(`/api/admin/sellers/${sellerId}/reject`, { rejectReason }).then((res) => res.data)
