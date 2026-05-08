@@ -1,109 +1,100 @@
-import { useState, useMemo } from "react"
-import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { CheckCircle, Search, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import {
+  approveAdminProduct,
+  getAdminProducts,
+  rejectAdminProduct,
+} from "../../api/adminApi"
 import styles from "./AdminProductsPage.module.css"
 
-// 임시 상품 데이터 (추후 API 연동 예정)
-const initialProducts = [
-  { id: 1, name: "[에스티로더] 갈색병 세럼 50ml", category: "뷰티", price: 89000, stock: 99, status: "판매중", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=60&h=60&fit=crop" },
-  { id: 2, name: "[나이키] 에어맥스 97 화이트", category: "패션", price: 179000, stock: 30, status: "판매중", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=60&h=60&fit=crop" },
-  { id: 3, name: "[설화수] 윤조에센스 60ml", category: "뷰티", price: 128000, stock: 50, status: "판매중", image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=60&h=60&fit=crop" },
-  { id: 4, name: "[유니클로] 린넨 블렌드 셔츠", category: "패션", price: 39900, stock: 0, status: "품절", image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=60&h=60&fit=crop" },
-  { id: 5, name: "[무인양품] 폴리에스터 이불커버", category: "리빙", price: 59000, stock: 15, status: "판매중", image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=60&h=60&fit=crop" },
-  { id: 6, name: "[헤라] 블랙쿠션 파운데이션", category: "뷰티", price: 55000, stock: 80, status: "판매중", image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=60&h=60&fit=crop" },
-]
+const ALL_CATEGORY = "전체"
 
-const categories = ["뷰티", "패션", "리빙"]
-const FILTER_CATEGORIES = ["전체", ...categories]
-const EMPTY_FORM = { name: "", category: "뷰티", price: "", stock: "" }
+const statusLabel = {
+  ON_SALE: "판매중",
+  SOLD_OUT: "품절",
+  HIDDEN: "숨김",
+  DELETED: "삭제",
+}
+
+const approvalStatusLabel = {
+  PENDING: "승인대기",
+  APPROVED: "승인",
+  REJECTED: "거절",
+}
+
+const approvalStatusClass = {
+  PENDING: "statusPending",
+  APPROVED: "statusApproved",
+  REJECTED: "statusRejected",
+}
+
+const formatPrice = (price) => Number(price ?? 0).toLocaleString()
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("전체")
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState(null)
-  const [formData, setFormData] = useState(EMPTY_FORM)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY)
+  const [loading, setLoading] = useState(false)
+  const [processingId, setProcessingId] = useState(null)
+
+  const fetchProducts = useCallback(() => {
+    setLoading(true)
+    getAdminProducts()
+      .then((data) => setProducts(data ?? []))
+      .catch(() => alert("상품 목록을 불러오지 못했습니다."))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(fetchProducts, 0)
+    return () => clearTimeout(timeoutId)
+  }, [fetchProducts])
+
+  const filterCategories = useMemo(() => {
+    const categories = products
+      .map((product) => product.parentCategoryName)
+      .filter(Boolean)
+    return [ALL_CATEGORY, ...new Set(categories)]
+  }, [products])
 
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
-    return products.filter((p) => {
-      const matchesSearch = !term || p.name.toLowerCase().includes(term)
-      const matchesCategory = selectedCategory === "전체" || p.category === selectedCategory
+    return products.filter((product) => {
+      const name = product.productName ?? ""
+      const brand = product.brand ?? ""
+      const category = product.parentCategoryName ?? ""
+      const matchesSearch =
+        !term ||
+        name.toLowerCase().includes(term) ||
+        brand.toLowerCase().includes(term)
+      const matchesCategory =
+        selectedCategory === ALL_CATEGORY || category === selectedCategory
       return matchesSearch && matchesCategory
     })
   }, [products, searchTerm, selectedCategory])
 
-  const handleOpenCreate = () => {
-    setEditingProduct(null)
-    setFormData(EMPTY_FORM)
-    setIsModalOpen(true)
+  const handleApprove = (productId) => {
+    if (!window.confirm("상품을 승인하시겠습니까?")) return
+    setProcessingId(productId)
+    approveAdminProduct(productId)
+      .then(fetchProducts)
+      .catch(() => alert("상품 승인에 실패했습니다."))
+      .finally(() => setProcessingId(null))
   }
 
-  const handleOpenEdit = (product) => {
-    setEditingProduct(product)
-    setFormData({
-      name: product.name,
-      category: product.category,
-      price: String(product.price),
-      stock: String(product.stock),
-    })
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setEditingProduct(null)
-    setFormData(EMPTY_FORM)
-  }
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!formData.name.trim() || !formData.price || !formData.stock) {
-      alert("모든 항목을 입력해주세요.")
+  const handleReject = (productId) => {
+    const rejectReason = window.prompt("거절 사유를 입력해주세요.")
+    if (rejectReason === null) return
+    if (!rejectReason.trim()) {
+      alert("거절 사유는 필수입니다.")
       return
     }
-    setIsSubmitting(true)
-    // FakeAPI - 실제 API 연동 전 500ms 시뮬레이션
-    setTimeout(() => {
-      const price = Number(formData.price)
-      const stock = Number(formData.stock)
-      const status = stock === 0 ? "품절" : "판매중"
-
-      if (editingProduct) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === editingProduct.id
-              ? { ...p, name: formData.name, category: formData.category, price, stock, status }
-              : p
-          )
-        )
-      } else {
-        const newProduct = {
-          id: Date.now(),
-          name: formData.name,
-          category: formData.category,
-          price,
-          stock,
-          status,
-          image: "https://images.unsplash.com/photo-1560472355-536de3962603?w=60&h=60&fit=crop",
-        }
-        setProducts((prev) => [newProduct, ...prev])
-      }
-      setIsSubmitting(false)
-      handleCloseModal()
-    }, 500)
-  }
-
-  const handleDelete = (productId, productName) => {
-    if (!window.confirm(`"${productName}"을(를) 삭제하시겠습니까?`)) return
-    setProducts((prev) => prev.filter((p) => p.id !== productId))
+    setProcessingId(productId)
+    rejectAdminProduct(productId, rejectReason.trim())
+      .then(fetchProducts)
+      .catch(() => alert("상품 거절에 실패했습니다."))
+      .finally(() => setProcessingId(null))
   }
 
   return (
@@ -113,38 +104,34 @@ export default function AdminProductsPage() {
         <h1 className={styles.pageTitle}>상품 관리</h1>
 
         <div className={styles.section}>
-          {/* 카테고리 필터 */}
           <div className={styles.filterBar}>
-            {FILTER_CATEGORIES.map((cat) => (
+            {filterCategories.map((category) => (
               <button
-                key={cat}
-                className={`${styles.filterBtn} ${selectedCategory === cat ? styles.filterBtnActive : ""}`}
-                onClick={() => setSelectedCategory(cat)}
+                key={category}
+                className={`${styles.filterBtn} ${
+                  selectedCategory === category ? styles.filterBtnActive : ""
+                }`}
+                onClick={() => setSelectedCategory(category)}
               >
-                {cat}
+                {category}
               </button>
             ))}
           </div>
 
-          {/* 툴바 */}
           <div className={styles.toolbar}>
             <div className={styles.searchWrap}>
               <Search size={16} className={styles.searchIcon} />
               <input
                 type="text"
                 className={styles.searchInput}
-                placeholder="상품명으로 검색"
+                placeholder="상품명 또는 브랜드로 검색"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className={styles.createBtn} onClick={handleOpenCreate}>
-              <Plus size={16} />
-              상품 등록
-            </button>
+            <span className={styles.totalCount}>총 {filteredProducts.length}개</span>
           </div>
 
-          {/* 테이블 */}
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
@@ -153,55 +140,90 @@ export default function AdminProductsPage() {
                   <th>카테고리</th>
                   <th>판매가</th>
                   <th>재고</th>
-                  <th>상태</th>
+                  <th>판매상태</th>
+                  <th>승인상태</th>
                   <th>관리</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.length === 0 ? (
+                {loading ? (
                   <tr>
-                    <td colSpan={6} className={styles.emptyRow}>
+                    <td colSpan={7} className={styles.emptyRow}>
+                      불러오는 중...
+                    </td>
+                  </tr>
+                ) : filteredProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className={styles.emptyRow}>
                       검색 결과가 없습니다.
                     </td>
                   </tr>
                 ) : (
                   filteredProducts.map((product) => (
-                    <tr key={product.id}>
+                    <tr key={product.productId}>
                       <td>
                         <div className={styles.productCell}>
-                          <img src={product.image} alt={product.name} className={styles.productThumb} />
-                          <span className={styles.productName}>{product.name}</span>
+                          {product.thumbnailUrl ? (
+                            <img
+                              src={product.thumbnailUrl}
+                              alt={product.productName}
+                              className={styles.productThumb}
+                            />
+                          ) : (
+                            <div className={styles.productThumb} />
+                          )}
+                          <div>
+                            <span className={styles.productName}>{product.productName}</span>
+                            <span className={styles.brandName}>{product.brand}</span>
+                          </div>
                         </div>
                       </td>
-                      <td>{product.category}</td>
-                      <td>{product.price.toLocaleString()}원</td>
-                      <td>{product.stock}개</td>
+                      <td>{product.parentCategoryName ?? "-"}</td>
+                      <td>{formatPrice(product.price)}원</td>
+                      <td>{product.stockQuantity ?? 0}개</td>
                       <td>
                         <span
                           className={`${styles.statusBadge} ${
-                            product.status === "판매중" ? styles.statusOnSale : styles.statusSoldOut
+                            product.status === "ON_SALE"
+                              ? styles.statusOnSale
+                              : styles.statusSoldOut
                           }`}
                         >
-                          {product.status}
+                          {statusLabel[product.status] ?? product.status}
                         </span>
                       </td>
                       <td>
-                        <div className={styles.actionBtns}>
-                          <button
-                            className={styles.editBtn}
-                            onClick={() => handleOpenEdit(product)}
-                            aria-label="수정"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            className={styles.deleteBtn}
-                            onClick={() => handleDelete(product.id, product.name)}
-                            aria-label="삭제"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
+                        <span
+                          className={`${styles.statusBadge} ${
+                            styles[approvalStatusClass[product.approvalStatus]] ?? ""
+                          }`}
+                        >
+                          {approvalStatusLabel[product.approvalStatus] ?? product.approvalStatus}
+                        </span>
+                      </td>
+                      <td>
+                        {product.approvalStatus === "PENDING" ? (
+                          <div className={styles.actionBtns}>
+                            <button
+                              className={`${styles.actionBtn} ${styles.approveBtn}`}
+                              onClick={() => handleApprove(product.productId)}
+                              disabled={processingId === product.productId}
+                            >
+                              <CheckCircle size={14} />
+                              승인
+                            </button>
+                            <button
+                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                              onClick={() => handleReject(product.productId)}
+                              disabled={processingId === product.productId}
+                            >
+                              <XCircle size={14} />
+                              거절
+                            </button>
+                          </div>
+                        ) : (
+                          <span className={styles.noAction}>-</span>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -210,88 +232,6 @@ export default function AdminProductsPage() {
             </table>
           </div>
         </div>
-
-        {/* 등록 / 수정 모달 */}
-        {isModalOpen && (
-          <div className={styles.modalOverlay} onClick={handleCloseModal}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>
-                  {editingProduct ? "상품 수정" : "상품 등록"}
-                </h2>
-                <button className={styles.modalCloseBtn} onClick={handleCloseModal} aria-label="닫기">
-                  <X size={20} />
-                </button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>상품명</label>
-                  <input
-                    type="text"
-                    name="name"
-                    className={styles.formInput}
-                    value={formData.name}
-                    onChange={handleFormChange}
-                    placeholder="상품명을 입력하세요"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>카테고리</label>
-                  <select
-                    name="category"
-                    className={styles.formInput}
-                    value={formData.category}
-                    onChange={handleFormChange}
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>판매가 (원)</label>
-                  <input
-                    type="number"
-                    name="price"
-                    className={styles.formInput}
-                    value={formData.price}
-                    onChange={handleFormChange}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>재고 수량</label>
-                  <input
-                    type="number"
-                    name="stock"
-                    className={styles.formInput}
-                    value={formData.stock}
-                    onChange={handleFormChange}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-                <div className={styles.modalFooter}>
-                  <button
-                    type="button"
-                    className={styles.cancelBtn}
-                    onClick={handleCloseModal}
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    className={styles.submitBtn}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "저장 중..." : editingProduct ? "수정하기" : "등록하기"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   )

@@ -1,26 +1,91 @@
-import { useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import {
+  getAdminClaims,
+  rejectAdminClaim,
+  updateClaimStatus,
+} from "../../api/claimApi"
 import styles from "./AdminRefundPage.module.css"
 
-// 임시 환불 요청 데이터 (추후 API 연동 예정)
-const mockRefundRequests = [
-  { id: 1, orderId: "AP-00000003", memberName: "박지성", productName: "[설화수] 윤조에센스 60ml", amount: 128000, reason: "상품 불량", requestedAt: "2026-04-15" },
-  { id: 2, orderId: "AP-00000006", memberName: "손예진", productName: "[헤라] 블랙쿠션 파운데이션", amount: 55000, reason: "단순 변심", requestedAt: "2026-04-16" },
-  { id: 3, orderId: "AP-00000008", memberName: "유재석", productName: "[나이키] 에어맥스 97 화이트", amount: 179000, reason: "사이즈 불일치", requestedAt: "2026-04-16" },
-]
+const reasonLabel = {
+  CHANGE_MIND: "단순 변심",
+  SIZE_COLOR: "사이즈/색상 불만족",
+  DESCRIPTION_DIFF: "상품 설명과 다름",
+  DEFECT: "상품 불량/파손",
+  WRONG_ITEM: "오배송",
+  MISSING_ITEM: "구성품 누락",
+  ETC: "기타",
+}
+
+const statusLabel = {
+  SUBMITTED: "접수",
+  IN_PROGRESS: "처리중",
+  COMPLETED: "완료",
+  REJECTED: "거절",
+  CANCELLED: "취소",
+}
+
+const pendingStatuses = ["SUBMITTED", "IN_PROGRESS"]
+
+const formatPrice = (amount) => Number(amount ?? 0).toLocaleString()
+
+const formatDate = (date) => {
+  if (!date) return "-"
+  return date.slice(0, 10)
+}
 
 export default function AdminRefundPage() {
-  const [refundRequests, setRefundRequests] = useState(mockRefundRequests)
+  const [claims, setClaims] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [processingId, setProcessingId] = useState(null)
 
-  const handleApprove = (id, orderId) => {
-    if (!window.confirm(`주문 ${orderId}의 환불을 승인하시겠습니까?`)) return
-    setRefundRequests((prev) => prev.filter((r) => r.id !== id))
+  const fetchClaims = useCallback(() => {
+    setLoading(true)
+    getAdminClaims()
+      .then((data) => setClaims(data ?? []))
+      .catch(() => alert("환불 요청 목록을 불러오지 못했습니다."))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(fetchClaims, 0)
+    return () => clearTimeout(timeoutId)
+  }, [fetchClaims])
+
+  const refundRequests = useMemo(
+    () =>
+      claims.filter(
+        (claim) =>
+          claim.claimType === "RETURN" && pendingStatuses.includes(claim.status)
+      ),
+    [claims]
+  )
+
+  const handleApprove = (claim) => {
+    const nextStatus = claim.status === "SUBMITTED" ? "IN_PROGRESS" : "COMPLETED"
+    if (!window.confirm(`환불 요청을 ${statusLabel[nextStatus]} 상태로 변경하시겠습니까?`)) return
+
+    setProcessingId(claim.claimId)
+    updateClaimStatus(claim.claimId, nextStatus)
+      .then(fetchClaims)
+      .catch(() => alert("환불 승인 처리에 실패했습니다."))
+      .finally(() => setProcessingId(null))
   }
 
-  const handleReject = (id, orderId) => {
-    if (!window.confirm(`주문 ${orderId}의 환불을 거절하시겠습니까?`)) return
-    setRefundRequests((prev) => prev.filter((r) => r.id !== id))
+  const handleReject = (claim) => {
+    const rejectReason = window.prompt("거절 사유를 입력해주세요.")
+    if (rejectReason === null) return
+    if (!rejectReason.trim()) {
+      alert("거절 사유는 필수입니다.")
+      return
+    }
+
+    setProcessingId(claim.claimId)
+    rejectAdminClaim(claim.claimId, rejectReason.trim())
+      .then(fetchClaims)
+      .catch(() => alert("환불 거절 처리에 실패했습니다."))
+      .finally(() => setProcessingId(null))
   }
 
   return (
@@ -43,39 +108,53 @@ export default function AdminRefundPage() {
                   <th>상품명</th>
                   <th>환불금액</th>
                   <th>환불사유</th>
+                  <th>상태</th>
                   <th>신청일</th>
                   <th>처리</th>
                 </tr>
               </thead>
               <tbody>
-                {refundRequests.length === 0 ? (
+                {loading ? (
                   <tr>
-                    <td colSpan={8} className={styles.emptyRow}>
+                    <td colSpan={9} className={styles.emptyRow}>
+                      불러오는 중...
+                    </td>
+                  </tr>
+                ) : refundRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className={styles.emptyRow}>
                       환불 요청이 없습니다.
                     </td>
                   </tr>
                 ) : (
-                  refundRequests.map((req) => (
-                    <tr key={req.id}>
-                      <td className={styles.idCell}>{req.id}</td>
-                      <td className={styles.orderId}>{req.orderId}</td>
-                      <td>{req.memberName}</td>
-                      <td className={styles.productName}>{req.productName}</td>
-                      <td>{req.amount.toLocaleString()}원</td>
-                      <td>{req.reason}</td>
-                      <td>{req.requestedAt}</td>
+                  refundRequests.map((claim) => (
+                    <tr key={claim.claimId}>
+                      <td className={styles.idCell}>{claim.claimId}</td>
+                      <td className={styles.orderId}>{claim.orderNumber ?? claim.orderItemId}</td>
+                      <td>{claim.memberName ?? claim.memberId}</td>
+                      <td className={styles.productName}>{claim.productName ?? "-"}</td>
+                      <td>{formatPrice(claim.refundAmount)}원</td>
+                      <td>{reasonLabel[claim.reasonCode] ?? claim.reasonCode}</td>
+                      <td>
+                        <span className={styles.statusBadge}>
+                          {statusLabel[claim.status] ?? claim.status}
+                        </span>
+                      </td>
+                      <td>{formatDate(claim.createdAt)}</td>
                       <td>
                         <div className={styles.actionGroup}>
                           <button
                             className={`${styles.actionBtn} ${styles.approveBtn}`}
-                            onClick={() => handleApprove(req.id, req.orderId)}
+                            onClick={() => handleApprove(claim)}
+                            disabled={processingId === claim.claimId}
                           >
                             <CheckCircle size={14} />
                             승인
                           </button>
                           <button
                             className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                            onClick={() => handleReject(req.id, req.orderId)}
+                            onClick={() => handleReject(claim)}
+                            disabled={processingId === claim.claimId}
                           >
                             <XCircle size={14} />
                             거절
