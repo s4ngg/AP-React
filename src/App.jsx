@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import OrderPage from "./pages/order/OrderPage"
 import Header from "./components/common/Header"
 import Footer from "./components/common/Footer"
@@ -22,6 +22,7 @@ import ResetPasswordPage from "./pages/member/ResetPasswordPage"
 import SellerApplyPage from "./pages/member/SellerApplyPage"
 import SellerApplyCompletePage from "./pages/member/SellerApplyCompletePage"
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
+import AdminLoginPage from "./pages/admin/AdminLoginPage"
 import AdminMemberPage from "./pages/admin/AdminMemberPage"
 import AdminProductsPage from "./pages/admin/AdminProductsPage"
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage"
@@ -36,11 +37,12 @@ import SellerRefundPage from "./pages/seller/SellerRefundPage"
 import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
 import OrderSuccessPage from "./pages/order/OrderSuccessPage"
 import OrderFailPage from "./pages/order/OrderFailPage"
+import useAuthStore from "./store/authStore"
 import "./index.css"
 
-const PrivateRoute = ({ children }) => {
-  const { isLoggedIn } = useAuthStore()
-  return isLoggedIn ? children : <Navigate to="/login" replace />
+const AdminRoute = ({ children }) => {
+  const { adminToken } = useAuthStore()
+  return adminToken ? children : <Navigate to="/admin/login" replace />
 }
 
 
@@ -74,14 +76,15 @@ function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/seller-apply" element={<SellerApplyPage />} />
             <Route path="/seller-apply/complete" element={<SellerApplyCompletePage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
-            <Route path="/admin/members" element={<AdminMemberPage />} />
-            <Route path="/admin/products" element={<AdminProductsPage />} />
-            <Route path="/admin/orders" element={<AdminOrdersPage />} />
-            <Route path="/admin/categories" element={<AdminCategoryPage />} />
-            <Route path="/admin/refunds" element={<AdminRefundPage />} />
-            <Route path="/admin/notices" element={<AdminNoticePage />} />
-            <Route path="/admin/faqs" element={<AdminFAQPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+            <Route path="/admin/members" element={<AdminRoute><AdminMemberPage /></AdminRoute>} />
+            <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
+            <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
+            <Route path="/admin/categories" element={<AdminRoute><AdminCategoryPage /></AdminRoute>} />
+            <Route path="/admin/refunds" element={<AdminRoute><AdminRefundPage /></AdminRoute>} />
+            <Route path="/admin/notices" element={<AdminRoute><AdminNoticePage /></AdminRoute>} />
+            <Route path="/admin/faqs" element={<AdminRoute><AdminFAQPage /></AdminRoute>} />
             <Route path="/seller" element={<SellerDashboardPage />} />
             <Route path="/seller/products" element={<SellerProductsPage />} />
             <Route path="/seller/orders" element={<SellerOrdersPage />} />

@@ -1,5 +1,9 @@
 import api from "./index"
 
+// ─── 관리자 인증 ─────────────────────────────────────────────────
+export const adminLogin = (credentials) =>
+  api.post("/api/admins/login", credentials).then((res) => res.data.data)
+
 // ─── 구매자 회원 ─────────────────────────────────────────────────
 export const getMembers = () =>
   api.get("/api/admin/members").then((res) => res.data.data)
