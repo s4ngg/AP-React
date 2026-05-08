@@ -6,6 +6,7 @@ import { getMemberCoupons } from "../../api/couponApi"
 import { getMembershipHistory } from "../../api/membershipApi"
 import {
   getMyOrders,
+  cancelOrder,
   getDeliveryAddresses,
   addDeliveryAddress,
   updateDeliveryAddress,
@@ -292,6 +293,15 @@ export default function MyPage() {
       .catch(() => alert("삭제에 실패했습니다."))
   }
 
+  const handleCancelOrder = (orderId) => {
+    if (!window.confirm("주문을 취소하시겠습니까?")) return
+    cancelOrder(orderId)
+      .then((data) => {
+        setOrders((prev) => prev.map((order) => order.orderId === data.orderId ? data : order))
+      })
+      .catch(() => alert("주문 취소에 실패했습니다."))
+  }
+
   const filteredCoupons = coupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
   )
@@ -466,7 +476,12 @@ export default function MyPage() {
                           총 결제 금액 <strong>{Number(order.totalAmount).toLocaleString()}원</strong>
                         </span>
                         {order.status === "PENDING" && (
-                          <button className={styles.cancelOrderBtn}>주문 취소</button>
+                          <button
+                            className={styles.cancelOrderBtn}
+                            onClick={() => handleCancelOrder(order.orderId)}
+                          >
+                            주문 취소
+                          </button>
                         )}
                       </div>
                     </div>

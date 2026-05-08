@@ -8,6 +8,10 @@ export const createOrder = (data) =>
 export const getOrder = (orderId) =>
   api.get(`/api/orders/${orderId}`).then((res) => res.data.data)
 
+// 주문 취소
+export const cancelOrder = (orderId) =>
+  api.patch(`/api/orders/${orderId}/cancel`).then((res) => res.data.data)
+
 // 내 주문 목록 조회
 export const getMyOrders = () =>
   api.get("/api/members/me/orders").then((res) => res.data.data)
