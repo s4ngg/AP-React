@@ -20,3 +20,17 @@ export const getPendingSellers = () =>
 
 export const toggleSellerStatus = (sellerId) =>
   api.patch(`/api/admin/sellers/${sellerId}/status`).then((res) => res.data)
+
+// ─── 관리자 상품 ─────────────────────────────────────────────────
+export const getAdminProducts = () =>
+  api.get("/api/admin/products").then((res) => res.data.data)
+
+export const approveAdminProduct = (productId) =>
+  api.patch(`/api/admin/products/${productId}/approve`).then((res) => res.data)
+
+export const rejectAdminProduct = (productId, rejectReason) =>
+  api.patch(`/api/admin/products/${productId}/reject`, { rejectReason }).then((res) => res.data)
+
+// ─── 관리자 주문 ─────────────────────────────────────────────────
+export const getAdminOrders = () =>
+  api.get("/api/admin/orders").then((res) => res.data.data)

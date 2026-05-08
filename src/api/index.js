@@ -28,7 +28,11 @@ const getAdminToken = () => {
   }
 }
 
-const isAdminRequest = (url = "") => url.startsWith("/api/admin/") || url.startsWith("/api/admins")
+const isAdminClaimRequest = (url = "") =>
+  url === "/api/claims/admin" || /^\/api\/claims\/[^/]+\/(status|reject)$/.test(url)
+
+const isAdminRequest = (url = "") =>
+  url.startsWith("/api/admin/") || url.startsWith("/api/admins") || isAdminClaimRequest(url)
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",
