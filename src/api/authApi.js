@@ -40,9 +40,9 @@ export const login = async (data) => {
   return response.data;
 };
 
+// Spring에 logout 엔드포인트 미구현 — 클라이언트(zustand) 초기화로만 처리
 export const logout = async () => {
-  const response = await api.post("/api/auth/logout");
-  return response.data;
+  return Promise.resolve();
 };
 
 export const getSocialLoginUrl = (provider) => {
@@ -51,6 +51,9 @@ export const getSocialLoginUrl = (provider) => {
 };
 
 // ==================== 계정 찾기/복구 API ====================
+// 아래 4개 함수는 Spring 미구현 상태입니다.
+// FindEmailPage, FindPasswordPage, ResetPasswordPage는 현재 사용 불가 상태이며
+// 해당 페이지에서 호출 시 에러가 발생합니다. (추후 Spring 구현 후 활성화)
 
 export const findEmail = async (data) => {
   const response = await api.post("/api/auth/find-email", data);

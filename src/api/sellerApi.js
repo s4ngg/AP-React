@@ -46,9 +46,9 @@ export const approveClaim = (claimId) =>
 export const rejectClaim = (claimId, rejectReason) =>
   api.patch(`/api/claims/${claimId}/seller-reject`, { rejectReason }).then((res) => res.data)
 
-// 문의 목록 조회 (판매자용 API 확인 필요)
+// 수정: /api/inquiries/my → /api/inquiries/seller (판매자용 엔드포인트)
 export const getSellerInquiries = () =>
-  api.get("/api/inquiries/my").then((res) => res.data.data)
+  api.get("/api/inquiries/seller").then((res) => res.data.data)
 
 /**
  * 판매자 본인 상품 목록 조회
