@@ -1,18 +1,19 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Trash2, Pin } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminNoticePage.module.css"
+import { getNotices, createNotice, deleteNotice} from "../../api/noticeApi.js"
 
-// 임시 공지사항 데이터 (추후 API 연동 예정)
-const mockNotices = [
-  { id: 1, title: "AllPick 서비스 오픈 안내", isPinned: true, createdAt: "2026-04-01" },
-  { id: 2, title: "개인정보처리방침 개정 안내", isPinned: true, createdAt: "2026-04-05" },
-  { id: 3, title: "2026년 5월 정기점검 안내", isPinned: false, createdAt: "2026-04-10" },
-  { id: 4, title: "배송 지연 안내 (택배사 파업)", isPinned: false, createdAt: "2026-04-14" },
-]
 
 export default function AdminNoticePage() {
-  const [notices, setNotices] = useState(mockNotices)
+  const [notices, setNotices] = useState([])
+
+  useEffect(() => {
+    getNotices()
+        .then((data) => setNotices(data ?? []))
+        .catch(() => alert("공지사항을 불러오지 못했습니다."))
+  }, [])
+
   const [newTitle, setNewTitle] = useState("")
   const [newIsPinned, setNewIsPinned] = useState(false)
 
@@ -20,20 +21,20 @@ export default function AdminNoticePage() {
     e.preventDefault()
     const title = newTitle.trim()
     if (!title) return
-    const newItem = {
-      id: Date.now(),
-      title,
-      isPinned: newIsPinned,
-      createdAt: new Date().toISOString().slice(0, 10),
-    }
-    setNotices((prev) => [newItem, ...prev])
-    setNewTitle("")
-    setNewIsPinned(false)
+    createNotice({ title, content: "", fixed: newIsPinned })
+        .then((data) => {
+          setNotices((prev) => [data, ...prev])
+          setNewTitle("")
+          setNewIsPinned(false)
+        })
+        .catch(() => alert("공지사항 등록에 실패했습니다."))
   }
 
   const handleDelete = (id, title) => {
     if (!window.confirm(`"${title}" 공지를 삭제하시겠습니까?`)) return
-    setNotices((prev) => prev.filter((n) => n.id !== id))
+    deleteNotice(id)
+      .then(() => setNotices((prev) => prev.filter((n) => n.noticeId !== id)))
+      .catch(() => alert("삭제에 실패했습니다."))
   }
 
   return (
@@ -85,11 +86,11 @@ export default function AdminNoticePage() {
                   </tr>
                 ) : (
                   notices.map((notice) => (
-                    <tr key={notice.id}>
-                      <td className={styles.idCell}>{notice.id}</td>
+                    <tr key={notice.noticeId}>
+                      <td className={styles.idCell}>{notice.noticeId}</td>
                       <td>
                         <span className={styles.titleCell}>
-                          {notice.isPinned && (
+                          {notice.fixed && (
                             <span className={styles.pinnedBadge}>
                               <Pin size={11} />
                               고정
@@ -99,15 +100,15 @@ export default function AdminNoticePage() {
                         </span>
                       </td>
                       <td>
-                        {notice.isPinned && (
+                        {notice.fixed && (
                           <span className={styles.pinnedMark}>Y</span>
                         )}
                       </td>
-                      <td>{notice.createdAt}</td>
+                      <td>{notice.createdAt?.slice(0, 10)}</td>
                       <td>
                         <button
                           className={styles.deleteBtn}
-                          onClick={() => handleDelete(notice.id, notice.title)}
+                          onClick={() => handleDelete(notice.noticeId, notice.title)}
                           aria-label="삭제"
                         >
                           <Trash2 size={14} />

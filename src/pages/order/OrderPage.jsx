@@ -8,6 +8,7 @@ import { getDeliveryAddresses, createOrder, addDeliveryAddress } from "../../api
 import { getUnusedCoupons } from "../../api/couponApi"
 import { getMember } from "../../api/memberApi"
 import AddressSearch from "../../components/common/AddressSearch"
+import { loadTossPayments } from "@tosspayments/payment-sdk"
 
 const payMethods = [
   { id: "CARD",          label: "신용카드",   icon: "💳" },
@@ -112,33 +113,40 @@ export default function OrderPage() {
   }
 
   const handlePay = async () => {
-    if (!selectedPay || !selectedAddressId || orderItems.length === 0) return
+  if (!selectedPay || !selectedAddressId || orderItems.length === 0) return
 
-    setIsLoading(true)
-    try {
-      const requestBody = {
-        addressId: selectedAddressId,
-        memberCouponId: selectedCouponId ?? null,
-        paymentMethod: selectedPay,
-        orderItems: orderItems.map((item) => ({
+  setIsLoading(true)
+  try {
+    const requestBody = {
+      addressId: selectedAddressId,
+      memberCouponId: selectedCouponId ?? null,
+      paymentMethod: selectedPay,
+      orderItems: orderItems.map((item) => ({
         productId: item.product.id,
         productName: item.product.name,
         productPrice: item.product.price,
         quantity: item.quantity,
         optionId: Number(Object.keys(item.selectedOptions ?? {})[0]) || 1,
-})),
-      }
-
-      const result = await createOrder(requestBody)
-      clearCart()
-      setCompletedOrderNumber(result.orderNumber)
-      setIsComplete(true)
-    } catch (e) {
-      alert("주문 처리 중 오류가 발생했습니다.")
-    } finally {
-      setIsLoading(false)
+      })),
     }
+    const result = await createOrder(requestBody)
+
+    // 토스 결제창 띄우기
+    const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY)
+    await tossPayments.requestPayment("카드", {
+      amount: totalPrice,
+      orderId: result.orderNumber,
+      orderName: orderItems[0]?.product.name + (orderItems.length > 1 ? ` 외 ${orderItems.length - 1}건` : ""),
+      customerName: authUser?.name ?? "고객",
+      successUrl: `${window.location.origin}/order/success?orderNumber=${result.orderNumber}`,
+      failUrl: `${window.location.origin}/order/fail`,
+    })
+  } catch (e) {
+    alert("주문 처리 중 오류가 발생했습니다.")
+  } finally {
+    setIsLoading(false)
   }
+}
 
   if (isComplete) {
     return (

@@ -1,33 +1,49 @@
 import { Link } from "react-router-dom"
 import { Sparkles, Shirt, Apple, Wine, Home } from "lucide-react"
+import { useState, useEffect } from "react"
 import styles from "./CategorySection.module.css"
+import { getParentCategories } from "../../api/productApi"
 
-const categories = [
-  { name: "뷰티",  icon: Sparkles, count: "1,200+", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", iconBg: "#fce7f3", iconColor: "#db2777", href: "/products?category=beauty" },
-  { name: "패션",  icon: Shirt,    count: "3,500+", image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=300&h=300&fit=crop", iconBg: "#dbeafe", iconColor: "#2563eb", href: "/products?category=fashion" },
-  { name: "식품",  icon: Apple,    count: "2,800+", image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&h=300&fit=crop", iconBg: "#dcfce7", iconColor: "#16a34a", href: "/products?category=food" },
-  { name: "주류",  icon: Wine,     count: "800+",   image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=300&h=300&fit=crop", iconBg: "#ede9fe", iconColor: "#7c3aed", href: "/products?category=alcohol" },
-  { name: "리빙",  icon: Home,     count: "1,600+", image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=300&h=300&fit=crop", iconBg: "#fef3c7", iconColor: "#d97706", href: "/products?category=living" },
-]
+const iconMap = {
+  "뷰티": { icon: Sparkles, iconBg: "#fce7f3", iconColor: "#db2777", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop" },
+  "패션": { icon: Shirt,    iconBg: "#dbeafe", iconColor: "#2563eb", image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=300&h=300&fit=crop" },
+  "식품": { icon: Apple,    iconBg: "#dcfce7", iconColor: "#16a34a", image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&h=300&fit=crop" },
+  "주류": { icon: Wine,     iconBg: "#ede9fe", iconColor: "#7c3aed", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=300&h=300&fit=crop" },
+  "리빙": { icon: Home,     iconBg: "#fef3c7", iconColor: "#d97706", image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=300&h=300&fit=crop" },
+}
 
 export default function CategorySection() {
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getParentCategories()
+        setCategories(res.data || [])
+      } catch {
+        setCategories([])
+      }
+    }
+    fetchCategories()
+  }, [])
+
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
         <h2 className={styles.sectionTitle}>카테고리</h2>
         <div className={styles.grid}>
           {categories.map((c) => {
-            const Icon = c.icon
+            const meta = iconMap[c.categoryName] || { icon: Sparkles, iconBg: "#f3f4f6", iconColor: "#6b7280", image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=300&h=300&fit=crop" }
+            const Icon = meta.icon
             return (
-              <Link key={c.name} to={c.href} className={styles.item}>
+              <Link key={c.parentCategoryId} to={`/products?category=${c.categoryName}`} className={styles.item}>
                 <div className={styles.imageBox}>
-                  <img src={c.image} alt={c.name} />
-                  <div className={styles.iconBadge} style={{ backgroundColor: c.iconBg }}>
-                    <Icon size={14} color={c.iconColor} />
+                  <img src={meta.image} alt={c.categoryName} />
+                  <div className={styles.iconBadge} style={{ backgroundColor: meta.iconBg }}>
+                    <Icon size={14} color={meta.iconColor} />
                   </div>
                 </div>
-                <span className={styles.name}>{c.name}</span>
-                <span className={styles.count}>{c.count}</span>
+                <span className={styles.name}>{c.categoryName}</span>
               </Link>
             )
           })}

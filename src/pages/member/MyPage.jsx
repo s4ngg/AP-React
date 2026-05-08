@@ -1,86 +1,28 @@
 import { useState, useEffect } from "react"
 import styles from "./MyPage.module.css"
 import useAuthStore from "../../store/authStore"
-import { getMember } from "../../api/memberApi"
+import { getMember, updateMember, changePassword, deleteMember } from "../../api/memberApi"
 import { getMemberCoupons } from "../../api/couponApi"
 import { getMembershipHistory } from "../../api/membershipApi"
+import { getMyOrders, getDeliveryAddresses, deleteDeliveryAddress } from "../../api/orderApi"
 import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket, Store } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
-
-// 임시 사용자 데이터 (추후 API 연동)
-const mockUser = {
-  name: "이소정",
-  email: "sojeong@example.com",
-  phone: "010-1234-5678",
-  address: "(12345) 인천광역시 미추홀구 OO로 123",
-  addressDetail: "OO아파트 101동 101호",
-  grade: "SILVER",
+// 백엔드 OrderStatus enum → 한글 라벨 매핑
+const STATUS_LABEL = {
+  PENDING: "주문완료",
+  PAID: "결제완료",
+  SHIPPING: "배송중",
+  DELIVERED: "배송완료",
+  CANCELLED: "취소",
 }
 
-// 임시 주문 데이터 (추후 API 연동)
-const mockOrders = [
-  {
-    id: "AP-20250415001",
-    date: "2025-04-15",
-    status: "배송완료",
-    items: [
-      {
-        name: "[에스티로더] 갈색병 세럼 50ml",
-        price: 89000,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=200&h=200&fit=crop",
-      },
-    ],
-    totalPrice: 89000,
-  },
-  {
-    id: "AP-20250412002",
-    date: "2025-04-12",
-    status: "배송중",
-    items: [
-      {
-        name: "[나이키] 에어맥스 97 화이트",
-        price: 179000,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop",
-      },
-      {
-        name: "[무신사] 오버핏 코튼 티셔츠",
-        price: 29000,
-        quantity: 2,
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop",
-      },
-    ],
-    totalPrice: 237000,
-  },
-]
-
-// 임시 배송지 데이터
-const mockAddresses = [
-  {
-    id: 1,
-    name: "이소정",
-    phone: "010-1234-5678",
-    address: "(12345) 인천광역시 미추홀구 OO로 123",
-    addressDetail: "OO아파트 101동 101호",
-    isDefault: true,
-  },
-  {
-    id: 2,
-    name: "이소정",
-    phone: "010-9876-5432",
-    address: "(06000) 서울특별시 강남구 테헤란로 123",
-    addressDetail: "OO빌딩 5층",
-    isDefault: false,
-  },
-]
-
 const STATUS_CLASS = {
-  주문완료: "statusOrder",
-  배송중: "statusShipping",
-  배송완료: "statusDone",
-  취소: "statusCancel",
+  PENDING: "statusOrder",
+  PAID: "statusOrder",
+  SHIPPING: "statusShipping",
+  DELIVERED: "statusDone",
+  CANCELLED: "statusCancel",
 }
 
 const GRADE_CONFIG = {
@@ -119,13 +61,14 @@ export default function MyPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false)
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
 
-  const { user: authUser } = useAuthStore()
+  const { logout } = useAuthStore()
 
-  // memberId 상태 (쿠폰/멤버십 API에 필요)
+  // 회원 정보
+  const [memberInfo, setMemberInfo] = useState(null)
   const [memberId, setMemberId] = useState(null)
 
   // 멤버십
-  const [memberGrade, setMemberGrade] = useState(mockUser.grade)
+  const [memberGrade, setMemberGrade] = useState("NORMAL")
   const [membershipHistory, setMembershipHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
 
@@ -133,19 +76,54 @@ export default function MyPage() {
   const [coupons, setCoupons] = useState([])
   const [couponLoading, setCouponLoading] = useState(false)
 
-  const [form, setForm] = useState({
-    phone: mockUser.phone,
-    address: mockUser.address,
-    addressDetail: mockUser.addressDetail,
+  // 주문
+  const [orders, setOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
+
+  // 배송지
+  const [addresses, setAddresses] = useState([])
+  const [addressLoading, setAddressLoading] = useState(false)
+  const [showAddressModal, setShowAddressModal] = useState(false)
+  const [editingAddress, setEditingAddress] = useState(null)
+  const [addressForm, setAddressForm] = useState({
+    recipientName: "", phone: "", zipCode: "", address: "", addressDetail: "", isDefault: false,
   })
+
+  // 내 정보 수정 폼
+  const [form, setForm] = useState({ phone: "", address: "", addressDetail: "" })
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" })
 
-  // 마운트 시 memberId 1회 로드 (쿠폰/멤버십 API에 필요)
+  // 마운트 시 회원 정보 로드
   useEffect(() => {
     getMember()
-      .then((data) => setMemberId(data.id))
-      .catch(() => { })
+      .then((data) => {
+        setMemberId(data.id)
+        setMemberInfo(data)
+        setMemberGrade(data.grade ?? "NORMAL")
+        setForm({ phone: data.phone ?? "", address: data.address ?? "", addressDetail: "" })
+      })
+      .catch(() => {})
   }, [])
+
+  // 주문 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "orders") return
+    setOrdersLoading(true)
+    getMyOrders()
+      .then((data) => setOrders(data ?? []))
+      .catch(() => setOrders([]))
+      .finally(() => setOrdersLoading(false))
+  }, [activeTab])
+
+  // 배송지 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "address") return
+    setAddressLoading(true)
+    getDeliveryAddresses()
+      .then((data) => setAddresses(data ?? []))
+      .catch(() => setAddresses([]))
+      .finally(() => setAddressLoading(false))
+  }, [activeTab])
 
   // 쿠폰 탭 진입 시 API 호출
   useEffect(() => {
@@ -160,11 +138,6 @@ export default function MyPage() {
   // 멤버십 탭 진입 시 API 호출
   useEffect(() => {
     if (activeTab !== "membership" || !memberId) return
-
-    getMember()
-      .then((data) => setMemberGrade(data.grade ?? "NORMAL"))
-      .catch(() => { })
-
     setHistoryLoading(true)
     getMembershipHistory(memberId)
       .then((data) => setMembershipHistory(data ?? []))
@@ -182,12 +155,103 @@ export default function MyPage() {
     setPwForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleInfoSave = () => setIsEditing(false)
-  const handlePwSave = () => {
-    setPwForm({ current: "", next: "", confirm: "" })
-    setShowPwForm(false)
+  // 내 정보 수정 저장
+  const handleInfoSave = () => {
+    updateMember({ phone: form.phone, address: form.address })
+      .then((data) => {
+        setMemberInfo(data)
+        setIsEditing(false)
+      })
+      .catch(() => alert("정보 수정에 실패했습니다."))
   }
-  const handleWithdraw = () => setShowWithdrawConfirm(false)
+
+  // 비밀번호 변경
+  const handlePwSave = () => {
+    if (pwForm.next !== pwForm.confirm) {
+      alert("새 비밀번호가 일치하지 않습니다.")
+      return
+    }
+    changePassword({ currentPassword: pwForm.current, newPassword: pwForm.next })
+      .then(() => {
+        alert("비밀번호가 변경되었습니다.")
+        setPwForm({ current: "", next: "", confirm: "" })
+        setShowPwForm(false)
+      })
+      .catch(() => alert("비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요."))
+  }
+
+  // 회원 탈퇴
+  const handleWithdraw = () => {
+    deleteMember()
+      .then(() => {
+        logout()
+        window.location.href = "/"
+      })
+      .catch(() => alert("탈퇴 처리에 실패했습니다."))
+  }
+
+  // 배송지 추가 모달 열기
+  const handleOpenAddModal = () => {
+    setEditingAddress(null)
+    setAddressForm({ recipientName: "", phone: "", zipCode: "", address: "", addressDetail: "", isDefault: false })
+    setShowAddressModal(true)
+  }
+
+  // 배송지 수정 모달 열기
+  const handleOpenEditModal = (addr) => {
+    setEditingAddress(addr)
+    setAddressForm({
+      recipientName: addr.recipientName,
+      phone: addr.phone,
+      zipCode: addr.zipCode,
+      address: addr.address,
+      addressDetail: addr.addressDetail,
+      isDefault: addr.isDefault,
+    })
+    setShowAddressModal(true)
+  }
+
+  // 배송지 폼 입력 변경
+  const handleAddressFormChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setAddressForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }))
+  }
+
+  // 배송지 저장 (추가 or 수정)
+  const handleAddressSave = () => {
+    if (editingAddress) {
+      updateDeliveryAddress(editingAddress.addressId, addressForm)
+        .then((data) => {
+          setAddresses((prev) => prev.map((a) => a.addressId === data.addressId ? data : a))
+          setShowAddressModal(false)
+        })
+        .catch(() => alert("수정에 실패했습니다."))
+    } else {
+      addDeliveryAddress(addressForm)
+        .then((data) => {
+          setAddresses((prev) => [...prev, data])
+          setShowAddressModal(false)
+        })
+        .catch(() => alert("추가에 실패했습니다."))
+    }
+  }
+
+  // 기본 배송지 설정
+  const handleSetDefault = (addr) => {
+    updateDeliveryAddress(addr.addressId, { ...addr, isDefault: true })
+      .then((data) => {
+        setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.addressId === data.addressId })))
+      })
+      .catch(() => alert("기본 설정에 실패했습니다."))
+  }
+
+  // 배송지 삭제
+  const handleDeleteAddress = (addressId) => {
+    if (!window.confirm("배송지를 삭제하시겠습니까?")) return
+    deleteDeliveryAddress(addressId)
+      .then(() => setAddresses((prev) => prev.filter((a) => a.addressId !== addressId)))
+      .catch(() => alert("삭제에 실패했습니다."))
+  }
 
   const filteredCoupons = coupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
@@ -211,9 +275,9 @@ export default function MyPage() {
         {/* 사이드바 */}
         <aside className={styles.sidebar}>
           <div className={styles.userCard}>
-            <div className={styles.avatar}>{mockUser.name.slice(0, 1)}</div>
-            <p className={styles.userName}>{mockUser.name}</p>
-            <p className={styles.userEmail}>{mockUser.email}</p>
+            <div className={styles.avatar}>{memberInfo?.name?.slice(0, 1) ?? ""}</div>
+            <p className={styles.userName}>{memberInfo?.name ?? ""}</p>
+            <p className={styles.userEmail}>{memberInfo?.email ?? ""}</p>
             <div
               className={styles.gradeBadge}
               style={{ backgroundColor: currentGradeConfig.bg, color: currentGradeConfig.color }}
@@ -252,11 +316,11 @@ export default function MyPage() {
               <div className={styles.infoList}>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>이름</span>
-                  <span className={styles.infoValue}>{mockUser.name}</span>
+                  <span className={styles.infoValue}>{memberInfo?.name ?? ""}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>이메일</span>
-                  <span className={styles.infoValue}>{mockUser.email}</span>
+                  <span className={styles.infoValue}>{memberInfo?.email ?? ""}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>연락처</span>
@@ -324,41 +388,42 @@ export default function MyPage() {
           {activeTab === "orders" && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>주문 내역</h2>
-              {mockOrders.length === 0 ? (
+              {ordersLoading ? (
+                <div className={styles.empty}><p>불러오는 중...</p></div>
+              ) : orders.length === 0 ? (
                 <div className={styles.empty}>
                   <Package size={40} color="#d1d5db" />
                   <p>주문 내역이 없습니다.</p>
                 </div>
               ) : (
                 <div className={styles.orderList}>
-                  {mockOrders.map((order) => (
-                    <div key={order.id} className={styles.orderCard}>
+                  {orders.map((order) => (
+                    <div key={order.orderId} className={styles.orderCard}>
                       <div className={styles.orderHeader}>
                         <div className={styles.orderMeta}>
-                          <span className={styles.orderDate}>{order.date}</span>
-                          <span className={styles.orderNum}>주문번호 {order.id}</span>
+                          <span className={styles.orderDate}>{order.orderedAt?.slice(0, 10)}</span>
+                          <span className={styles.orderNum}>주문번호 {order.orderNumber}</span>
                         </div>
                         <span className={`${styles.statusBadge} ${styles[STATUS_CLASS[order.status]]}`}>
-                          {order.status}
+                          {STATUS_LABEL[order.status] ?? order.status}
                         </span>
                       </div>
                       <div className={styles.orderItems}>
-                        {order.items.map((item, idx) => (
-                          <div key={idx} className={styles.orderItem}>
-                            <img src={item.image} alt={item.name} className={styles.orderItemImg} />
+                        {order.orderItems?.map((item) => (
+                          <div key={item.orderItemId} className={styles.orderItem}>
                             <div className={styles.orderItemInfo}>
-                              <p className={styles.orderItemName}>{item.name}</p>
+                              <p className={styles.orderItemName}>{item.productName}</p>
                               <p className={styles.orderItemMeta}>{item.quantity}개</p>
-                              <p className={styles.orderItemPrice}>{(item.price * item.quantity).toLocaleString()}원</p>
+                              <p className={styles.orderItemPrice}>{Number(item.totalPrice).toLocaleString()}원</p>
                             </div>
                           </div>
                         ))}
                       </div>
                       <div className={styles.orderFooter}>
                         <span className={styles.orderTotal}>
-                          총 결제 금액 <strong>{order.totalPrice.toLocaleString()}원</strong>
+                          총 결제 금액 <strong>{Number(order.totalAmount).toLocaleString()}원</strong>
                         </span>
-                        {order.status === "주문완료" && (
+                        {order.status === "PENDING" && (
                           <button className={styles.cancelOrderBtn}>주문 취소</button>
                         )}
                       </div>
@@ -374,27 +439,67 @@ export default function MyPage() {
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>배송지 관리</h2>
-                <button className={styles.addBtn}>+ 배송지 추가</button>
+                <button className={styles.addBtn} onClick={handleOpenAddModal}>+ 배송지 추가</button>
               </div>
-              <div className={styles.addressList}>
-                {mockAddresses.map((addr) => (
-                  <div key={addr.id} className={`${styles.addressCard} ${addr.isDefault ? styles.addressCardDefault : ""}`}>
-                    <div className={styles.addressCardHeader}>
-                      <div className={styles.addressNameWrap}>
-                        <span className={styles.addressName}>{addr.name}</span>
-                        {addr.isDefault && <span className={styles.defaultBadge}>기본 배송지</span>}
+              {addressLoading ? (
+                <div className={styles.empty}><p>불러오는 중...</p></div>
+              ) : addresses.length === 0 ? (
+                <div className={styles.empty}>
+                  <MapPin size={40} color="#d1d5db" />
+                  <p>등록된 배송지가 없습니다.</p>
+                </div>
+              ) : (
+                <div className={styles.addressList}>
+                  {addresses.map((addr) => (
+                    <div key={addr.addressId} className={`${styles.addressCard} ${addr.isDefault ? styles.addressCardDefault : ""}`}>
+                      <div className={styles.addressCardHeader}>
+                        <div className={styles.addressNameWrap}>
+                          <span className={styles.addressName}>{addr.recipientName}</span>
+                          {addr.isDefault && <span className={styles.defaultBadge}>기본 배송지</span>}
+                        </div>
+                        <div className={styles.addressActions}>
+                          {!addr.isDefault && <button className={styles.addressActionBtn} onClick={() => handleSetDefault(addr)}>기본 설정</button>}
+                          <button className={styles.addressActionBtn} onClick={() => handleOpenEditModal(addr)}>수정</button>
+                          {!addr.isDefault && (
+                            <button
+                              className={`${styles.addressActionBtn} ${styles.addressDeleteBtn}`}
+                              onClick={() => handleDeleteAddress(addr.addressId)}
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className={styles.addressActions}>
-                        {!addr.isDefault && <button className={styles.addressActionBtn}>기본 설정</button>}
-                        <button className={styles.addressActionBtn}>수정</button>
-                        {!addr.isDefault && <button className={`${styles.addressActionBtn} ${styles.addressDeleteBtn}`}>삭제</button>}
-                      </div>
+                      <p className={styles.addressPhone}>{addr.phone}</p>
+                      <p className={styles.addressText}>({addr.zipCode}) {addr.address}</p>
+                      <p className={styles.addressText}>{addr.addressDetail}</p>
                     </div>
-                    <p className={styles.addressPhone}>{addr.phone}</p>
-                    <p className={styles.addressText}>{addr.address}</p>
-                    <p className={styles.addressText}>{addr.addressDetail}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 배송지 추가/수정 모달 */}
+          {showAddressModal && (
+            <div className={styles.modalOverlay} onClick={() => setShowAddressModal(false)}>
+              <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <h3 className={styles.modalTitle}>{editingAddress ? "배송지 수정" : "배송지 추가"}</h3>
+                <div className={styles.modalForm}>
+                  <input className={styles.input} name="recipientName" value={addressForm.recipientName} onChange={handleAddressFormChange} placeholder="받는 분" />
+                  <input className={styles.input} name="phone" value={addressForm.phone} onChange={handleAddressFormChange} placeholder="연락처 (01012345678)" />
+                  <input className={styles.input} name="zipCode" value={addressForm.zipCode} onChange={handleAddressFormChange} placeholder="우편번호" />
+                  <input className={styles.input} name="address" value={addressForm.address} onChange={handleAddressFormChange} placeholder="주소" />
+                  <input className={styles.input} name="addressDetail" value={addressForm.addressDetail} onChange={handleAddressFormChange} placeholder="상세 주소" />
+                  <label className={styles.modalCheckLabel}>
+                    <input type="checkbox" name="isDefault" checked={addressForm.isDefault} onChange={handleAddressFormChange} />
+                    기본 배송지로 설정
+                  </label>
+                </div>
+                <div className={styles.actionRow}>
+                  <button className={styles.cancelBtn} onClick={() => setShowAddressModal(false)}>취소</button>
+                  <button className={styles.saveBtn} onClick={handleAddressSave}>저장</button>
+                </div>
               </div>
             </div>
           )}

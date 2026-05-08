@@ -57,12 +57,12 @@ export default function VerifyEmailPage() {
     setError("");
     try {
       await verifyEmailCode(formData.email, code);
-    } catch {
-      // 데모용: 무시
-    } finally {
       setFormData({ emailVerified: true });
       setCurrentStep(3);
       navigate("/signup/interests");
+    } catch (err) {
+      setError(err.message || "인증번호가 올바르지 않습니다");
+    } finally {
       setIsVerifying(false);
     }
   };

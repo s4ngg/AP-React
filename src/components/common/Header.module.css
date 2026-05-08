@@ -188,7 +188,12 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.categoryWrapper { position: relative; }
+.categoryWrapper {
+  position: relative;
+  padding-bottom: 12px;
+  margin-bottom: -12px; 
+}
+
 
 /* 카테고리 버튼 */
 .categoryTrigger {
@@ -206,14 +211,14 @@
 
 .categoryTrigger:hover { color: #2563eb; }
 
-/* 카테고리 드롭다운 전체 박스 */
+
 .categoryDropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% - 8px); 
   left: 0;
   margin-top: 4px;
-  display: flex; /* 기존 block → flex로 확장 */
-  width: auto;   /* 기존 160px 깨기 */
+  display: flex;
+  width: auto;
   align-items: stretch;
   background-color: #ffffff;
   border: 1px solid #e5e7eb;

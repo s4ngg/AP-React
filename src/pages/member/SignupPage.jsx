@@ -7,7 +7,7 @@ import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
 import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
-// import { sendSmsCode, verifySmsCode } from "../../api/authApi"; // import 추가
+import { sendSmsCode, verifySmsCode } from "../../api/authApi";
 
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
@@ -22,12 +22,12 @@ export default function SignupPage({ isSeller = false }) {
   const [emailAvailable, setEmailAvailable] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [phoneVerified, setPhoneVerified] = useState(false);
-  // const [phoneSent, setPhoneSent] = useState(false);
-  // const [smsCode, setSmsCode] = useState("");
-  // const [sendingCode, setSendingCode] = useState(false);
-  // const [verifyingCode, setVerifyingCode] = useState(false);
-  // const [smsError, setSmsError] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneSent, setPhoneSent] = useState(false);
+  const [smsCode, setSmsCode] = useState("");
+  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [smsError, setSmsError] = useState("");
 
   const {
     register,
@@ -43,36 +43,36 @@ export default function SignupPage({ isSeller = false }) {
   const passwordConfirm = watch("passwordConfirm");
   const email = watch("email");
 
-  // const handleSendSmsCode = async () => {
-  //   const phone = watch("phone");
-  //   if (!phone) return;
-  //   const cleaned = phone.replace(/-/g, "");
-  //   setSendingCode(true);
-  //   setSmsError("");
-  //   try {
-  //     await sendSmsCode(cleaned);
-  //     setPhoneSent(true);
-  //   } catch {
-  //     setSmsError("인증번호 발송에 실패했습니다.");
-  //   } finally {
-  //     setSendingCode(false);
-  //   }
-  // };
+  const handleSendSmsCode = async () => {
+    const phone = watch("phone");
+    if (!phone) return;
+    const cleaned = phone.replace(/-/g, "");
+    setSendingCode(true);
+    setSmsError("");
+    try {
+      await sendSmsCode(cleaned);
+      setPhoneSent(true);
+    } catch {
+      setSmsError("인증번호 발송에 실패했습니다.");
+    } finally {
+      setSendingCode(false);
+    }
+  };
 
-  // const handleVerifySmsCode = async () => {
-  //   const phone = watch("phone");
-  //   const cleaned = phone.replace(/-/g, "");
-  //   setVerifyingCode(true);
-  //   setSmsError("");
-  //   try {
-  //     await verifySmsCode(cleaned, smsCode);
-  //     setPhoneVerified(true);
-  //   } catch {
-  //     setSmsError("인증번호가 올바르지 않습니다.");
-  //   } finally {
-  //     setVerifyingCode(false);
-  //   }
-  // };
+  const handleVerifySmsCode = async () => {
+    const phone = watch("phone");
+    const cleaned = phone.replace(/-/g, "");
+    setVerifyingCode(true);
+    setSmsError("");
+    try {
+      await verifySmsCode(cleaned, smsCode);
+      setPhoneVerified(true);
+    } catch {
+      setSmsError("인증번호가 올바르지 않습니다.");
+    } finally {
+      setVerifyingCode(false);
+    }
+  };
   const formatPhone = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, 11)
     if (digits.length < 4) return digits
@@ -109,9 +109,9 @@ export default function SignupPage({ isSeller = false }) {
       setEmailAvailable(response.data?.available ?? true);
       clearErrors("email");
     } catch {
-      setEmailChecked(true);
-      setEmailAvailable(true);
-      clearErrors("email");
+      setEmailChecked(false)   // ← 변경
+      setEmailAvailable(false) // ← 변경
+      setError("email", { message: "이메일 확인 중 오류가 발생했습니다. 다시 시도해주세요." }) // ← 추가
     } finally {
       setCheckingEmail(false);
     }
@@ -165,10 +165,10 @@ export default function SignupPage({ isSeller = false }) {
       setError("email", { message: "이메일 중복 확인을 해주세요" });
       return;
     }
-    // if (!phoneVerified) {
-    //   setSmsError("휴대폰 인증을 완료해주세요");
-    //   return;
-    // }
+    if (!phoneVerified) {
+      setSmsError("휴대폰 인증을 완료해주세요");
+      return;
+    }
     if (!isPasswordValid) return;
     if (!passwordsMatch) return;
 
@@ -321,20 +321,19 @@ export default function SignupPage({ isSeller = false }) {
                   }}
                 />
 
-                {/* <button
+                <button
                   type="button"
                   onClick={handleSendSmsCode}
                   disabled={sendingCode || phoneVerified}
                   className={styles.checkBtn}
                 >
-                
                   {sendingCode ? "발송 중..." : phoneSent ? "재발송" : "인증번호 발송"}
-                </button> */}
+                </button>
               </div>
               {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
 
               {/* 인증번호 입력 */}
-              {/*phoneSent && !phoneVerified && (
+              {phoneSent && !phoneVerified && (
                 <div className={styles.emailRow} style={{ marginTop: 8 }}>
                   <input
                     type="text"
@@ -353,8 +352,7 @@ export default function SignupPage({ isSeller = false }) {
                     {verifyingCode ? "확인 중..." : "인증 확인"}
                   </button>
                 </div>
-              )} )*/
-              }
+              )}
             </div>
 
             {/* 우편번호 */}

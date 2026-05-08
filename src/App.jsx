@@ -34,6 +34,8 @@ import SellerProductsPage from "./pages/seller/SellerProductsPage"
 import SellerOrdersPage from "./pages/seller/SellerOrdersPage"
 import SellerRefundPage from "./pages/seller/SellerRefundPage"
 import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
+import OrderSuccessPage from "./pages/order/OrderSuccessPage"
+import OrderFailPage from "./pages/order/OrderFailPage"
 import "./index.css"
 
 const PrivateRoute = ({ children }) => {
@@ -54,6 +56,8 @@ function App() {
             <Route path="/" element={<MainPage />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/order" element={<OrderPage />} />
+            <Route path="/order/success" element={<OrderSuccessPage />} />
+            <Route path="/order/fail" element={<OrderFailPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/products" element={<ProductListPage />} />
@@ -81,10 +85,10 @@ function App() {
             <Route path="/admin/notices" element={<AdminNoticePage />} />
             <Route path="/admin/faqs" element={<AdminFAQPage />} />
             <Route path="/seller" element={<SellerDashboardPage />} />
-            <Route path="/seller/products" element={<SellerProductsPage />} />
-            <Route path="/seller/orders" element={<SellerOrdersPage />} />
-            <Route path="/seller/refunds" element={<SellerRefundPage />} />
-            <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
+              <Route path="/seller/products" element={<SellerProductsPage />} />
+              <Route path="/seller/orders" element={<SellerOrdersPage />} />
+              <Route path="/seller/refunds" element={<SellerRefundPage />} />
+              <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
           </Routes>
         </div>
         <Footer />
@@ -92,5 +96,4 @@ function App() {
     </BrowserRouter>
   )
 }
-
 export default App

@@ -1,8 +1,8 @@
 import api from "./index";
 
-export const createInquiry = (data) => api.post("/inquiries", data);
-export const getMyInquiries = () => api.get("/inquiries/my");
-export const cancelInquiry = (inquiryId) => api.patch(`/inquiries/${inquiryId}/cancel`);
+export const createInquiry = (data) => api.post("/api/inquiries", data);
+export const getMyInquiries = () => api.get("/api/inquiries/my");
+export const cancelInquiry = (inquiryId) => api.patch(`/api/inquiries/${inquiryId}/cancel`);
 
 // 특정 문의 상세 조회 (현재 미사용 - 문의 상세 페이지 구현 시 사용)
-export const getInquiryById = (inquiryId) => api.get(`/inquiries/${inquiryId}`);
+export const getInquiryById = (inquiryId) => api.get(`/api/inquiries/${inquiryId}`);

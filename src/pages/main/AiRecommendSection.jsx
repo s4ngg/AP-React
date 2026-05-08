@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Sparkles, RefreshCw, Heart, ShoppingCart } from "lucide-react"
+import { Sparkles, RefreshCw, Heart } from "lucide-react"
+import { getAiRecommendations } from "../../api/aiApi"
 import styles from "./AiRecommendSection.module.css"
+import useAuthStore from "../../store/authStore"
 
-// 임시 Mock 데이터 (추후 OpenAI API + FakeStore API 연동 예정)
 const mockRecommendations = {
-  user: "김상우",
   categories: ["뷰티", "리빙"],
   keywords: ["스킨케어", "인테리어소품", "보습"],
   products: [
@@ -43,9 +43,6 @@ const mockRecommendations = {
     },
   ],
 }
-
-// 임시 로그인 상태 (추후 authStore 연동 예정)
-const MOCK_IS_LOGGED_IN = true
 
 function SkeletonCard() {
   return (
@@ -99,27 +96,28 @@ function ProductCard({ product }) {
             {product.originalPrice.toLocaleString()}원
           </div>
         )}
-        
       </div>
     </div>
   )
 }
 
 export default function AiRecommendSection() {
+  const { isLoggedIn, user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
   const [data, setData] = useState(mockRecommendations)
-  const isLoggedIn = MOCK_IS_LOGGED_IN
 
-  // 추천 새로고침 (추후 OpenAI API 호출로 교체)
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsLoading(true)
-    setTimeout(() => {
+    try {
+      const result = await getAiRecommendations(data.categories, [])
+      setData((prev) => ({ ...prev, ...result }))
+    } catch (e) {
+      console.error("AI 추천 실패", e)
+    } finally {
       setIsLoading(false)
-      // TODO: OpenAI API 호출 → 추천 상품 업데이트
-    }, 2000)
+    }
   }
 
-  // 비로그인 상태
   if (!isLoggedIn) {
     return (
       <section className={styles.section}>
@@ -156,7 +154,6 @@ export default function AiRecommendSection() {
   return (
     <section className={styles.section}>
       <div className={styles.inner}>
-        {/* 헤더 */}
         <div className={styles.header}>
           <div className={styles.titleWrap}>
             <div className={styles.aiIcon}>
@@ -164,7 +161,7 @@ export default function AiRecommendSection() {
             </div>
             <div className={styles.titleGroup}>
               <h2 className={styles.sectionTitle}>
-                <span>{data.user}님</span>을 위한 AI 추천
+                <span>{user?.name ?? "회원"}님</span>을 위한 AI 추천
               </h2>
               <p className={styles.sectionSub}>
                 관심 카테고리와 위시리스트를 분석했습니다
@@ -177,7 +174,6 @@ export default function AiRecommendSection() {
           </button>
         </div>
 
-        {/* AI 분석 태그 */}
         {!isLoading && (
           <div className={styles.analysisTags}>
             <span className={styles.analysisLabel}>분석 기반:</span>
@@ -190,7 +186,6 @@ export default function AiRecommendSection() {
           </div>
         )}
 
-        {/* 로딩 상태 */}
         {isLoading && (
           <>
             <div className={styles.loadingMsg}>
@@ -203,7 +198,6 @@ export default function AiRecommendSection() {
           </>
         )}
 
-        {/* 상품 그리드 */}
         {!isLoading && (
           <div className={styles.productGrid}>
             {data.products.map((product) => (
