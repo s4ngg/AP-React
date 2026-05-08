@@ -40,8 +40,13 @@ import OrderFailPage from "./pages/order/OrderFailPage"
 import useAuthStore from "./store/authStore"
 import "./index.css"
 
+const PrivateRoute = ({ children }) => {
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+  return isLoggedIn ? children : <Navigate to="/login" replace />
+}
+
 const AdminRoute = ({ children }) => {
-  const { adminToken } = useAuthStore()
+  const adminToken = useAuthStore((state) => state.adminToken)
   return adminToken ? children : <Navigate to="/admin/login" replace />
 }
 
@@ -54,7 +59,7 @@ function App() {
         <div style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<MainPage />} />
-            <Route path="/mypage" element={<MyPage />} />
+            <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/order/success" element={<OrderSuccessPage />} />
             <Route path="/order/fail" element={<OrderFailPage />} />

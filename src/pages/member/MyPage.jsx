@@ -1,10 +1,17 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import styles from "./MyPage.module.css"
 import useAuthStore from "../../store/authStore"
 import { getMember, updateMember, changePassword, deleteMember } from "../../api/memberApi"
 import { getMemberCoupons } from "../../api/couponApi"
 import { getMembershipHistory } from "../../api/membershipApi"
-import { getMyOrders, getDeliveryAddresses, deleteDeliveryAddress } from "../../api/orderApi"
+import {
+  getMyOrders,
+  cancelOrder,
+  getDeliveryAddresses,
+  addDeliveryAddress,
+  updateDeliveryAddress,
+  deleteDeliveryAddress,
+} from "../../api/orderApi"
 import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket, Store } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
@@ -50,6 +57,12 @@ const tabs = [
   { id: "seller", label: "판매자 신청", icon: Store },
   { id: "withdrawal", label: "회원 탈퇴", icon: AlertTriangle },
 ]
+
+const normalizePhone = (phone) => phone.replaceAll("-", "").trim()
+
+const buildAddress = ({ address, addressDetail }) =>
+  [address, addressDetail].map((value) => value.trim()).filter(Boolean).join(" ")
+
 export default function MyPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("info")
@@ -105,45 +118,67 @@ export default function MyPage() {
       .catch(() => {})
   }, [])
 
-  // 주문 탭 진입 시 API 호출
-  useEffect(() => {
-    if (activeTab !== "orders") return
+  const fetchOrders = useCallback(() => {
     setOrdersLoading(true)
     getMyOrders()
       .then((data) => setOrders(data ?? []))
       .catch(() => setOrders([]))
       .finally(() => setOrdersLoading(false))
-  }, [activeTab])
+  }, [])
 
-  // 배송지 탭 진입 시 API 호출
-  useEffect(() => {
-    if (activeTab !== "address") return
+  const fetchAddresses = useCallback(() => {
     setAddressLoading(true)
     getDeliveryAddresses()
       .then((data) => setAddresses(data ?? []))
       .catch(() => setAddresses([]))
       .finally(() => setAddressLoading(false))
-  }, [activeTab])
+  }, [])
 
-  // 쿠폰 탭 진입 시 API 호출
-  useEffect(() => {
-    if (activeTab !== "coupon" || !memberId) return
+  const fetchCoupons = useCallback(() => {
+    if (!memberId) return
     setCouponLoading(true)
     getMemberCoupons(memberId)
       .then((data) => setCoupons(data ?? []))
       .catch(() => setCoupons([]))
       .finally(() => setCouponLoading(false))
-  }, [activeTab, memberId])
+  }, [memberId])
 
-  // 멤버십 탭 진입 시 API 호출
-  useEffect(() => {
-    if (activeTab !== "membership" || !memberId) return
+  const fetchMembershipHistory = useCallback(() => {
+    if (!memberId) return
     setHistoryLoading(true)
     getMembershipHistory(memberId)
       .then((data) => setMembershipHistory(data ?? []))
       .catch(() => setMembershipHistory([]))
       .finally(() => setHistoryLoading(false))
-  }, [activeTab, memberId])
+  }, [memberId])
+
+  // 주문 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "orders") return
+    const timeoutId = setTimeout(fetchOrders, 0)
+    return () => clearTimeout(timeoutId)
+  }, [activeTab, fetchOrders])
+
+  // 배송지 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "address") return
+    const timeoutId = setTimeout(fetchAddresses, 0)
+    return () => clearTimeout(timeoutId)
+  }, [activeTab, fetchAddresses])
+
+  // 쿠폰 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "coupon" || !memberId) return
+    const timeoutId = setTimeout(fetchCoupons, 0)
+    return () => clearTimeout(timeoutId)
+  }, [activeTab, memberId, fetchCoupons])
+
+  // 멤버십 탭 진입 시 API 호출
+  useEffect(() => {
+    if (activeTab !== "membership" || !memberId) return
+    const timeoutId = setTimeout(fetchMembershipHistory, 0)
+    return () => clearTimeout(timeoutId)
+  }, [activeTab, memberId, fetchMembershipHistory])
 
   const handleFormChange = (e) => {
     const { name, value } = e.target
@@ -157,9 +192,14 @@ export default function MyPage() {
 
   // 내 정보 수정 저장
   const handleInfoSave = () => {
-    updateMember({ phone: form.phone, address: form.address })
+    updateMember({
+      name: memberInfo?.name ?? "",
+      phone: normalizePhone(form.phone),
+      address: buildAddress(form),
+    })
       .then((data) => {
         setMemberInfo(data)
+        setForm({ phone: data.phone ?? "", address: data.address ?? "", addressDetail: "" })
         setIsEditing(false)
       })
       .catch(() => alert("정보 수정에 실패했습니다."))
@@ -253,6 +293,15 @@ export default function MyPage() {
       .catch(() => alert("삭제에 실패했습니다."))
   }
 
+  const handleCancelOrder = (orderId) => {
+    if (!window.confirm("주문을 취소하시겠습니까?")) return
+    cancelOrder(orderId)
+      .then((data) => {
+        setOrders((prev) => prev.map((order) => order.orderId === data.orderId ? data : order))
+      })
+      .catch(() => alert("주문 취소에 실패했습니다."))
+  }
+
   const filteredCoupons = coupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
   )
@@ -287,17 +336,20 @@ export default function MyPage() {
             </div>
           </div>
           <nav className={styles.tabNav}>
-            {tabs.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                className={`${styles.tabBtn} ${activeTab === id ? styles.tabBtnActive : ""} ${id === "withdrawal" ? styles.tabBtnDanger : ""}`}
-                onClick={() => setActiveTab(id)}
-              >
-                <Icon size={16} />
-                {label}
-                <ChevronRight size={14} className={styles.tabChevron} />
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const TabIcon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ""} ${tab.id === "withdrawal" ? styles.tabBtnDanger : ""}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <TabIcon size={16} />
+                  {tab.label}
+                  <ChevronRight size={14} className={styles.tabChevron} />
+                </button>
+              )
+            })}
           </nav>
         </aside>
 
@@ -424,7 +476,12 @@ export default function MyPage() {
                           총 결제 금액 <strong>{Number(order.totalAmount).toLocaleString()}원</strong>
                         </span>
                         {order.status === "PENDING" && (
-                          <button className={styles.cancelOrderBtn}>주문 취소</button>
+                          <button
+                            className={styles.cancelOrderBtn}
+                            onClick={() => handleCancelOrder(order.orderId)}
+                          >
+                            주문 취소
+                          </button>
                         )}
                       </div>
                     </div>
