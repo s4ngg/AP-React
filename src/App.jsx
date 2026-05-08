@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import OrderPage from "./pages/order/OrderPage"
 import Header from "./components/common/Header"
 import Footer from "./components/common/Footer"
@@ -36,10 +36,11 @@ import SellerRefundPage from "./pages/seller/SellerRefundPage"
 import SellerInquiryPage from "./pages/seller/SellerInquiryPage"
 import OrderSuccessPage from "./pages/order/OrderSuccessPage"
 import OrderFailPage from "./pages/order/OrderFailPage"
+import useAuthStore from "./store/authStore"
 import "./index.css"
 
 const PrivateRoute = ({ children }) => {
-  const { isLoggedIn } = useAuthStore()
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   return isLoggedIn ? children : <Navigate to="/login" replace />
 }
 
@@ -52,7 +53,7 @@ function App() {
         <div style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<MainPage />} />
-            <Route path="/mypage" element={<MyPage />} />
+            <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
             <Route path="/order" element={<OrderPage />} />
             <Route path="/order/success" element={<OrderSuccessPage />} />
             <Route path="/order/fail" element={<OrderFailPage />} />
