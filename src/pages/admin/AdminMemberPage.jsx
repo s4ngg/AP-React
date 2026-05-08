@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Search, CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import styles from "./AdminMemberPage.module.css"
@@ -27,35 +27,41 @@ export default function AdminMemberPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (activeTab === 0) fetchBuyers()
-    else if (activeTab === 1) fetchSellers()
-    else if (activeTab === 2) fetchPendingSellers()
-  }, [activeTab])
-
-  const fetchBuyers = () => {
+  const fetchBuyers = useCallback(() => {
     setLoading(true)
     getMembers()
       .then((data) => setBuyers(data))
       .catch(() => alert("구매자 목록을 불러오지 못했습니다."))
       .finally(() => setLoading(false))
-  }
+  }, [])
 
-  const fetchSellers = () => {
+  const fetchSellers = useCallback(() => {
     setLoading(true)
     getSellers()
       .then((data) => setSellers(data))
       .catch(() => alert("판매자 목록을 불러오지 못했습니다."))
       .finally(() => setLoading(false))
-  }
+  }, [])
 
-  const fetchPendingSellers = () => {
+  const fetchPendingSellers = useCallback(() => {
     setLoading(true)
     getPendingSellers()
       .then((data) => setPendingSellers(data))
       .catch(() => alert("승인 대기 목록을 불러오지 못했습니다."))
       .finally(() => setLoading(false))
-  }
+  }, [])
+
+  useEffect(() => {
+    const fetchData =
+      activeTab === 0
+        ? fetchBuyers
+        : activeTab === 1
+          ? fetchSellers
+          : fetchPendingSellers
+
+    const timeoutId = setTimeout(fetchData, 0)
+    return () => clearTimeout(timeoutId)
+  }, [activeTab, fetchBuyers, fetchSellers, fetchPendingSellers])
 
   const filteredBuyers = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
