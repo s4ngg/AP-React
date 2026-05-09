@@ -192,6 +192,7 @@ export default function MyPage() {
 
   // 내 정보 수정 저장
   const handleInfoSave = () => {
+    if (!memberInfo) return
     updateMember({
       name: memberInfo?.name ?? "",
       phone: normalizePhone(form.phone),

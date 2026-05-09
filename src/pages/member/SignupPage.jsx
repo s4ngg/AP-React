@@ -6,8 +6,7 @@ import { AuthLayout } from "../../components/common/AuthLayout";
 import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
-import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
-// import { sendSmsCode, verifySmsCode } from "../../api/authApi"; // import 추가
+import { checkEmailDuplicate, validateBusinessNumber, sendSmsCode, verifySmsCode } from "../../api/authApi";
 
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
@@ -22,12 +21,12 @@ export default function SignupPage({ isSeller = false }) {
   const [emailAvailable, setEmailAvailable] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [phoneVerified, setPhoneVerified] = useState(false);
-  // const [phoneSent, setPhoneSent] = useState(false);
-  // const [smsCode, setSmsCode] = useState("");
-  // const [sendingCode, setSendingCode] = useState(false);
-  // const [verifyingCode, setVerifyingCode] = useState(false);
-  // const [smsError, setSmsError] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneSent, setPhoneSent] = useState(false);
+  const [smsCode, setSmsCode] = useState("");
+  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [smsError, setSmsError] = useState("");
 
   const {
     register,
@@ -43,42 +42,44 @@ export default function SignupPage({ isSeller = false }) {
   const passwordConfirm = watch("passwordConfirm");
   const email = watch("email");
 
-  // const handleSendSmsCode = async () => {
-  //   const phone = watch("phone");
-  //   if (!phone) return;
-  //   const cleaned = phone.replace(/-/g, "");
-  //   setSendingCode(true);
-  //   setSmsError("");
-  //   try {
-  //     await sendSmsCode(cleaned);
-  //     setPhoneSent(true);
-  //   } catch {
-  //     setSmsError("인증번호 발송에 실패했습니다.");
-  //   } finally {
-  //     setSendingCode(false);
-  //   }
-  // };
+  const handleSendSmsCode = async () => {
+    const phone = watch("phone");
+    if (!phone) return;
+    const cleaned = phone.replace(/-/g, "");
+    setSendingCode(true);
+    setSmsError("");
+    try {
+      await sendSmsCode(cleaned);
+      setPhoneSent(true);
+    } catch {
+      setSmsError("인증번호 발송에 실패했습니다.");
+    } finally {
+      setSendingCode(false);
+    }
+  };
 
-  // const handleVerifySmsCode = async () => {
-  //   const phone = watch("phone");
-  //   const cleaned = phone.replace(/-/g, "");
-  //   setVerifyingCode(true);
-  //   setSmsError("");
-  //   try {
-  //     await verifySmsCode(cleaned, smsCode);
-  //     setPhoneVerified(true);
-  //   } catch {
-  //     setSmsError("인증번호가 올바르지 않습니다.");
-  //   } finally {
-  //     setVerifyingCode(false);
-  //   }
-  // };
+  const handleVerifySmsCode = async () => {
+    const phone = watch("phone");
+    const cleaned = phone.replace(/-/g, "");
+    setVerifyingCode(true);
+    setSmsError("");
+    try {
+      await verifySmsCode(cleaned, smsCode);
+      setPhoneVerified(true);
+    } catch {
+      setSmsError("인증번호가 올바르지 않습니다.");
+    } finally {
+      setVerifyingCode(false);
+    }
+  };
+
   const formatPhone = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, 11)
     if (digits.length < 4) return digits
     if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`
     return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
   }
+
   const passwordValidation = {
     hasLength: password?.length >= 8,
     hasLetter: /[a-zA-Z]/.test(password || ""),
@@ -109,9 +110,9 @@ export default function SignupPage({ isSeller = false }) {
       setEmailAvailable(response.data?.available ?? true);
       clearErrors("email");
     } catch {
-      setEmailChecked(false)   // ← 변경
-      setEmailAvailable(false) // ← 변경
-      setError("email", { message: "이메일 확인 중 오류가 발생했습니다. 다시 시도해주세요." }) // ← 추가
+      setEmailChecked(false);
+      setEmailAvailable(false);
+      setError("email", { message: "이메일 확인 중 오류가 발생했습니다. 다시 시도해주세요." });
     } finally {
       setCheckingEmail(false);
     }
@@ -165,10 +166,10 @@ export default function SignupPage({ isSeller = false }) {
       setError("email", { message: "이메일 중복 확인을 해주세요" });
       return;
     }
-    // if (!phoneVerified) {
-    //   setSmsError("휴대폰 인증을 완료해주세요");
-    //   return;
-    // }
+    if (!phoneVerified) {
+      setSmsError("휴대폰 인증을 완료해주세요");
+      return;
+    }
     if (!isPasswordValid) return;
     if (!passwordsMatch) return;
 
@@ -178,7 +179,7 @@ export default function SignupPage({ isSeller = false }) {
         email: data.email,
         password: data.password,
         name: data.name,
-        phone: data.phone.replace(/-/g, ""), // ← 하이픈 제거
+        phone: data.phone.replace(/-/g, ""),
         zipCode: data.zipCode,
         address: data.address,
         addressDetail: data.addressDetail,
@@ -204,12 +205,10 @@ export default function SignupPage({ isSeller = false }) {
     <AuthLayout showSteps currentStep={1} title="회원가입" description="AllPick 회원이 되어 다양한 혜택을 누리세요">
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
 
-
         <div className={isSeller ? styles.twoColumn : styles.singleColumn}>
           <div className={styles.column}>
             <p className={styles.columnTitle}>기본 정보</p>
 
-            {/* 이메일 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>이메일</label>
               <div className={styles.emailRow}>
@@ -235,7 +234,6 @@ export default function SignupPage({ isSeller = false }) {
               )}
             </div>
 
-            {/* 비밀번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>비밀번호</label>
               <div className={styles.inputWrapper}>
@@ -266,7 +264,6 @@ export default function SignupPage({ isSeller = false }) {
               )}
             </div>
 
-            {/* 비밀번호 확인 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>비밀번호 확인</label>
               <div className={styles.inputWrapper}>
@@ -287,7 +284,6 @@ export default function SignupPage({ isSeller = false }) {
               )}
             </div>
 
-            {/* 이름 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>이름</label>
               <input
@@ -302,8 +298,6 @@ export default function SignupPage({ isSeller = false }) {
               {errors.name && <p className={styles.fieldError}>{errors.name.message}</p>}
             </div>
 
-            {/* 휴대폰 번호 */}
-            {/* 휴대폰 번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>휴대폰 번호</label>
               <div className={styles.emailRow}>
@@ -318,23 +312,24 @@ export default function SignupPage({ isSeller = false }) {
                   onChange={(e) => {
                     const formatted = formatPhone(e.target.value)
                     setValue("phone", formatted, { shouldValidate: true, shouldDirty: true })
+                    setPhoneSent(false);
+                    setPhoneVerified(false);
+                    setSmsCode("");
+                    setSmsError("");
                   }}
                 />
-
-                {/* <button
+                <button
                   type="button"
                   onClick={handleSendSmsCode}
                   disabled={sendingCode || phoneVerified}
                   className={styles.checkBtn}
                 >
-                
                   {sendingCode ? "발송 중..." : phoneSent ? "재발송" : "인증번호 발송"}
-                </button> */}
+                </button>
               </div>
               {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
 
-              {/* 인증번호 입력 */}
-              {/*phoneSent && !phoneVerified && (
+              {phoneSent && !phoneVerified && (
                 <div className={styles.emailRow} style={{ marginTop: 8 }}>
                   <input
                     type="text"
@@ -353,11 +348,16 @@ export default function SignupPage({ isSeller = false }) {
                     {verifyingCode ? "확인 중..." : "인증 확인"}
                   </button>
                 </div>
-              )} )*/
-              }
+              )}
+
+              {phoneVerified && (
+                <p className={`${styles.emailStatus} ${styles.emailAvailable}`}>
+                  <Check size={13} /> 휴대폰 인증이 완료되었습니다
+                </p>
+              )}
+              {smsError && <p className={styles.fieldError}>{smsError}</p>}
             </div>
 
-            {/* 우편번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>우편번호</label>
               <div className={styles.emailRow}>
@@ -375,7 +375,6 @@ export default function SignupPage({ isSeller = false }) {
               {errors.zipCode && <p className={styles.fieldError}>{errors.zipCode.message}</p>}
             </div>
 
-            {/* 주소 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>주소</label>
               <input
@@ -387,13 +386,13 @@ export default function SignupPage({ isSeller = false }) {
               {errors.address && <p className={styles.fieldError}>{errors.address.message}</p>}
             </div>
           </div>
+
           {isSeller && (
             <>
               <div className={styles.columnDivider} />
               <div className={styles.column}>
                 <p className={styles.columnTitle}>판매자 정보</p>
 
-                {/* 상호명 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>상호명</label>
                   <input
@@ -405,7 +404,6 @@ export default function SignupPage({ isSeller = false }) {
                   {errors.business_name && <p className={styles.fieldError}>{errors.business_name.message}</p>}
                 </div>
 
-                {/* ✅ 사업자 등록번호 - 버튼 포함 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>사업자 등록번호</label>
                   <div className={styles.emailRow}>
@@ -438,7 +436,6 @@ export default function SignupPage({ isSeller = false }) {
                   )}
                 </div>
 
-                {/* 대표자명 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>대표자명</label>
                   <input
@@ -450,7 +447,6 @@ export default function SignupPage({ isSeller = false }) {
                   {errors.representative_name && <p className={styles.fieldError}>{errors.representative_name.message}</p>}
                 </div>
 
-                {/* 은행명 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>은행명</label>
                   <select
@@ -468,7 +464,6 @@ export default function SignupPage({ isSeller = false }) {
                   {errors.bank_name && <p className={styles.fieldError}>{errors.bank_name.message}</p>}
                 </div>
 
-                {/* 계좌번호 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>계좌번호</label>
                   <input
