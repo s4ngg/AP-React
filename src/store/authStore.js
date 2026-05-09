@@ -7,6 +7,7 @@ const useAuthStore = create(
       user: null,
       isLoggedIn: false,
       token: null,
+<<<<<<< HEAD
       sellerToken: null,
       adminToken: null,
 
@@ -21,10 +22,13 @@ const useAuthStore = create(
           sellerToken: null,
           adminToken: null,
         }),
+=======
+
+      setUser: (user, token) => set({ user, isLoggedIn: true, token }),
+      logout: () => set({ user: null, isLoggedIn: false, token: null }),
+>>>>>>> c0c584e94364700e9069954e465ffc404c69c338
     }),
-    {
-      name: "auth-storage",
-    }
+    { name: "auth-storage" }
   )
 )
 

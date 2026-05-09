@@ -31,6 +31,7 @@ export default function LoginPage() {
 
       setUser({ email, name, isSeller }, token);
 
+      setUser({ email, name, isSeller: seller }, token);  // ← 이건 그대로
       navigate("/");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다");

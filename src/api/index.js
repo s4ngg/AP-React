@@ -10,14 +10,7 @@ const getToken = () => {
   }
 }
 
-const getSellerToken = () => {
-  try {
-    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
-    return authStorage?.state?.sellerToken ?? null
-  } catch {
-    return null
-  }
-}
+// getSellerToken 함수 삭제
 
 const getAdminToken = () => {
   try {

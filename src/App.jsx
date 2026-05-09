@@ -41,8 +41,15 @@ import useAuthStore from "./store/authStore"
 import "./index.css"
 
 const PrivateRoute = ({ children }) => {
+<<<<<<< HEAD
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   return isLoggedIn ? children : <Navigate to="/login" replace />
+=======
+  const { isLoggedIn, user } = useAuthStore()
+  if (!isLoggedIn) return <Navigate to="/login" replace />
+  if (!user?.isSeller) return <Navigate to="/" replace />
+  return children
+>>>>>>> c0c584e94364700e9069954e465ffc404c69c338
 }
 
 const AdminRoute = ({ children }) => {
