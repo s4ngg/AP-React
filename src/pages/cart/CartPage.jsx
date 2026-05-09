@@ -94,15 +94,16 @@ export default function CartPage() {
         serverItems.forEach((serverItem) => {
           addItem(
             {
-              productId: serverItem.cartItemId,
-              productName: serverItem.productName,
+              id: serverItem.productId,
+              name: serverItem.productName,
               brandName: serverItem.brandName,
               price: serverItem.price,
-              option: serverItem.option,
+              thumbnailUrl: serverItem.thumbnailUrl,
               cartItemId: serverItem.cartItemId,
+              optionId: serverItem.optionId,
             },
             serverItem.quantity,
-            {}
+            serverItem.option ? { option: serverItem.option } : {}
           )
         })
       } catch {

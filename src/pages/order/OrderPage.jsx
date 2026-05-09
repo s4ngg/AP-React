@@ -126,7 +126,7 @@ export default function OrderPage() {
         productName: item.product.name,
         productPrice: item.product.price,
         quantity: item.quantity,
-        optionId: Number(Object.keys(item.selectedOptions ?? {})[0]) || 1,
+        optionId: Number(Object.keys(item.selectedOptions ?? {})[0]) || null,
       })),
     }
     const result = await createOrder(requestBody)
@@ -163,7 +163,7 @@ export default function OrderPage() {
           주문번호: {completedOrderNumber}
         </div>
         <div className={styles.completeBtns}>
-          <Link to="/my-page" className={styles.completeBtnPrimary}>주문 내역 보기</Link>
+          <Link to="/mypage" className={styles.completeBtnPrimary}>주문 내역 보기</Link>
           <Link to="/" className={styles.completeBtnSecondary}>쇼핑 계속하기</Link>
         </div>
       </div>

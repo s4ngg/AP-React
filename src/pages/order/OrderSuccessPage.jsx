@@ -23,7 +23,7 @@ export default function OrderSuccessPage() {
                 주문번호: {orderNumber}
             </div>
             <div className={styles.completeBtns}>
-                <Link to="/my-page" className={styles.completeBtnPrimary}>주문 내역 보기</Link>
+                <Link to="/mypage" className={styles.completeBtnPrimary}>주문 내역 보기</Link>
                 <Link to="/" className={styles.completeBtnSecondary}>쇼핑 계속하기</Link>
             </div>
         </div>

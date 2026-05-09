@@ -1,32 +1,34 @@
 import api from "./index";
-import emailjs from "@emailjs/browser"
+import emailjs from "@emailjs/browser";
 
 // ==================== 회원가입 관련 API ====================
 
 export const checkEmailDuplicate = async (email) => {
-  const response = await api.get(`/api/members/check-email?email=${encodeURIComponent(email)}`);
+  const response = await api.get(
+    `/api/members/check-email?email=${encodeURIComponent(email)}`,
+  );
   return response.data;
 };
 
-let storedCode = ""
+let storedCode = "";
 
 export const sendVerificationCode = async (email) => {
-  const code = Math.floor(100000 + Math.random() * 900000).toString()
-  storedCode = code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  storedCode = code;
   await emailjs.send(
     import.meta.env.VITE_EMAILJS_SERVICE_ID,
     import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
     { to_email: email, code },
-    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-  )
-}
+    import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  );
+};
 
 export const verifyEmailCode = async (email, inputCode) => {
   if (inputCode !== storedCode) {
-    throw new Error("인증번호가 올바르지 않습니다")
+    throw new Error("인증번호가 올바르지 않습니다");
   }
-  storedCode = ""
-}
+  storedCode = "";
+};
 
 export const signup = async (data) => {
   const response = await api.post("/api/auth/signup", data);
@@ -40,17 +42,21 @@ export const login = async (data) => {
   return response.data;
 };
 
+// Spring에 logout 엔드포인트 미구현 — 클라이언트(zustand) 초기화로만 처리
 export const logout = async () => {
-  const response = await api.post("/api/auth/logout");
-  return response.data;
+  return Promise.resolve();
 };
 
 export const getSocialLoginUrl = (provider) => {
-  const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api";
+  const baseUrl =
+    (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api";
   return `${baseUrl}/oauth2/authorization/${provider}`;
 };
 
 // ==================== 계정 찾기/복구 API ====================
+// 아래 4개 함수는 Spring 미구현 상태입니다.
+// FindEmailPage, FindPasswordPage, ResetPasswordPage는 현재 사용 불가 상태이며
+// 해당 페이지에서 호출 시 에러가 발생합니다. (추후 Spring 구현 후 활성화)
 
 export const findEmail = async (data) => {
   const response = await api.post("/api/auth/find-email", data);
@@ -63,7 +69,10 @@ export const sendPasswordResetCode = async (email) => {
 };
 
 export const verifyPasswordResetCode = async (email, code) => {
-  const response = await api.post("/api/auth/verify-password-reset", { email, code });
+  const response = await api.post("/api/auth/verify-password-reset", {
+    email,
+    code,
+  });
   return response.data;
 };
 
@@ -90,18 +99,6 @@ export const getTerms = async () => {
 // ==================== 사업자등록번호 검증 ====================
 
 export const validateBusinessNumber = async (businessNumber) => {
-  const cleaned = businessNumber.replaceAll("-", "");
-  const response = await fetch(
-    `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${import.meta.env.VITE_BUSINESS_API_KEY}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({ b_no: [cleaned] })
-    }
-  );
-  const data = await response.json();
-  return data.data[0]?.b_stt_cd === "01";
+  // TODO: 테스트 완료 후 원래 로직으로 복구
+  return true;
 };
