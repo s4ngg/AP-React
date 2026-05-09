@@ -30,7 +30,7 @@ jobs:
                   echo "VITE_EMAILJS_SERVICE_ID=service_bhg4i6l" >> .env
                   echo "VITE_EMAILJS_TEMPLATE_ID=template_dg7jjnk" >> .env
                   echo "VITE_EMAILJS_PUBLIC_KEY=yDN0B44_FF3lz0jzk" >> .env
-                  echo "VITE_API_URL=http://13.54.215.62:8080" >> .env
+                  echo "VITE_API_URL=https://d15b731cpaqp76.cloudfront.net" >> .env
 
             - name: Install dependencies
               run: npm install
