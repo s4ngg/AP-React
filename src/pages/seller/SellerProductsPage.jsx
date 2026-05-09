@@ -118,6 +118,11 @@ export default function SellerProductsPage() {
         price: Number(formData.price),
         categoryId: Number(formData.categoryId),
         description: formData.description || formData.productName,
+        optionList: formData.optionList.map((opt) => ({
+          ...opt,
+          additionalPrice: Number(opt.additionalPrice),
+          stockQuantity: Number(opt.stockQuantity),
+        })),
         productImageList: formData.productImageList.length > 0
           ? formData.productImageList
           : formData.thumbnailUrl

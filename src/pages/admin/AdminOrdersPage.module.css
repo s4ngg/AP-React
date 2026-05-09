@@ -142,6 +142,7 @@
 }
 
 .statusPaid { background-color: #eff6ff; color: #2563eb; }
+.statusPending { background-color: #f3f4f6; color: #6b7280; }
 .statusShipping { background-color: #fff7ed; color: #ea580c; }
 .statusDelivered { background-color: #f0fdf4; color: #16a34a; }
 .statusCancelled { background-color: #fef2f2; color: #dc2626; }
