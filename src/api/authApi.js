@@ -1,32 +1,34 @@
 import api from "./index";
-import emailjs from "@emailjs/browser"
+import emailjs from "@emailjs/browser";
 
 // ==================== 회원가입 관련 API ====================
 
 export const checkEmailDuplicate = async (email) => {
-  const response = await api.get(`/api/members/check-email?email=${encodeURIComponent(email)}`);
+  const response = await api.get(
+    `/api/members/check-email?email=${encodeURIComponent(email)}`,
+  );
   return response.data;
 };
 
-let storedCode = ""
+let storedCode = "";
 
 export const sendVerificationCode = async (email) => {
-  const code = Math.floor(100000 + Math.random() * 900000).toString()
-  storedCode = code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  storedCode = code;
   await emailjs.send(
     import.meta.env.VITE_EMAILJS_SERVICE_ID,
     import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
     { to_email: email, code },
-    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-  )
-}
+    import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  );
+};
 
 export const verifyEmailCode = async (email, inputCode) => {
   if (inputCode !== storedCode) {
-    throw new Error("인증번호가 올바르지 않습니다")
+    throw new Error("인증번호가 올바르지 않습니다");
   }
-  storedCode = ""
-}
+  storedCode = "";
+};
 
 export const signup = async (data) => {
   const response = await api.post("/api/auth/signup", data);
@@ -46,7 +48,8 @@ export const logout = async () => {
 };
 
 export const getSocialLoginUrl = (provider) => {
-  const baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api";
+  const baseUrl =
+    (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api";
   return `${baseUrl}/oauth2/authorization/${provider}`;
 };
 
@@ -66,7 +69,10 @@ export const sendPasswordResetCode = async (email) => {
 };
 
 export const verifyPasswordResetCode = async (email, code) => {
-  const response = await api.post("/api/auth/verify-password-reset", { email, code });
+  const response = await api.post("/api/auth/verify-password-reset", {
+    email,
+    code,
+  });
   return response.data;
 };
 
@@ -100,10 +106,10 @@ export const validateBusinessNumber = async (businessNumber) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
-      body: JSON.stringify({ b_no: [cleaned] })
-    }
+      body: JSON.stringify({ b_no: [cleaned] }),
+    },
   );
   const data = await response.json();
   return data.data[0]?.b_stt_cd === "01";
