@@ -27,14 +27,9 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await login({ email: data.email, password: data.password });
-      const { token, email, name, sellerToken } = res.data;  // ← sellerToken 추가
+      const { token, email, name, isSeller } = res.data;
 
-      setUser({ email, name }, token);
-
-      // 셀러 토큰이 있으면 저장
-      if (sellerToken) {
-        useAuthStore.getState().setSellerToken(sellerToken)
-      }
+      setUser({ email, name, isSeller }, token);
 
       navigate("/");
     } catch {

@@ -143,7 +143,7 @@ export default function ProductDetailPage() {
         thumbnailUrl: product.thumbnailUrl,
       },
       quantity,
-      selectedOption ? { [selectedOption.optionName]: selectedOption.optionValue } : {}
+      selectedOption ? { [selectedOption.optionId]: selectedOption.optionValue } : {}
     )
     alert("장바구니에 추가되었습니다.")
   }
@@ -170,7 +170,7 @@ export default function ProductDetailPage() {
         thumbnailUrl: product.thumbnailUrl,
       },
       quantity,
-      selectedOption ? { [selectedOption.optionName]: selectedOption.optionValue } : {}
+      selectedOption ? { [selectedOption.optionId]: selectedOption.optionValue } : {}
     )
     navigate("/cart")
   }
