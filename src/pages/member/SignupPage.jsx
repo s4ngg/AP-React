@@ -6,12 +6,8 @@ import { AuthLayout } from "../../components/common/AuthLayout";
 import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
-<<<<<<< HEAD
 import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
 import { sendSmsCode, verifySmsCode } from "../../api/authApi";
-=======
-import { checkEmailDuplicate, validateBusinessNumber, sendSmsCode, verifySmsCode } from "../../api/authApi";
->>>>>>> 112f9bf4e152b4b35841544dbe8352d36aaf6413
 
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
@@ -62,7 +58,6 @@ export default function SignupPage({ isSeller = false }) {
       setSendingCode(false);
     }
   };
-<<<<<<< HEAD
 
   const handleVerifySmsCode = async () => {
     const phone = watch("phone");
@@ -78,24 +73,6 @@ export default function SignupPage({ isSeller = false }) {
       setVerifyingCode(false);
     }
   };
-=======
-
-  const handleVerifySmsCode = async () => {
-    const phone = watch("phone");
-    const cleaned = phone.replace(/-/g, "");
-    setVerifyingCode(true);
-    setSmsError("");
-    try {
-      await verifySmsCode(cleaned, smsCode);
-      setPhoneVerified(true);
-    } catch {
-      setSmsError("인증번호가 올바르지 않습니다.");
-    } finally {
-      setVerifyingCode(false);
-    }
-  };
-
->>>>>>> 112f9bf4e152b4b35841544dbe8352d36aaf6413
   const formatPhone = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, 11)
     if (digits.length < 4) return digits

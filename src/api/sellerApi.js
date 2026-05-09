@@ -82,3 +82,10 @@ export const getClaimDetail = (claimId) =>
 
 export const getClaimAttachments = (claimId) =>
   api.get(`/api/attachments/claim/${claimId}`).then((res) => res.data.data)
+/**
+ * 문의 답변 등록
+ * @param {number} inquiryId - 문의 ID
+ * @param {string} content   - 답변 내용
+ */
+export const replyToInquiry = (inquiryId, content) =>
+  api.post(`/api/inquiries/${inquiryId}/answers/seller`, { content }).then((res) => res.data)

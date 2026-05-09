@@ -28,9 +28,21 @@ const NEXT_STATUS_LABEL = {
 }
 
 const STATUS_TO_BACKEND = {
+  결제완료: "PENDING",
   상품준비중: "PAID",
   배송중: "SHIPPING",
   배송완료: "DELIVERED",
+}
+const PREV_STATUS_MAP = {
+  상품준비중: "결제완료",
+  배송중: "상품준비중",
+  배송완료: "배송중",
+}
+
+const PREV_STATUS_LABEL = {
+  상품준비중: "결제완료로 되돌리기",
+  배송중: "준비중으로 되돌리기",
+  배송완료: "배송중으로 되돌리기",
 }
 
 const SEARCH_TYPES = [
@@ -108,7 +120,23 @@ export default function SellerOrdersPage() {
       alert("상태 변경에 실패했습니다.")
     }
   }
-
+  const handleStatusRevert = async (orderId, currentStatus) => {
+    const prevStatus = PREV_STATUS_MAP[currentStatus]
+    if (!prevStatus) return
+    if (!window.confirm(`상태를 "${prevStatus}"(으)로 되돌리시겠습니까?`)) return
+    const backendStatus = STATUS_TO_BACKEND[prevStatus]
+    try {
+      await updateSellerOrderStatus(orderId, backendStatus)
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId === orderId ? { ...o, status: prevStatus } : o))
+      )
+      if (selectedOrder?.orderId === orderId) {
+        setSelectedOrder((prev) => ({ ...prev, status: prevStatus }))
+      }
+    } catch {
+      alert("상태 되돌리기에 실패했습니다.")
+    }
+  }
   return (
     <div className={styles.sellerLayout}>
       <SellerSidebar />
@@ -202,16 +230,24 @@ export default function SellerOrdersPage() {
                           {order.status}
                         </span>
                       </td>
-                      <td>
-                        {NEXT_STATUS_MAP[order.status] && (
-                          <button
-                            className={styles.statusBtn}
-                            onClick={() => handleStatusUpdate(order.orderId, order.status)}
-                          >
-                            {NEXT_STATUS_LABEL[order.status]}
-                          </button>
-                        )}
-                      </td>
+                        <td className={styles.actionBtns}>
+                          {NEXT_STATUS_MAP[order.status] && (
+                            <button
+                              className={styles.statusBtn}
+                              onClick={() => handleStatusUpdate(order.orderId, order.status)}
+                            >
+                              {NEXT_STATUS_LABEL[order.status]}
+                            </button>
+                          )}
+                          {PREV_STATUS_MAP[order.status] && (
+                            <button
+                              className={styles.statusRevertBtn}
+                              onClick={() => handleStatusRevert(order.orderId, order.status)}
+                            >
+                              되돌리기
+                            </button>
+                          )}
+                        </td>
                     </tr>
                   ))
                 )}
@@ -268,9 +304,16 @@ export default function SellerOrdersPage() {
             </div>
             {NEXT_STATUS_MAP[selectedOrder.status] && (
               <div className={styles.modalFooter}>
-                <button className={styles.statusBtn} onClick={() => handleStatusUpdate(selectedOrder.orderId, selectedOrder.status)}>
-                  {NEXT_STATUS_LABEL[selectedOrder.status]}
-                </button>
+                {NEXT_STATUS_MAP[selectedOrder.status] && (
+                  <button className={styles.statusBtn} onClick={() => handleStatusUpdate(selectedOrder.orderId, selectedOrder.status)}>
+                    {NEXT_STATUS_LABEL[selectedOrder.status]}
+                  </button>
+                )}
+                {PREV_STATUS_MAP[selectedOrder.status] && (
+                  <button className={styles.statusRevertBtn} onClick={() => handleStatusRevert(selectedOrder.orderId, selectedOrder.status)}>
+                    {PREV_STATUS_LABEL[selectedOrder.status]}
+                  </button>
+                )}
               </div>
             )}
           </div>
