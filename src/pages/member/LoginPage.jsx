@@ -10,7 +10,7 @@ import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { setUser } = useAuthStore();
+  const { setUser, setSellerToken } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,8 +30,9 @@ export default function LoginPage() {
       const { token, email, name, isSeller } = res.data;
 
       setUser({ email, name, isSeller }, token);
-
-      setUser({ email, name, isSeller: seller }, token);  // ← 이건 그대로
+      if (isSeller) {
+        setSellerToken(token);  // ← 판매자면 sellerToken도 저장
+      }
       navigate("/");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다");

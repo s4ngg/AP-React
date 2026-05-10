@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct } from "../../api/productApi"
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
 
 const EMPTY_FORM = {
@@ -13,7 +13,7 @@ const EMPTY_FORM = {
   precaution: "",
   description: "",
   thumbnailUrl: "",
-  categoryId: 1,
+  categoryId: "",
   optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
@@ -27,8 +27,18 @@ export default function SellerProductsPage() {
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [viewingProduct, setViewingProduct] = useState(null)
+  const [categories, setCategories] = useState([])
 
   useEffect(() => {
+    getParentCategories()
+      .then((res) => {
+        const list = res.data ?? []
+        setCategories(list)
+        if (list.length > 0) {
+          setFormData((prev) => ({ ...prev, categoryId: list[0].parentCategoryId }))
+        }
+      })
+      .catch((err) => console.error("카테고리 조회 실패", err))
 
     getSellerProducts()
       .then((data) => setProducts(data ?? []))
@@ -47,7 +57,10 @@ export default function SellerProductsPage() {
 
   const handleOpenCreate = () => {
     setEditingProduct(null)
-    setFormData(EMPTY_FORM)
+    setFormData({
+      ...EMPTY_FORM,
+      categoryId: categories[0]?.parentCategoryId ?? "",
+    })
     setIsModalOpen(true)
   }
 
@@ -62,7 +75,7 @@ export default function SellerProductsPage() {
       precaution: "",
       description: "",
       thumbnailUrl: product.thumbnailUrl ?? "",
-      categoryId: 1,
+      categoryId: categories[0]?.parentCategoryId ?? "",
       optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
       productImageList: [],
     })
@@ -137,7 +150,6 @@ export default function SellerProductsPage() {
         )
       } else {
         await createProduct(payload)
-        // 목록 새로고침
         const fresh = await getSellerProducts()
         setProducts(fresh ?? [])
       }
@@ -299,8 +311,14 @@ export default function SellerProductsPage() {
                     <input type="number" name="price" className={styles.formInput} value={formData.price} onChange={handleFormChange} placeholder="0" min="0" />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>카테고리 ID *</label>
-                    <input type="number" name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange} placeholder="1" min="1" />
+                    <label className={styles.formLabel}>카테고리 *</label>
+                    <select name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange}>
+                      {categories.map((cat) => (
+                        <option key={cat.parentCategoryId} value={cat.parentCategoryId}>
+                          {cat.categoryName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className={styles.formRow}>

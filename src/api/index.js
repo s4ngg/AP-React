@@ -20,6 +20,14 @@ const getAdminToken = () => {
     return null
   }
 }
+const getSellerToken = () => {
+  try {
+    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
+    return authStorage?.state?.sellerToken ?? null
+  } catch {
+    return null
+  }
+}
 
 const isAdminClaimRequest = (url = "") =>
   url === "/api/claims/admin" || /^\/api\/claims\/[^/]+\/(status|reject)$/.test(url)
@@ -28,7 +36,7 @@ const isAdminRequest = (url = "") =>
   url.startsWith("/api/admin/") || url.startsWith("/api/admins") || isAdminClaimRequest(url)
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
