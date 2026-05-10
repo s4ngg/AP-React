@@ -21,7 +21,7 @@ const navLinks = [
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isLoggedIn, logout } = useAuthStore()
+  const { user, isLoggedIn, logout, sellerToken } = useAuthStore()
   const { items } = useCartStore()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -66,33 +66,31 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-  {
-    user?.isSeller && (
-      <Link to="/seller" className={styles.iconBtn}>
-        <Store size={20} />
-        <span>셀러</span>
-      </Link>
-    )
-  }
+                {isLoggedIn && sellerToken && (
+                  <Link to="/seller" className={styles.iconBtn}>
+                    <Store size={20} />
+                    <span>판매자 관리</span>
+                  </Link>
+                )}
 
-  <button className={styles.logoutBtn} onClick={handleLogout}>
-    <LogOut size={20} />
-    <span>로그아웃</span>
-  </button>
+                <button className={styles.logoutBtn} onClick={handleLogout}>
+                  <LogOut size={20} />
+                  <span>로그아웃</span>
+                </button>
               </>
             ) : (
-    <>
-      <Link to="/login" className={styles.iconBtn}>
-        <User size={20} />
-        <span>로그인</span>
-      </Link>
-      <Link to="/signup" className={styles.iconBtn}>
-        <User size={20} />
-        <span>회원가입</span>
-      </Link>
-    </>
-  )
-}
+              <>
+                <Link to="/login" className={styles.iconBtn}>
+                  <User size={20} />
+                  <span>로그인</span>
+                </Link>
+                <Link to="/signup" className={styles.iconBtn}>
+                  <User size={20} />
+                  <span>회원가입</span>
+                </Link>
+              </>
+            )
+            }
 
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20} />
@@ -106,7 +104,16 @@ export default function Header() {
               <Headphones size={20} />
               <span>고객센터</span>
             </Link>
-
+            {/* 아래 추가 */}
+            {isLoggedIn && sellerToken && (
+              <Link
+                to="/seller"
+                className={styles.mobileMenuItem}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                판매자 관리
+              </Link>
+            )}
             <button
               className={styles.mobileMenuBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -190,101 +197,101 @@ export default function Header() {
         </div>
       </nav >
 
-  { mobileMenuOpen && (
-    <div className={styles.mobileMenu}>
-      <p className={styles.mobileMenuLabel}>카테고리</p>
-      {Object.keys(categoryData).map((categoryName) => (
-        <div key={categoryName} className={styles.mobileCategoryGroup}>
-          <button
-            type="button"
-            className={styles.mobileMenuItemButton}
-            onClick={() => {
-              setMobileMenuOpen(false)
-              navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-            }}
-          >
-            {categoryName}
-          </button>
-
-          <div className={styles.mobileSubCategoryList}>
-            {categoryData[categoryName].map((subCategory) => (
+      {mobileMenuOpen && (
+        <div className={styles.mobileMenu}>
+          <p className={styles.mobileMenuLabel}>카테고리</p>
+          {Object.keys(categoryData).map((categoryName) => (
+            <div key={categoryName} className={styles.mobileCategoryGroup}>
               <button
-                key={subCategory}
                 type="button"
-                className={styles.mobileSubCategoryItem}
+                className={styles.mobileMenuItemButton}
                 onClick={() => {
                   setMobileMenuOpen(false)
-                  navigate(
-                    `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
-                  )
+                  navigate(`/products?category=${encodeURIComponent(categoryName)}`)
                 }}
               >
-                {subCategory}
+                {categoryName}
+              </button>
+
+              <div className={styles.mobileSubCategoryList}>
+                {categoryData[categoryName].map((subCategory) => (
+                  <button
+                    key={subCategory}
+                    type="button"
+                    className={styles.mobileSubCategoryItem}
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      navigate(
+                        `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
+                      )
+                    }}
+                  >
+                    {subCategory}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
+            <p className={styles.mobileMenuLabel}>메뉴</p>
+            {navLinks.map((item) => (
+              <button
+                key={item.name}
+                className={styles.mobileMenuItem}
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  handleNavClick()
+                }}
+              >
+                {item.name}
               </button>
             ))}
           </div>
-        </div>
-      ))}
 
-      <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}>
-        <p className={styles.mobileMenuLabel}>메뉴</p>
-        {navLinks.map((item) => (
-          <button
-            key={item.name}
+          <Link
+            to="/customer"
             className={styles.mobileMenuItem}
-            onClick={() => {
-              setMobileMenuOpen(false)
-              handleNavClick()
-            }}
+            onClick={() => setMobileMenuOpen(false)}
           >
-            {item.name}
-          </button>
-        ))}
-      </div>
+            고객센터
+          </Link>
 
-      <Link
-        to="/customer"
-        className={styles.mobileMenuItem}
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        고객센터
-      </Link>
-
-      <div className={styles.mobileBtns}>
-        {isLoggedIn ? (
-          <>
-            <Link
-              to="/mypage"
-              className={styles.mobileLoginBtn}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <User size={15} /> {user?.name || "마이페이지"}
-            </Link>
-            <button className={styles.mobileLogoutBtn} onClick={handleLogout}>
-              <LogOut size={15} /> 로그아웃
-            </button>
-          </>
-        ) : (
-          <>
-            <Link
-              to="/login"
-              className={styles.mobileLoginBtn}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              로그인
-            </Link>
-            <Link
-              to="/signup"
-              className={styles.mobileSignupBtn}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              회원가입
-            </Link>
-          </>
-        )}
-      </div>
-    </div>
-  )}
+          <div className={styles.mobileBtns}>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/mypage"
+                  className={styles.mobileLoginBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User size={15} /> {user?.name || "마이페이지"}
+                </Link>
+                <button className={styles.mobileLogoutBtn} onClick={handleLogout}>
+                  <LogOut size={15} /> 로그아웃
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className={styles.mobileLoginBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  로그인
+                </Link>
+                <Link
+                  to="/signup"
+                  className={styles.mobileSignupBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  회원가입
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header >
   )
 }

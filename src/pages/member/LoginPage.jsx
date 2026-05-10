@@ -27,11 +27,11 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await login({ email: data.email, password: data.password });
-      const { token, email, name, isSeller } = res.data;
-
-      setUser({ email, name, isSeller }, token);
-      if (isSeller) {
-        setSellerToken(token);  // ← 판매자면 sellerToken도 저장
+      console.log(res.data);
+      const { token, email, name, seller, sellerToken } = res.data;
+      setUser({ email, name, isSeller: seller }, token);
+      if (sellerToken) {
+        setSellerToken(sellerToken);
       }
       navigate("/");
     } catch {
