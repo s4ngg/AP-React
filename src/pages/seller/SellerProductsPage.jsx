@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct } from "../../api/productApi"
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
 
 const EMPTY_FORM = {
@@ -13,10 +13,48 @@ const EMPTY_FORM = {
   precaution: "",
   description: "",
   thumbnailUrl: "",
-  categoryId: 1,
+  categoryId: "",
   optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
+
+const createEmptyForm = (categoryId = "") => ({
+  ...EMPTY_FORM,
+  categoryId,
+  optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
+  productImageList: [],
+})
+
+const getErrorMessage = (error) =>
+  error.response?.data?.message || error.message || "처리 중 오류가 발생했습니다."
+
+const toNullableText = (value) => {
+  const text = value?.trim()
+  return text ? text : null
+}
+
+const buildCreatePayload = (formData) => ({
+  ...formData,
+  price: Number(formData.price),
+  categoryId: Number(formData.categoryId),
+  description: formData.description || formData.productName,
+  productImageList: formData.productImageList.length > 0
+    ? formData.productImageList
+    : formData.thumbnailUrl
+      ? [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }]
+      : [],
+})
+
+const buildUpdatePayload = (formData) => ({
+  productName: toNullableText(formData.productName),
+  brand: toNullableText(formData.brand),
+  price: formData.price ? Number(formData.price) : null,
+  thumbnailUrl: toNullableText(formData.thumbnailUrl),
+  description: toNullableText(formData.description),
+  manufacturer: toNullableText(formData.manufacturer),
+  origin: toNullableText(formData.origin),
+  precaution: toNullableText(formData.precaution),
+})
 
 export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
@@ -27,13 +65,29 @@ export default function SellerProductsPage() {
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [viewingProduct, setViewingProduct] = useState(null)
+  const [parentCategories, setParentCategories] = useState([])
+  const [categoryLoading, setCategoryLoading] = useState(true)
 
   useEffect(() => {
 
     getSellerProducts()
       .then((data) => setProducts(data ?? []))
-      .catch((err) => console.error("상품 목록 조회 실패", err))
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    getParentCategories()
+      .then((res) => {
+        const categories = res.data ?? []
+        setParentCategories(categories)
+        setFormData((prev) => {
+          if (prev.categoryId || categories.length === 0) return prev
+          return { ...prev, categoryId: String(categories[0].parentCategoryId) }
+        })
+      })
+      .catch(() => setParentCategories([]))
+      .finally(() => setCategoryLoading(false))
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -47,12 +101,13 @@ export default function SellerProductsPage() {
 
   const handleOpenCreate = () => {
     setEditingProduct(null)
-    setFormData(EMPTY_FORM)
+    setFormData(createEmptyForm(parentCategories[0]?.parentCategoryId ? String(parentCategories[0].parentCategoryId) : ""))
     setIsModalOpen(true)
   }
 
   const handleOpenEdit = (product) => {
     setEditingProduct(product)
+    const matchedCategory = parentCategories.find((category) => category.categoryName === product.parentCategoryName)
     setFormData({
       productName: product.productName ?? "",
       brand: product.brand ?? "",
@@ -62,7 +117,7 @@ export default function SellerProductsPage() {
       precaution: "",
       description: "",
       thumbnailUrl: product.thumbnailUrl ?? "",
-      categoryId: 1,
+      categoryId: matchedCategory?.parentCategoryId ? String(matchedCategory.parentCategoryId) : "",
       optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
       productImageList: [],
     })
@@ -72,7 +127,7 @@ export default function SellerProductsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingProduct(null)
-    setFormData(EMPTY_FORM)
+    setFormData(createEmptyForm(parentCategories[0]?.parentCategoryId ? String(parentCategories[0].parentCategoryId) : ""))
   }
 
   const handleFormChange = (e) => {
@@ -111,20 +166,13 @@ export default function SellerProductsPage() {
       alert("상품명, 판매가, 대표 이미지 URL은 필수입니다.")
       return
     }
+    if (!editingProduct && (!formData.categoryId || !formData.manufacturer.trim() || !formData.origin.trim() || !formData.precaution.trim())) {
+      alert("카테고리, 제조사, 원산지, 주의사항은 필수입니다.")
+      return
+    }
     setIsSubmitting(true)
     try {
-      const payload = {
-        ...formData,
-        price: Number(formData.price),
-        categoryId: Number(formData.categoryId),
-        description: formData.description || formData.productName,
-        productImageList: formData.productImageList.length > 0
-          ? formData.productImageList
-          : formData.thumbnailUrl
-            ? [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }]
-            : [],
-      }
-      console.log("payload:", JSON.stringify(payload, null, 2))
+      const payload = editingProduct ? buildUpdatePayload(formData) : buildCreatePayload(formData)
       if (editingProduct) {
         const updated = await updateProduct(editingProduct.productId, payload)
         setProducts((prev) =>
@@ -137,8 +185,8 @@ export default function SellerProductsPage() {
         setProducts(fresh ?? [])
       }
       handleCloseModal()
-    } catch (err) {
-      alert("저장 중 오류가 발생했습니다.")
+    } catch (error) {
+      alert(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
@@ -294,8 +342,21 @@ export default function SellerProductsPage() {
                     <input type="number" name="price" className={styles.formInput} value={formData.price} onChange={handleFormChange} placeholder="0" min="0" />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>카테고리 ID *</label>
-                    <input type="number" name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange} placeholder="1" min="1" />
+                    <label className={styles.formLabel}>카테고리 *</label>
+                    <select
+                      name="categoryId"
+                      className={styles.formInput}
+                      value={formData.categoryId}
+                      onChange={handleFormChange}
+                      disabled={categoryLoading || Boolean(editingProduct)}
+                    >
+                      <option value="">카테고리 선택</option>
+                      {parentCategories.map((category) => (
+                        <option key={category.parentCategoryId} value={category.parentCategoryId}>
+                          {category.categoryName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className={styles.formRow}>
