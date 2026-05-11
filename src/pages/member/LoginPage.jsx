@@ -27,9 +27,9 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await login({ email: data.email, password: data.password });
-      const { token, email, name, isSeller } = res.data;
+      const { token, email, name, isSeller, seller } = res.data;
 
-      setUser({ email, name, isSeller }, token);
+      setUser({ email, name, isSeller: isSeller ?? seller ?? false }, token);
 
       navigate("/");
     } catch {
