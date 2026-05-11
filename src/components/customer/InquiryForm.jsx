@@ -147,11 +147,17 @@ export default function InquiryForm({ initialView = "form", onBack }) {
             const created = res.data?.data;
 
             if (images.length > 0 && created?.inquiryId) {
-                for (let i = 0; i < images.length; i++) {
-                    const formData = new FormData();
-                    formData.append("file", images[i].file);
-                    formData.append("sortOrder", i);
-                    await uploadInquiryAttachment(created.inquiryId, formData);
+                try {
+                    for (let i = 0; i < images.length; i++) {
+                        const formData = new FormData();
+                        formData.append("file", images[i].file);
+                        formData.append("sortOrder", i);
+                        await uploadInquiryAttachment(created.inquiryId, formData);
+                    }
+                } catch {
+                    await cancelInquiry(created.inquiryId).catch(() => {})
+                    alert("사진 업로드에 실패했습니다. 다시 시도해주세요.")
+                    return
                 }
             }
 
