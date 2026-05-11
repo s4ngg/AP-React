@@ -11,9 +11,9 @@ import AddressSearch from "../../components/common/AddressSearch"
 import { loadTossPayments } from "@tosspayments/payment-sdk"
 
 const payMethods = [
-  { id: "CARD",          label: "신용카드",   icon: "💳" },
-  { id: "KAKAO_PAY",     label: "카카오페이", icon: "💛" },
-  { id: "NAVER_PAY",     label: "네이버페이", icon: "🟢" },
+  { id: "CARD", label: "신용카드", icon: "💳" },
+  { id: "KAKAO_PAY", label: "카카오페이", icon: "💛" },
+  { id: "NAVER_PAY", label: "네이버페이", icon: "🟢" },
   { id: "BANK_TRANSFER", label: "무통장입금", icon: "🏦" },
 ]
 
@@ -54,16 +54,16 @@ export default function OrderPage() {
         const defaultAddr = (data ?? []).find((a) => a.isDefault) || (data ?? [])[0]
         if (defaultAddr) setSelectedAddressId(defaultAddr.addressId)
       })
-      .catch(() => {})
+      .catch(() => { })
 
     // 쿠폰은 memberId PathVariable 필요 → getMember로 id 먼저 조회
     getMember()
       .then((data) => {
         getUnusedCoupons(data.id)
           .then((couponData) => setCoupons(couponData ?? []))
-          .catch(() => {})
+          .catch(() => { })
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const orderItems = items.filter((item) => item.isSelected)
@@ -71,7 +71,7 @@ export default function OrderPage() {
   const totalProductPrice = orderItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity, 0
   )
-  const shippingFee = 0
+  const shippingFee = totalProductPrice >= 50000 ? 0 : totalProductPrice > 0 ? 3000 : 0
 
   const selectedAddress = addresses.find((a) => a.addressId === selectedAddressId) ?? null
   const selectedCoupon = coupons.find((c) => c.memberCouponId === selectedCouponId) ?? null
@@ -79,9 +79,9 @@ export default function OrderPage() {
   const discountAmount = selectedCoupon
     ? selectedCoupon.coupon.discountType === "PERCENT"
       ? Math.min(
-          Math.round(totalProductPrice * selectedCoupon.coupon.discountValue / 100),
-          selectedCoupon.coupon.maxDiscount ?? Infinity
-        )
+        Math.round(totalProductPrice * selectedCoupon.coupon.discountValue / 100),
+        selectedCoupon.coupon.maxDiscount ?? Infinity
+      )
       : Number(selectedCoupon.coupon.discountValue)
     : 0
 
@@ -113,40 +113,41 @@ export default function OrderPage() {
   }
 
   const handlePay = async () => {
-  if (!selectedPay || !selectedAddressId || orderItems.length === 0) return
+    if (!selectedPay || !selectedAddressId || orderItems.length === 0) return
 
-  setIsLoading(true)
-  try {
-    const requestBody = {
-      addressId: selectedAddressId,
-      memberCouponId: selectedCouponId ?? null,
-      paymentMethod: selectedPay,
-      orderItems: orderItems.map((item) => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        productPrice: item.product.price,
-        quantity: item.quantity,
-        optionId: Number(Object.keys(item.selectedOptions ?? {})[0]) || null,
-      })),
+    setIsLoading(true)
+    try {
+      const requestBody = {
+        addressId: selectedAddressId,
+        memberCouponId: selectedCouponId ?? null,
+        paymentMethod: selectedPay,
+        shippingFee: shippingFee,   // 추가
+        orderItems: orderItems.map((item) => ({
+          productId: item.product.id,
+          productName: item.product.name,
+          productPrice: item.product.price,
+          quantity: item.quantity,
+          optionId: Number(Object.keys(item.selectedOptions ?? {})[0]) || null,
+        })),
+      }
+      const result = await createOrder(requestBody)
+
+      // 토스 결제창 띄우기
+      const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY)
+      await tossPayments.requestPayment("카드", {
+        amount: totalPrice,
+        orderId: result.orderNumber,
+        orderName: orderItems[0]?.product.name + (orderItems.length > 1 ? ` 외 ${orderItems.length - 1}건` : ""),
+        customerName: authUser?.name ?? "고객",
+        successUrl: `${window.location.origin}/order/success?orderNumber=${result.orderNumber}`,
+        failUrl: `${window.location.origin}/order/fail`,
+      })
+    } catch (e) {
+      alert("주문 처리 중 오류가 발생했습니다.")
+    } finally {
+      setIsLoading(false)
     }
-    const result = await createOrder(requestBody)
-
-    // 토스 결제창 띄우기
-    const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY)
-    await tossPayments.requestPayment("카드", {
-      amount: totalPrice,
-      orderId: result.orderNumber,
-      orderName: orderItems[0]?.product.name + (orderItems.length > 1 ? ` 외 ${orderItems.length - 1}건` : ""),
-      customerName: authUser?.name ?? "고객",
-      successUrl: `${window.location.origin}/order/success?orderNumber=${result.orderNumber}`,
-      failUrl: `${window.location.origin}/order/fail`,
-    })
-  } catch (e) {
-    alert("주문 처리 중 오류가 발생했습니다.")
-  } finally {
-    setIsLoading(false)
   }
-}
 
   if (isComplete) {
     return (

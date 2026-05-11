@@ -69,18 +69,23 @@ function ProductCard({ product }) {
 export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
   const [displayProducts, setDisplayProducts] = useState([])
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await getProductList(0)
-        setDisplayProducts(res.data?.content || [])
+        const res = await getProductList(page)
+        const content = res.data?.content || []
+        const totalPages = res.data?.totalPages || 0
+        setDisplayProducts(prev => page === 0 ? content : [...prev, ...content])
+        setHasMore(page < totalPages - 1)
       } catch {
         setDisplayProducts([])
       }
     }
     fetchProducts()
-  }, [])
+  }, [page])
 
   const sortedProducts = [...displayProducts].sort((a, b) => {
     if (activeSort === "price_asc") return Number(a.price) - Number(b.price)
@@ -114,7 +119,11 @@ export default function ProductGrid() {
             {sortedProducts.map((p) => <ProductCard key={p.productId} product={p} />)}
           </div>
         )}
-        <button className={styles.moreBtn}>더보기</button>
+        {hasMore && (
+          <button className={styles.moreBtn} onClick={() => setPage(p => p + 1)}>
+            더보기
+          </button>
+        )}
       </div>
     </section>
   )
