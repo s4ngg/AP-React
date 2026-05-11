@@ -37,3 +37,28 @@ export const rejectAdminProduct = (productId, rejectReason) =>
 // ─── 관리자 주문 ─────────────────────────────────────────────────
 export const getAdminOrders = () =>
   api.get("/api/admin/orders").then((res) => res.data.data)
+
+// 관리자 카테고리
+export const getAdminParentCategories = () =>
+  api.get("/api/admin/categories/parents").then((res) => res.data.data)
+
+export const createAdminParentCategory = (data) =>
+  api.post("/api/admin/categories/parents", data).then((res) => res.data.data)
+
+export const updateAdminParentCategory = (parentCategoryId, data) =>
+  api.patch(`/api/admin/categories/parents/${parentCategoryId}`, data).then((res) => res.data.data)
+
+export const deleteAdminParentCategory = (parentCategoryId) =>
+  api.delete(`/api/admin/categories/parents/${parentCategoryId}`).then((res) => res.data)
+
+export const getAdminChildCategories = (parentCategoryId) =>
+  api.get(`/api/admin/categories/parents/${parentCategoryId}/children`).then((res) => res.data.data)
+
+export const createAdminChildCategory = (parentCategoryId, data) =>
+  api.post(`/api/admin/categories/parents/${parentCategoryId}/children`, data).then((res) => res.data.data)
+
+export const updateAdminChildCategory = (childCategoryId, data) =>
+  api.patch(`/api/admin/categories/children/${childCategoryId}`, data).then((res) => res.data.data)
+
+export const deleteAdminChildCategory = (childCategoryId) =>
+  api.delete(`/api/admin/categories/children/${childCategoryId}`).then((res) => res.data)

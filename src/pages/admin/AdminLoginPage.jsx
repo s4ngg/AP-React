@@ -9,7 +9,7 @@ import styles from "../member/LoginPage.module.css"
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
-  const { setAdminToken, setAdminRole } = useAuthStore()
+  const { setAdminToken, setAdminRole, setAdminName } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -32,6 +32,7 @@ export default function AdminLoginPage() {
 
       setAdminToken(response.token)
       setAdminRole(response.role)
+      setAdminName(response.adminName)
       navigate(response.role === "CS_ADMIN" ? "/admin/refunds" : "/admin/members")
     } catch {
       setError("관리자 이메일 또는 비밀번호가 올바르지 않습니다")
@@ -55,7 +56,7 @@ export default function AdminLoginPage() {
             <label className={styles.label}>이메일</label>
             <input
               type="email"
-              placeholder="admin@allpick.com"
+              placeholder="ex) email@google.com"
               className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
               {...register("email", {
                 required: "이메일을 입력해주세요",

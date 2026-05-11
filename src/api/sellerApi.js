@@ -37,6 +37,9 @@ export const updateSeller = (sellerId, data) =>
 export const deleteSeller = (sellerId) =>
   api.delete(`/api/seller/auth/${sellerId}`).then((res) => res.data);
 
+export const getSellerOrders = () =>
+  api.get("/api/seller/orders").then((res) => res.data.data)
+
 export const getSellerClaims = () =>
   api.get("/api/claims/seller").then((res) => res.data.data)
 

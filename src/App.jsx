@@ -52,6 +52,60 @@ const AdminRoute = ({ children }) => {
   return adminToken ? children : <Navigate to="/admin/login" replace />
 }
 
+function AppContent() {
+  const location = useLocation()
+  const isAdminPage = location.pathname.startsWith("/admin")
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {!isAdminPage && <Header />}
+      <div style={{ flex: 1 }}>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+          <Route path="/order" element={<OrderPage />} />
+          <Route path="/order/success" element={<OrderSuccessPage />} />
+          <Route path="/order/fail" element={<OrderFailPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/products" element={<ProductListPage />} />
+          <Route path="/products/:id/review/write" element={<ReviewWritePage />} />
+          <Route path="/customer" element={<CustomerPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupSelectPage />} />
+          <Route path="/signup/user" element={<SignupPage />} />
+          <Route path="/signup/seller" element={<SignupPage isSeller={true} />} />
+          <Route path="/signup/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/signup/interests" element={<InterestsPage />} />
+          <Route path="/signup/terms" element={<TermsPage />} />
+          <Route path="/signup/complete" element={<SignupCompletePage />} />
+          <Route path="/find-email" element={<FindEmailPage />} />
+          <Route path="/find-password" element={<FindPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/seller-apply" element={<SellerApplyPage />} />
+          <Route path="/seller-apply/complete" element={<SellerApplyCompletePage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin/members" element={<AdminRoute><AdminMemberPage /></AdminRoute>} />
+          <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
+          <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
+          <Route path="/admin/categories" element={<AdminRoute><AdminCategoryPage /></AdminRoute>} />
+          <Route path="/admin/refunds" element={<AdminRoute><AdminRefundPage /></AdminRoute>} />
+          <Route path="/admin/notices" element={<AdminRoute><AdminNoticePage /></AdminRoute>} />
+          <Route path="/admin/faqs" element={<AdminRoute><AdminFAQPage /></AdminRoute>} />
+          <Route path="/admin/inquiries" element={<AdminRoute><AdminInquiryPage /></AdminRoute>} />
+          <Route path="/admin/accounts" element={<AdminRoute><AdminAccountPage /></AdminRoute>} />
+          <Route path="/seller" element={<SellerDashboardPage />} />
+          <Route path="/seller/products" element={<SellerProductsPage />} />
+          <Route path="/seller/orders" element={<SellerOrdersPage />} />
+          <Route path="/seller/refunds" element={<SellerRefundPage />} />
+          <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
+        </Routes>
+      </div>
+      {!isAdminPage && <Footer />}
+    </div>
+  )
+}
 
 function AppContent() {
   const location = useLocation()

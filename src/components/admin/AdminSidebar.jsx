@@ -1,5 +1,5 @@
-import { NavLink } from "react-router-dom"
-import { LayoutDashboard, Users, Package, ShoppingBag, Tag, RefreshCcw, Bell, HelpCircle, MessageSquare, UserCog } from "lucide-react"
+import { NavLink, useNavigate } from "react-router-dom"
+import { LayoutDashboard, Users, Package, ShoppingBag, Tag, RefreshCcw, Bell, HelpCircle, MessageSquare, UserCog, LogOut } from "lucide-react"
 import styles from "./AdminSidebar.module.css"
 import useAuthStore from "../../store/authStore"
 
@@ -16,12 +16,24 @@ const ALL_NAV_ITEMS = [
   { to: "/admin/accounts", label: "관리자 계정 관리", icon: UserCog, roles: ["SUPER_ADMIN"] },
 ]
 
+const ROLE_LABEL = {
+  SUPER_ADMIN: "최고 관리자",
+  CS_ADMIN: "CS 관리자",
+}
+
 export default function AdminSidebar() {
-  const adminRole = useAuthStore((state) => state.adminRole)
+  const navigate = useNavigate()
+  const { adminRole, adminName, logout } = useAuthStore()
   const navItems = ALL_NAV_ITEMS.filter((item) => item.roles.includes(adminRole))
 
+  const handleLogout = () => {
+    logout()
+    navigate("/admin/login")
+  }
+
+
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} style={{ position: "relative", minHeight: "100vh" }}>
       <div className={styles.sidebarHeader}>
         <span className={styles.sidebarBadge}>ADMIN</span>
       </div>
@@ -40,6 +52,17 @@ export default function AdminSidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <div className={styles.sidebarFooter}>
+        <div className={styles.adminInfo}>
+          <div className={styles.adminName}>{adminName ?? "-"}</div>
+          <div className={styles.adminRole}>{ROLE_LABEL[adminRole] ?? adminRole}</div>
+        </div>
+        <button className={styles.logoutBtn} onClick={handleLogout}>
+          <LogOut size={14} />
+          로그아웃
+        </button>
+      </div>
     </aside>
   )
 }

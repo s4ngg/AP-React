@@ -42,3 +42,49 @@
   background-color: #2563eb;
   color: #ffffff;
 }
+
+.sidebarFooter {
+  position: absolute;
+  bottom: 0;
+  width: 200px;
+  padding: 16px;
+  border-top: 1px solid #334155;
+  background-color: #1e293b;
+}
+
+.adminInfo {
+  margin-bottom: 12px;
+}
+
+.adminName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.adminRole {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: none;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.logoutBtn:hover {
+  background-color: #334155;
+  color: #f1f5f9;
+}
