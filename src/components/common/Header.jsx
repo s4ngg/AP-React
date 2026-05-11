@@ -21,7 +21,11 @@ const navLinks = [
 
 export default function Header() {
   const navigate = useNavigate()
+<<<<<<< feat/seller
   const { user, isLoggedIn, logout, sellerToken } = useAuthStore()
+=======
+  const { user, isLoggedIn, logout, adminToken } = useAuthStore()
+>>>>>>> develop
   const { items } = useCartStore()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -43,9 +47,11 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.topBar}>
-        신규가입 시 <strong>5,000원</strong> 할인쿠폰 즉시 지급!
-      </div>
+      {!isLoggedIn && !adminToken && (
+        <div className={styles.topBar}>
+          신규가입 시 <strong>5,000원</strong> 할인쿠폰 즉시 지급!
+        </div>
+      )}
 
       <nav className={styles.nav}>
         <div className={styles.navTop}>
