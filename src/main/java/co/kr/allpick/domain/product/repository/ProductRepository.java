@@ -1,0 +1,57 @@
+package co.kr.allpick.domain.product.repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import co.kr.allpick.domain.product.entity.Product;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+
+	// 상품id로 조회하기 전, 1. 판매중인지, 2. 승인이 난 상품인지 검증해준다.
+	@Query("SELECT p FROM Product p " +
+		   "LEFT JOIN FETCH p.parentCategory " +
+		   "WHERE p.productId = :id " +
+		   "AND p.status = 'ON_SALE' " +
+		   "AND p.approvalStatus = 'APPROVED' ")
+	Optional<Product> findValidProduct(@Param("id") Long productId);
+
+	// 상품명 존재 여부 확인 메서드 (중복 확인)
+	boolean existsByProductName(String productName);
+
+	List<Product> findBySeller_SellerId(Long sellerId);
+	// 상품 조회 (seller fetch-join 포함 — 판매자 상태 검증용- 단건 조회)
+	@Query("SELECT p FROM Product p JOIN FETCH p.seller WHERE p.productId = :productId AND p.deletedAt IS NULL")
+	Optional<Product> findByProductIdAndDeletedAtIsNull(@Param("productId") Long productId);
+
+	// 상품 조회 (판매자가 검증이 된 경우-단건 조회)
+	@Query("SELECT p FROM Product p " +
+		   "JOIN FETCH p.seller s " +
+		   "JOIN s.member m " +
+		   "WHERE p.productId = :productId AND m.id = :memberId")
+	Optional<Product> findByProductIdAndMemberId(@Param("memberId") Long memberId, @Param("productId") Long productId);
+
+	// 판매자 본인 상품 목록 조회
+	@Query("SELECT p FROM Product p WHERE p.seller.sellerId = :sellerId AND p.deletedAt IS NULL")
+    List<Product> findBySellerIdAndDeletedAtIsNull(@Param("sellerId") Long sellerId);
+
+	// 관리자 상품 목록 조회
+	@EntityGraph(attributePaths = {"parentCategory", "optionList", "seller"})
+	List<Product> findAllByDeletedAtIsNullOrderByCreatedAtDesc();
+
+	// 판매 중이고 승인된 상품 목록 페이지 조회
+	@EntityGraph(attributePaths = {"parentCategory"})
+	Page<Product> findByStatusAndApprovalStatusAndDeletedAtIsNull(
+			Product.Status status,
+			Product.ApprovalStatus approvalStatus,
+			Pageable pageable
+	);
+}
