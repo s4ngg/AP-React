@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
             <label className={styles.label}>이메일</label>
             <input
               type="email"
-              placeholder="admin@allpick.com"
+              placeholder="ex) email@google.com"
               className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
               {...register("email", {
                 required: "이메일을 입력해주세요",

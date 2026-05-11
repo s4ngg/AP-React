@@ -320,7 +320,7 @@ export default function SellerProductsPage() {
 
       {/* 등록/수정 모달 */}
       {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={handleCloseModal}>
+        <div className={styles.modalOverlay}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>{editingProduct ? "상품 수정" : "상품 등록"}</h2>
