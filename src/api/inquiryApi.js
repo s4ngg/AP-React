@@ -10,3 +10,5 @@ export const getAdminInquiries = () =>
   api.get("/api/inquiries/admin").then((res) => res.data.data);
 export const postAdminAnswer = (inquiryId, content) =>
   api.post(`/api/inquiries/${inquiryId}/answers/admin`, { content }).then((res) => res.data.data);
+export const updateInquiryStatus = (inquiryId, status) =>
+  api.patch(`/api/inquiries/${inquiryId}/status`, null, { params: { status } });
