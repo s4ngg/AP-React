@@ -4,7 +4,7 @@ on:
     push:
         branches:
             - develop
- 
+
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -24,13 +24,13 @@ jobs:
 
             - name: Create .env file
               run: |
-                  echo "VITE_TOSS_CLIENT_KEY=test_ck_0RnYX2w532ZPllmOPDZl3NeyqApQ" >> .env
-                  echo "VITE_FASTAPI_URL=http://54.79.32.255:8000" >> .env
-                  echo "VITE_BUSINESS_API_KEY=96c13bb0281d76a84b5325cce416a8ccccccc31c7737bb4d484eef01371f04a8" >> .env
-                  echo "VITE_EMAILJS_SERVICE_ID=service_bhg4i6l" >> .env
-                  echo "VITE_EMAILJS_TEMPLATE_ID=template_dg7jjnk" >> .env
-                  echo "VITE_EMAILJS_PUBLIC_KEY=yDN0B44_FF3lz0jzk" >> .env
-                  echo "VITE_API_URL=https://d15b731cpaqp76.cloudfront.net" >> .env
+                  echo "VITE_TOSS_CLIENT_KEY=${{ secrets.VITE_TOSS_CLIENT_KEY }}" >> .env
+                  echo "VITE_FASTAPI_URL=${{ secrets.VITE_FASTAPI_URL }}" >> .env
+                  echo "VITE_BUSINESS_API_KEY=${{ secrets.VITE_BUSINESS_API_KEY }}" >> .env
+                  echo "VITE_EMAILJS_SERVICE_ID=${{ secrets.VITE_EMAILJS_SERVICE_ID }}" >> .env
+                  echo "VITE_EMAILJS_TEMPLATE_ID=${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}" >> .env
+                  echo "VITE_EMAILJS_PUBLIC_KEY=${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}" >> .env
+                  echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
 
             - name: Install dependencies
               run: npm install

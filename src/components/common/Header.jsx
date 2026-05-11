@@ -43,9 +43,11 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.topBar}>
-        신규가입 시 <strong>5,000원</strong> 할인쿠폰 즉시 지급!
-      </div>
+      {!isLoggedIn && (
+        <div className={styles.topBar}>
+          신규가입 시 <strong>5,000원</strong> 할인쿠폰 즉시 지급!
+        </div>
+      )}
 
       <nav className={styles.nav}>
         <div className={styles.navTop}>
