@@ -1,13 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import {
-  getSellerProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  getParentCategories,
-} from "../../api/productApi"
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
 
 const APPROVAL_CLASS = {

@@ -29,7 +29,7 @@ export default function SellerRefundPage() {
     getSellerClaims()
       .then((data) =>
         setRequests(
-          (data ?? []).filter((c) => c.status === "SUBMITTED" || c.status === "IN_PROGRESS")
+          (data ?? []).filter((c) => c.status === "SUBMITTED")
         )
       )
       .catch((err) => console.error("환불/교환 목록 조회 실패", err))

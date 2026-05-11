@@ -79,6 +79,7 @@ export default function SignupPage({ isSeller = false }) {
     if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`
     return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
   }
+
   const passwordValidation = {
     hasLength: password?.length >= 8,
     hasLetter: /[a-zA-Z]/.test(password || ""),
@@ -109,9 +110,9 @@ export default function SignupPage({ isSeller = false }) {
       setEmailAvailable(response.data?.available ?? true);
       clearErrors("email");
     } catch {
-      setEmailChecked(false)   // ← 변경
-      setEmailAvailable(false) // ← 변경
-      setError("email", { message: "이메일 확인 중 오류가 발생했습니다. 다시 시도해주세요." }) // ← 추가
+      setEmailChecked(false);
+      setEmailAvailable(false);
+      setError("email", { message: "이메일 확인 중 오류가 발생했습니다. 다시 시도해주세요." });
     } finally {
       setCheckingEmail(false);
     }
@@ -178,7 +179,7 @@ export default function SignupPage({ isSeller = false }) {
         email: data.email,
         password: data.password,
         name: data.name,
-        phone: data.phone.replace(/-/g, ""), // ← 하이픈 제거
+        phone: data.phone.replace(/-/g, ""),
         zipCode: data.zipCode,
         address: data.address,
         addressDetail: data.addressDetail,
@@ -204,12 +205,10 @@ export default function SignupPage({ isSeller = false }) {
     <AuthLayout showSteps currentStep={1} title="회원가입" description="AllPick 회원이 되어 다양한 혜택을 누리세요">
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
 
-
         <div className={isSeller ? styles.twoColumn : styles.singleColumn}>
           <div className={styles.column}>
             <p className={styles.columnTitle}>기본 정보</p>
 
-            {/* 이메일 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>이메일</label>
               <div className={styles.emailRow}>
@@ -220,8 +219,8 @@ export default function SignupPage({ isSeller = false }) {
                   {...register("email", {
                     required: "이메일을 입력해주세요",
                     pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "올바른 이메일 형식이 아닙니다" },
+                    onChange: () => { setEmailChecked(false); setEmailAvailable(false); },
                   })}
-                  onChange={() => { setEmailChecked(false); setEmailAvailable(false); }}
                 />
                 <button type="button" onClick={handleCheckEmail} disabled={checkingEmail || !email} className={styles.checkBtn}>
                   {checkingEmail ? "확인 중..." : "중복 확인"}
@@ -235,7 +234,6 @@ export default function SignupPage({ isSeller = false }) {
               )}
             </div>
 
-            {/* 비밀번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>비밀번호</label>
               <div className={styles.inputWrapper}>
@@ -249,37 +247,27 @@ export default function SignupPage({ isSeller = false }) {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {password && (
-                <div className={styles.passwordValidation}>
-                  {[
-                    { key: "hasLength", label: "8자 이상" },
-                    { key: "hasLetter", label: "영문 포함" },
-                    { key: "hasUppercase", label: "대문자 포함" },
-                    { key: "hasNumber", label: "숫자 포함" },
-                    { key: "hasSpecial", label: "특수문자 포함" },
-                  ].map(({ key, label }) => (
-                    <span key={key} className={`${styles.validItem} ${passwordValidation[key] ? styles.validItemOk : styles.validItemFail}`}>
-                      {passwordValidation[key] ? <Check size={12} /> : <X size={12} />} {label}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div className={styles.passwordValidation}>
+                {[
+                  { key: "hasLength", label: "8자 이상" },
+                  { key: "hasLetter", label: "영문 포함" },
+                  { key: "hasUppercase", label: "대문자 포함" },
+                  { key: "hasNumber", label: "숫자 포함" },
+                  { key: "hasSpecial", label: "특수문자 포함" },
+                ].map(({ key, label }) => (
+                  <span key={key} className={`${styles.validItem} ${!password ? styles.validItemFail
+                    : passwordValidation[key] ? styles.validItemOk
+                      : styles.validItemFail}`}>
+                    {passwordValidation[key] ? <Check size={12} /> : <X size={12} />} {label}
+                  </span>
+                ))}
+              </div>
+
             </div>
 
-            {/* 비밀번호 확인 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>비밀번호 확인</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  type={showPasswordConfirm ? "text" : "password"}
-                  placeholder="비밀번호를 다시 입력해주세요"
-                  className={`${styles.input} ${styles.inputWithButton} ${errors.passwordConfirm ? styles.inputError : ""}`}
-                  {...register("passwordConfirm", { required: "비밀번호 확인을 입력해주세요" })}
-                />
-                <button type="button" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} className={styles.eyeButton}>
-                  {showPasswordConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+              <div className={styles.inputWrapper}></div>
               {passwordConfirm && (
                 <p className={`${styles.passwordMatch} ${passwordsMatch ? styles.matchOk : styles.matchFail}`}>
                   {passwordsMatch ? <><Check size={14} /> 비밀번호가 일치합니다</> : <><X size={14} /> 비밀번호가 일치하지 않습니다</>}
@@ -287,7 +275,6 @@ export default function SignupPage({ isSeller = false }) {
               )}
             </div>
 
-            {/* 이름 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>이름</label>
               <input
@@ -302,8 +289,6 @@ export default function SignupPage({ isSeller = false }) {
               {errors.name && <p className={styles.fieldError}>{errors.name.message}</p>}
             </div>
 
-            {/* 휴대폰 번호 */}
-            {/* 휴대폰 번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>휴대폰 번호</label>
               <div className={styles.emailRow}>
@@ -318,9 +303,12 @@ export default function SignupPage({ isSeller = false }) {
                   onChange={(e) => {
                     const formatted = formatPhone(e.target.value)
                     setValue("phone", formatted, { shouldValidate: true, shouldDirty: true })
+                    setPhoneSent(false);
+                    setPhoneVerified(false);
+                    setSmsCode("");
+                    setSmsError("");
                   }}
                 />
-
                 <button
                   type="button"
                   onClick={handleSendSmsCode}
@@ -353,9 +341,15 @@ export default function SignupPage({ isSeller = false }) {
                   </button>
                 </div>
               )}
+
+              {phoneVerified && (
+                <p className={`${styles.emailStatus} ${styles.emailAvailable}`}>
+                  <Check size={13} /> 휴대폰 인증이 완료되었습니다
+                </p>
+              )}
+              {smsError && <p className={styles.fieldError}>{smsError}</p>}
             </div>
 
-            {/* 우편번호 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>우편번호</label>
               <div className={styles.emailRow}>
@@ -373,7 +367,6 @@ export default function SignupPage({ isSeller = false }) {
               {errors.zipCode && <p className={styles.fieldError}>{errors.zipCode.message}</p>}
             </div>
 
-            {/* 주소 */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>주소</label>
               <input
@@ -385,13 +378,13 @@ export default function SignupPage({ isSeller = false }) {
               {errors.address && <p className={styles.fieldError}>{errors.address.message}</p>}
             </div>
           </div>
+
           {isSeller && (
             <>
               <div className={styles.columnDivider} />
               <div className={styles.column}>
                 <p className={styles.columnTitle}>판매자 정보</p>
 
-                {/* 상호명 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>상호명</label>
                   <input
@@ -403,7 +396,6 @@ export default function SignupPage({ isSeller = false }) {
                   {errors.business_name && <p className={styles.fieldError}>{errors.business_name.message}</p>}
                 </div>
 
-                {/* ✅ 사업자 등록번호 - 버튼 포함 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>사업자 등록번호</label>
                   <div className={styles.emailRow}>
@@ -436,7 +428,6 @@ export default function SignupPage({ isSeller = false }) {
                   )}
                 </div>
 
-                {/* 대표자명 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>대표자명</label>
                   <input
@@ -448,7 +439,6 @@ export default function SignupPage({ isSeller = false }) {
                   {errors.representative_name && <p className={styles.fieldError}>{errors.representative_name.message}</p>}
                 </div>
 
-                {/* 은행명 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>은행명</label>
                   <select
@@ -466,7 +456,6 @@ export default function SignupPage({ isSeller = false }) {
                   {errors.bank_name && <p className={styles.fieldError}>{errors.bank_name.message}</p>}
                 </div>
 
-                {/* 계좌번호 */}
                 <div className={styles.fieldGroup}>
                   <label className={styles.label}>계좌번호</label>
                   <input

@@ -16,7 +16,6 @@ const initialFormData = {
   marketingEmailAgreed: false,
   marketingSmsAgreed: false,
   ageVerified: false,
-  emailVerified: true,
 };
 
 export const useSignupStore = create(

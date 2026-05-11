@@ -91,6 +91,17 @@
   padding: 40px 0;
 }
 
+.statusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #eff6ff;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
 .actionGroup {
   display: flex;
   gap: 6px;
@@ -108,13 +119,18 @@
   transition: background-color 0.15s;
 }
 
+.actionBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .approveBtn {
   background-color: #f0fdf4;
   color: #16a34a;
   border: 1px solid #86efac;
 }
 
-.approveBtn:hover {
+.approveBtn:hover:not(:disabled) {
   background-color: #dcfce7;
 }
 
@@ -124,6 +140,6 @@
   border: 1px solid #fca5a5;
 }
 
-.rejectBtn:hover {
+.rejectBtn:hover:not(:disabled) {
   background-color: #fee2e2;
 }

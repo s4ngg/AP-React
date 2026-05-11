@@ -10,7 +10,7 @@ import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { setUser } = useAuthStore();
+  const { setUser, setSellerToken } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,9 +27,12 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await login({ email: data.email, password: data.password });
-      const { token, email, name, seller } = res.data;  // ← isSeller → seller로 변경
-
-      setUser({ email, name, isSeller: seller }, token);  // ← 이건 그대로
+      console.log(res.data);
+      const { token, email, name, seller, sellerToken } = res.data;
+      setUser({ email, name, isSeller: seller }, token);
+      if (sellerToken) {
+        setSellerToken(sellerToken);
+      }
       navigate("/");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다");

@@ -14,31 +14,35 @@ const STATUS_KO = {
   CANCELLED: "취소",
 }
 
+const STATUS_CLASS = {
+  PENDING: styles.statusPending,
+  PROCESSING: styles.statusProcessing,
+  SHIPPED: styles.statusShipped,
+  DELIVERED: styles.statusDelivered,
+  CANCELLED: styles.statusCancelled,
+}
+
 export default function SellerDashboardPage() {
-  const [claimCount, setClaimCount] = useState(0)
   const [orders, setOrders] = useState([])
+  const [claims, setClaims] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getSellerClaims()
-      .then((data) => {
-        const active = (data ?? []).filter(
-          (c) => c.status === "SUBMITTED" || c.status === "IN_PROGRESS"
-        )
-        setClaimCount(active.length)
+    Promise.allSettled([getSellerOrders(), getSellerClaims()])
+      .then(([ordersResult, claimsResult]) => {
+        if (ordersResult.status === "fulfilled") setOrders(ordersResult.value ?? [])
+        if (claimsResult.status === "fulfilled") setClaims(claimsResult.value ?? [])
       })
-      .catch(() => setClaimCount(0))
-
-    getSellerOrders()
-      .then((data) => setOrders(data ?? []))
-      .catch(() => setOrders([]))
+      .finally(() => setLoading(false))
   }, [])
 
-  const pendingCount = orders.filter(
-    (o) => o.status === "PAID" || o.status === "PENDING"
-  ).length
+  const totalOrders = orders.length
+  const pendingOrders = orders.filter((o) => o.status === "PENDING").length
+  const claimCount = claims.length
 
+  // 최근 5건
   const recentOrders = [...orders]
-    .sort((a, b) => new Date(b.orderedAt) - new Date(a.orderedAt))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5)
 
   return (
@@ -49,32 +53,39 @@ export default function SellerDashboardPage() {
 
         {/* 통계 카드 */}
         <div className={styles.statsGrid}>
+          {/* 매출 — 하드코딩 */}
           <div className={styles.statCard}>
             <div className={styles.statIcon}><TrendingUp size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>이번 달 매출</p>
-              <p className={styles.statValue}>{HARDCODED_MONTHLY_SALES.toLocaleString()}원</p>
+              <p className={styles.statValue}>₩ 1,250,000</p>
             </div>
           </div>
+
+          {/* 총 주문 수 — API */}
           <div className={styles.statCard}>
             <div className={`${styles.statIcon} ${styles.statIconBlue}`}><ShoppingBag size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>총 주문 수</p>
-              <p className={styles.statValue}>{orders.length}건</p>
+              <p className={styles.statValue}>{loading ? "-" : `${totalOrders}건`}</p>
             </div>
           </div>
+
+          {/* 처리 대기 주문 — API */}
           <div className={styles.statCard}>
             <div className={`${styles.statIcon} ${styles.statIconOrange}`}><Package size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>처리 대기 주문</p>
-              <p className={styles.statValue}>{pendingCount}건</p>
+              <p className={styles.statValue}>{loading ? "-" : `${pendingOrders}건`}</p>
             </div>
           </div>
+
+          {/* 환불/교환 요청 — API */}
           <div className={styles.statCard}>
             <div className={`${styles.statIcon} ${styles.statIconRed}`}><RefreshCcw size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>환불/교환 요청</p>
-              <p className={styles.statValue}>{claimCount}건</p>
+              <p className={styles.statValue}>{loading ? "-" : `${claimCount}건`}</p>
             </div>
           </div>
         </div>
@@ -95,19 +106,27 @@ export default function SellerDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>불러오는 중...</td>
+                  </tr>
+                ) : recentOrders.length === 0 ? (
                   <tr>
                     <td colSpan={6} className={styles.emptyRow}>주문 데이터가 없습니다.</td>
                   </tr>
                 ) : (
                   recentOrders.map((order) => (
                     <tr key={order.orderId}>
-                      <td>{order.orderNumber}</td>
-                      <td>{order.memberName}</td>
-                      <td>{order.orderItems?.[0]?.productName ?? "-"}</td>
-                      <td>{Number(order.totalAmount).toLocaleString()}원</td>
-                      <td>{order.orderedAt?.slice(0, 10)}</td>
-                      <td>{STATUS_KO[order.status] ?? order.status}</td>
+                      <td>#{order.orderId}</td>
+                      <td>{order.memberName ?? `회원 #${order.memberId}`}</td>
+                      <td>{order.productName ?? "-"}</td>
+                      <td>{order.totalPrice != null ? `₩ ${order.totalPrice.toLocaleString()}` : "-"}</td>
+                      <td>{order.createdAt?.slice(0, 10) ?? "-"}</td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${STATUS_CLASS[order.status] ?? ""}`}>
+                          {STATUS_LABEL[order.status] ?? order.status}
+                        </span>
+                      </td>
                     </tr>
                   ))
                 )}

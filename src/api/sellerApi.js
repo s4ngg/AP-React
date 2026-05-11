@@ -37,11 +37,14 @@ export const updateSeller = (sellerId, data) =>
 export const deleteSeller = (sellerId) =>
   api.delete(`/api/seller/auth/${sellerId}`).then((res) => res.data);
 
-export const getSellerOrders = () =>
-  api.get("/api/orders/seller").then((res) => res.data.data)
-
 export const getSellerClaims = () =>
   api.get("/api/claims/seller").then((res) => res.data.data)
+
+export const getSellerOrders = () =>
+  api.get("/api/seller/orders").then((res) => res.data.data)
+
+export const updateSellerOrderStatus = (orderId, status) =>
+  api.patch(`/api/seller/orders/${orderId}/status`, { status }).then((res) => res.data.data)
 
 export const approveClaim = (claimId) =>
   api.patch(`/api/claims/${claimId}/approve`).then((res) => res.data)
@@ -49,9 +52,9 @@ export const approveClaim = (claimId) =>
 export const rejectClaim = (claimId, rejectReason) =>
   api.patch(`/api/claims/${claimId}/seller-reject`, { rejectReason }).then((res) => res.data)
 
-// 문의 목록 조회 (판매자용 API 확인 필요)
+// 수정: /api/inquiries/my → /api/inquiries/seller (판매자용 엔드포인트)
 export const getSellerInquiries = () =>
-  api.get("/api/inquiries/my").then((res) => res.data.data)
+  api.get("/api/inquiries/seller").then((res) => res.data.data)
 
 /**
  * 판매자 본인 상품 목록 조회
@@ -79,3 +82,10 @@ export const getClaimDetail = (claimId) =>
 
 export const getClaimAttachments = (claimId) =>
   api.get(`/api/attachments/claim/${claimId}`).then((res) => res.data.data)
+/**
+ * 문의 답변 등록
+ * @param {number} inquiryId - 문의 ID
+ * @param {string} content   - 답변 내용
+ */
+export const replyToInquiry = (inquiryId, content) =>
+  api.post(`/api/inquiries/${inquiryId}/answers/seller`, { content }).then((res) => res.data)
