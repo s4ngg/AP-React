@@ -3,7 +3,6 @@ import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp, AlertCircle, CheckCi
 import styles from "./InquiryForm.module.css";
 import { createInquiry, getMyInquiries, cancelInquiry } from "../../api/inquiryApi.js";
 import { getMyOrders } from "../../api/orderApi.js";
-import { uploadInquiryAttachment } from "../../api/attachmentApi.js";
 
 const INQUIRY_TYPES = [
     { value: "", label: "유형을 선택해주세요" },
@@ -143,17 +142,8 @@ export default function InquiryForm({ initialView = "form", onBack }) {
                     productId: selectedOrder.orderItems[0]?.productId,
                 }),
             };
-            const res = await createInquiry(payload);
+            const res = await createInquiry(payload, images);
             const created = res.data?.data;
-
-            if (images.length > 0 && created?.inquiryId) {
-                for (let i = 0; i < images.length; i++) {
-                    const formData = new FormData();
-                    formData.append("file", images[i].file);
-                    formData.append("sortOrder", i);
-                    await uploadInquiryAttachment(created.inquiryId, formData);
-                }
-            }
 
             setSubmittedInquiry(created);
             setView("complete");

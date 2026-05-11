@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { ChevronDown, ChevronUp, Send } from "lucide-react"
+import { ChevronDown, ChevronUp, Send, CheckCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import { formatDate } from "../../utils/format"
-import { getAdminInquiries, postAdminAnswer } from "../../api/inquiryApi"
+import { getAdminInquiries, postAdminAnswer, updateInquiryStatus } from "../../api/inquiryApi"
 import styles from "./AdminInquiryPage.module.css"
 
 const TYPE_LABEL = {
@@ -31,6 +31,7 @@ export default function AdminInquiryPage() {
   const [expandedId, setExpandedId] = useState(null)
   const [answerText, setAnswerText] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [completingId, setCompletingId] = useState(null)
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
@@ -42,6 +43,23 @@ export default function AdminInquiryPage() {
   const toggleExpand = (id) => {
     setExpandedId((prev) => (prev === id ? null : id))
     setAnswerText("")
+  }
+
+  const handleComplete = async (inquiryId) => {
+    if (!window.confirm("문의를 처리 완료로 변경하시겠습니까?")) return
+    setCompletingId(inquiryId)
+    try {
+      await updateInquiryStatus(inquiryId, "COMPLETED")
+      setInquiries((prev) =>
+        prev.map((inq) =>
+          inq.inquiryId === inquiryId ? { ...inq, status: "COMPLETED" } : inq
+        )
+      )
+    } catch {
+      alert("상태 변경에 실패했습니다.")
+    } finally {
+      setCompletingId(null)
+    }
   }
 
   const handleAnswer = async (inquiryId) => {
@@ -140,23 +158,38 @@ export default function AdminInquiryPage() {
                                 </div>
                               )}
 
-                              <div className={styles.answerForm}>
-                                <textarea
-                                  className={styles.answerTextarea}
-                                  placeholder="답변을 입력하세요"
-                                  value={answerText}
-                                  onChange={(e) => setAnswerText(e.target.value)}
-                                  rows={3}
-                                />
-                                <button
-                                  className={styles.answerBtn}
-                                  onClick={() => handleAnswer(inq.inquiryId)}
-                                  disabled={submitting || !answerText.trim()}
-                                >
-                                  <Send size={14} />
-                                  답변 등록
-                                </button>
-                              </div>
+                              {(inq.answers ?? []).length > 0 && inq.status !== "COMPLETED" && (
+                                <div className={styles.completeWrap}>
+                                  <button
+                                    className={styles.completeBtn}
+                                    onClick={() => handleComplete(inq.inquiryId)}
+                                    disabled={completingId === inq.inquiryId}
+                                  >
+                                    <CheckCircle size={14} />
+                                    처리 완료
+                                  </button>
+                                </div>
+                              )}
+
+                              {(inq.answers ?? []).length === 0 && (
+                                <div className={styles.answerForm}>
+                                  <textarea
+                                    className={styles.answerTextarea}
+                                    placeholder="답변을 입력하세요"
+                                    value={answerText}
+                                    onChange={(e) => setAnswerText(e.target.value)}
+                                    rows={3}
+                                  />
+                                  <button
+                                    className={styles.answerBtn}
+                                    onClick={() => handleAnswer(inq.inquiryId)}
+                                    disabled={submitting || !answerText.trim()}
+                                  >
+                                    <Send size={14} />
+                                    답변 등록
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
