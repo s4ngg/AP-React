@@ -41,8 +41,12 @@ const REASON_LABEL = {
 };
 
 const SIMPLE_REASON_CODES = ["CHANGE_MIND", "SIZE_COLOR", "SIZE_CHANGE", "COLOR_CHANGE"];
+const SHIPPING_FEE_NOTICE = "단순 변심·사이즈/색상 변경 사유의 경우 왕복 배송비 6,000원이 환불 처리 과정에서 차감되거나 별도 안내될 수 있습니다.";
+const SHIPPING_FEE_SUMMARY = "왕복 배송비 6,000원 별도 안내";
 
 const MAX_IMAGES = 5;
+
+const isShippingFeeReason = (reasonCode) => SIMPLE_REASON_CODES.includes(reasonCode);
 
 const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -222,6 +226,12 @@ export default function ReturnForm({ onBack }) {
                         <span>수거 방법</span>
                         <strong>{pickup === "COURIER" ? "택배 수거" : "직접 방문 반납"}</strong>
                     </div>
+                    {isShippingFeeReason(submittedClaim.reasonCode) && (
+                        <div className={styles.summaryRow}>
+                            <span>배송비 안내</span>
+                            <strong>{SHIPPING_FEE_SUMMARY}</strong>
+                        </div>
+                    )}
                 </div>
                 <div className={styles.completeActions}>
                     <button className={styles.primaryBtn} onClick={onBack}>고객센터 홈으로</button>
@@ -234,7 +244,7 @@ export default function ReturnForm({ onBack }) {
         <div className={styles.formContainer}>
             <div className={styles.guideBox}>
                 <AlertCircle size={18} />
-                <p>교환/반품은 상품 수령 후 <strong>7일 이내</strong>에만 신청 가능합니다. 단순 변심 시 배송비가 발생할 수 있습니다.</p>
+                <p>교환/반품은 상품 수령 후 <strong>7일 이내</strong>에만 신청 가능합니다. 단순 변심·사이즈/색상 변경 시 배송비가 발생할 수 있습니다.</p>
             </div>
 
             <div className={styles.stepBar}>
@@ -392,10 +402,10 @@ export default function ReturnForm({ onBack }) {
                         />
                     </div>
 
-                    {SIMPLE_REASON_CODES.includes(reason) && (
+                    {isShippingFeeReason(reason) && (
                         <div className={styles.feeInfoBox}>
                             <AlertCircle size={16} />
-                            <p>단순 변심·사이즈 변경 사유의 경우 왕복 배송비 <strong>6,000원</strong>이 부과됩니다.</p>
+                            <p>{SHIPPING_FEE_NOTICE}</p>
                         </div>
                     )}
 
