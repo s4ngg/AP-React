@@ -4,7 +4,7 @@ import { Headset, Megaphone, HelpCircle, MessageSquare, RotateCcw, ChevronRight,
 import useAuthStore from "../../store/authStore.js";
 import styles from "./CustomerPage.module.css";
 import NoticeList from "../../components/customer/NoticeList.jsx";
-// import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
+import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
 import FAQList from "../../components/customer/FAQList.jsx";
 import InquiryForm from "../../components/customer/InquiryForm.jsx";
 import ReturnGuide from "../../components/customer/ReturnGuide.jsx";
@@ -29,8 +29,8 @@ export default function CustomerPage() {
         (async () => {
             setNoticesLoading(true);
             try {
-                const res = await getNotices();
-                setNotices(res.data?.data || []);
+                const data = await getNotices();
+                setNotices(data || []);
             } catch {
                 setNotices([]);
             } finally {

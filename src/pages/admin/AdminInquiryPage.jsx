@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { ChevronDown, ChevronUp, Send, CheckCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import { formatDate } from "../../utils/format"
@@ -113,8 +113,8 @@ export default function AdminInquiryPage() {
                   </tr>
                 ) : (
                   inquiries.map((inq) => (
-                    <>
-                      <tr key={inq.inquiryId}>
+                    <Fragment key={inq.inquiryId}>
+                      <tr>
                         <td className={styles.idCell}>{inq.inquiryId}</td>
                         <td>
                           <span className={styles.typeBadge}>
@@ -139,7 +139,7 @@ export default function AdminInquiryPage() {
                         </td>
                       </tr>
                       {expandedId === inq.inquiryId && (
-                        <tr key={`${inq.inquiryId}-detail`} className={styles.detailRow}>
+                        <tr className={styles.detailRow}>
                           <td colSpan={6}>
                             <div className={styles.detailBox}>
                               <p className={styles.detailContent}>{inq.content}</p>
@@ -194,7 +194,7 @@ export default function AdminInquiryPage() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   ))
                 )}
               </tbody>

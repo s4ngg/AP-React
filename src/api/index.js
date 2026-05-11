@@ -38,7 +38,12 @@ const isAdminInquiryRequest = (url = "") =>
   /^\/api\/inquiries\/[^/]+\/status$/.test(url)
 
 const isAdminRequest = (url = "") =>
-  (url.startsWith("/api/admin/") || (url.startsWith("/api/admins") && url !== "/api/admins/login") || isAdminClaimRequest(url) || isAdminInquiryRequest(url))
+  url.startsWith("/api/admin/") ||
+  (url.startsWith("/api/admins") && url !== "/api/admins/login") ||
+  isAdminClaimRequest(url) ||
+  isAdminInquiryRequest(url) ||
+  url.startsWith("/api/notices") ||
+  url.startsWith("/api/faqs")
 
 const isSellerRequest = (url = "") =>
   url.startsWith("/api/seller/") ||
