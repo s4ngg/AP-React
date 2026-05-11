@@ -7,9 +7,16 @@ export const getProducts = (page = 0, size = 20) =>
     .get("/api/products", { params: { page, size, sort: "createdAt,desc" } })
     .then((res) => res.data.data)
 
-export const getProductList = async (page = 0) => {
+export const getProductList = async (page = 0, size = 8) => {
   const response = await api.get("/api/products", {
-    params: { page, size: 8, sort: "createdAt,desc" },
+    params: { page, size, sort: "createdAt,desc" },
+  })
+  return response.data
+}
+
+export const getAllProductsForFilter = async () => {
+  const response = await api.get("/api/products", {
+    params: { page: 0, size: 1000, sort: "createdAt,desc" },
   })
   return response.data
 }

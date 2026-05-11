@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./ProductListPage.module.css";
-import { getProductList, getParentCategories, getChildCategories } from "../../api/productApi";
-import useCartStore from "../../store/cartStore";
-
+import { getAllProductsForFilter, getParentCategories, getChildCategories } from "../../api/productApi";
 
 function ProductListPage() {
   const location = useLocation();
@@ -18,13 +16,30 @@ function ProductListPage() {
   const [selectedChildId, setSelectedChildId] = useState(null);
   const [selectedChildName, setSelectedChildName] = useState("");
 
-  const [products, setProducts] = useState([]);
-  const [totalElements, setTotalElements] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [allProducts, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedSort, setSelectedSort] = useState("최신순");
   const [loading, setLoading] = useState(false);
 
+  const PAGE_SIZE = 8;
+
+  // 전체 상품 한 번에 로드
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllProductsForFilter();
+        setAllProducts(res.data?.content || []);
+      } catch {
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
+
+  // 카테고리 목록 로드
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -35,12 +50,12 @@ function ProductListPage() {
           setSelectedParentId(cats[0].parentCategoryId);
           setSelectedParentName(cats[0].categoryName);
         }
-      } catch {
-      }
+      } catch {}
     };
     fetchCategories();
   }, []);
 
+  // 하위 카테고리 로드
   useEffect(() => {
     if (!selectedParentId) return;
     const fetchChildCategories = async () => {
@@ -56,6 +71,7 @@ function ProductListPage() {
     fetchChildCategories();
   }, [selectedParentId]);
 
+  // URL 쿼리 카테고리 파라미터 반영
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const queryCategory = params.get("category");
@@ -68,33 +84,34 @@ function ProductListPage() {
     }
   }, [location.search, parentCategories]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const res = await getProductList(currentPage);
-        const pageData = res.data;
-        setProducts(pageData?.content || []);
-        setTotalElements(pageData?.totalElements || 0);
-        setTotalPages(pageData?.totalPages || 0);
-      } catch {
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [currentPage]);
-
+  // 카테고리/정렬 바뀌면 페이지 초기화
   useEffect(() => {
     setCurrentPage(0);
   }, [selectedParentId, selectedChildId, selectedSort]);
 
-  const sortedProducts = [...products].sort((a, b) => {
-    if (selectedSort === "가격낮은순") return Number(a.price) - Number(b.price);
-    if (selectedSort === "가격높은순") return Number(b.price) - Number(a.price);
-    return 0;
-  });
+  // 프론트 필터링 + 정렬
+  const filteredSortedProducts = useMemo(() => {
+    let result = [...allProducts];
+
+    // 카테고리 필터
+    if (selectedParentName) {
+      result = result.filter((p) => p.parentCategoryName === selectedParentName);
+    }
+
+    // 정렬
+    if (selectedSort === "가격낮은순") result.sort((a, b) => Number(a.price) - Number(b.price));
+    else if (selectedSort === "가격높은순") result.sort((a, b) => Number(b.price) - Number(a.price));
+
+    return result;
+  }, [allProducts, selectedParentName, selectedSort]);
+
+  // 페이지네이션
+  const totalElements = filteredSortedProducts.length;
+  const totalPages = Math.ceil(totalElements / PAGE_SIZE);
+  const pagedProducts = filteredSortedProducts.slice(
+    currentPage * PAGE_SIZE,
+    (currentPage + 1) * PAGE_SIZE
+  );
 
   return (
     <div className={styles.page}>
@@ -167,11 +184,11 @@ function ProductListPage() {
 
           {loading ? (
             <div style={{ textAlign: "center", padding: "3rem" }}>불러오는 중...</div>
-          ) : sortedProducts.length === 0 ? (
+          ) : pagedProducts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "3rem", color: "#9ca3af" }}>상품이 없습니다.</div>
           ) : (
             <div className={styles.productGrid}>
-              {sortedProducts.map((product) => (
+              {pagedProducts.map((product) => (
                 <div
                   key={product.productId}
                   className={styles.card}
@@ -179,7 +196,6 @@ function ProductListPage() {
                   style={{ cursor: "pointer" }}
                 >
                   <div className={styles.imageWrap}>
-                    <button type="button" className={styles.likeButton} onClick={(e) => e.stopPropagation()}>♡</button>
                     <img
                       src={product.thumbnailUrl}
                       alt={product.productName}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingCart, Truck, Star, MessageCircle, FileText, Info, Pencil, X, Check } from "lucide-react"
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Truck, Star, FileText, Info, Pencil, X, Check } from "lucide-react"
 import useCartStore from "../../store/cartStore"
 import useAuthStore from "../../store/authStore"
 import { getProductDetail } from "../../api/productApi"
@@ -12,14 +12,12 @@ const TAB_ICONS = {
   description: <FileText size={16} />,
   detail: <Info size={16} />,
   review: <Star size={16} />,
-  inquiry: <MessageCircle size={16} />,
 }
 
 const TABS = [
   { key: "description", label: "상품설명" },
   { key: "detail", label: "상세정보" },
   { key: "review", label: "후기" },
-  { key: "inquiry", label: "문의" },
 ]
 
 function StarRating({ rating, size = 16 }) {
@@ -59,7 +57,6 @@ export default function ProductDetailPage() {
   const [currentImg, setCurrentImg] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedOption, setSelectedOption] = useState(null)
-  const [isLiked, setIsLiked] = useState(false)
   const [activeTab, setActiveTab] = useState("description")
 
   useEffect(() => {
@@ -345,27 +342,6 @@ export default function ProductDetailPage() {
           </div>
         )
 
-      case "inquiry":
-        return (
-          <div className={styles.tabContent}>
-            <h3 className={styles.tabContentTitle}>상품 문의</h3>
-            <div className={styles.inquiryNotice}>
-              <p className={styles.inquiryNoticeTitle}>📌 문의 전 확인해주세요</p>
-              <ul className={styles.inquiryNoticeList}>
-                <li>상품 문의는 상품 관련 내용만 남겨주세요.</li>
-                <li>배송 관련 문의는 고객센터를 이용해주세요.</li>
-                <li>영업일 기준 1~2일 내에 답변 드립니다.</li>
-              </ul>
-            </div>
-            <div className={styles.inquiryForm}>
-              <textarea className={styles.inquiryTextarea} placeholder="상품에 대해 궁금한 점을 남겨주세요." rows={5} />
-              <div className={styles.inquiryBtnRow}>
-                <button className={styles.inquirySubmitBtn}>문의 등록</button>
-              </div>
-            </div>
-          </div>
-        )
-
       default:
         return null
     }
@@ -488,9 +464,6 @@ export default function ProductDetailPage() {
 
           {/* 버튼 */}
           <div className={styles.actionBtns}>
-            <button className={styles.wishBtn} onClick={() => setIsLiked(!isLiked)} aria-label="위시리스트">
-              <Heart size={20} fill={isLiked ? "#ef4444" : "none"} color={isLiked ? "#ef4444" : "#9ca3af"} />
-            </button>
             <button className={styles.cartBtn} onClick={handleAddToCart}>
               <ShoppingCart size={18} /> 장바구니
             </button>

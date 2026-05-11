@@ -85,7 +85,7 @@ export default function OrderPage() {
       : Number(selectedCoupon.coupon.discountValue)
     : 0
 
-  const totalPrice = totalProductPrice + shippingFee - discountAmount
+  const totalPrice = Math.max(0, totalProductPrice + shippingFee - discountAmount)
 
   const handleAddressComplete = ({ zonecode, address }) => {
     setAddressForm((prev) => ({ ...prev, zipCode: zonecode, address }))
@@ -135,7 +135,7 @@ export default function OrderPage() {
       // 토스 결제창 띄우기
       const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY)
       await tossPayments.requestPayment("카드", {
-        amount: totalPrice,
+        amount: Math.max(0, totalPrice),
         orderId: result.orderNumber,
         orderName: orderItems[0]?.product.name + (orderItems.length > 1 ? ` 외 ${orderItems.length - 1}건` : ""),
         customerName: authUser?.name ?? "고객",
