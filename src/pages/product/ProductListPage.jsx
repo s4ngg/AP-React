@@ -15,6 +15,7 @@ function ProductListPage() {
   const [selectedParentName, setSelectedParentName] = useState("");
   const [selectedChildId, setSelectedChildId] = useState(null);
   const [selectedChildName, setSelectedChildName] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("")
 
   const [allProducts, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -71,15 +72,23 @@ function ProductListPage() {
     fetchChildCategories();
   }, [selectedParentId]);
 
-  // URL 쿼리 카테고리 파라미터 반영
+  // URL 쿼리 파라미터 반영
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const queryCategory = params.get("category");
+    const queryKeyword = params.get("keyword");
+
+    if (queryKeyword) {
+      setSearchKeyword(queryKeyword)
+      setSelectedParentName("")
+    }
+
     if (queryCategory && parentCategories.length > 0) {
       const found = parentCategories.find((c) => c.categoryName === queryCategory);
       if (found) {
         setSelectedParentId(found.parentCategoryId);
         setSelectedParentName(found.categoryName);
+        setSearchKeyword("")
       }
     }
   }, [location.search, parentCategories]);
@@ -87,14 +96,19 @@ function ProductListPage() {
   // 카테고리/정렬 바뀌면 페이지 초기화
   useEffect(() => {
     setCurrentPage(0);
-  }, [selectedParentId, selectedChildId, selectedSort]);
+  }, [selectedParentId, selectedChildId, selectedSort, searchKeyword]);
 
   // 프론트 필터링 + 정렬
   const filteredSortedProducts = useMemo(() => {
     let result = [...allProducts];
 
-    // 카테고리 필터
-    if (selectedParentName) {
+    // 키워드 검색 필터
+    if (searchKeyword) {
+      result = result.filter((p) =>
+        p.productName?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        p.brand?.toLowerCase().includes(searchKeyword.toLowerCase())
+      )
+    } else if (selectedParentName) {
       result = result.filter((p) => p.parentCategoryName === selectedParentName);
     }
 
@@ -103,7 +117,7 @@ function ProductListPage() {
     else if (selectedSort === "가격높은순") result.sort((a, b) => Number(b.price) - Number(a.price));
 
     return result;
-  }, [allProducts, selectedParentName, selectedSort]);
+  }, [allProducts, selectedParentName, selectedSort, searchKeyword]);
 
   // 페이지네이션
   const totalElements = filteredSortedProducts.length;
@@ -128,6 +142,7 @@ function ProductListPage() {
                   onClick={() => {
                     setSelectedParentId(cat.parentCategoryId);
                     setSelectedParentName(cat.categoryName);
+                    setSearchKeyword("")
                   }}
                 >
                   {cat.categoryName}
@@ -160,9 +175,9 @@ function ProductListPage() {
           <div className={styles.topBar}>
             <div>
               <h2 className={styles.title}>
-                {selectedChildName || selectedParentName || "전체"} 추천 상품
+                {searchKeyword ? `"${searchKeyword}" 검색 결과` : selectedChildName || selectedParentName || "전체"} 추천 상품
               </h2>
-              {selectedChildName && (
+              {selectedChildName && !searchKeyword && (
                 <p className={styles.subTitle}>{selectedParentName} &gt; {selectedChildName}</p>
               )}
             </div>
