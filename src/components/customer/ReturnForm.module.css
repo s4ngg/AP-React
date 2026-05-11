@@ -575,7 +575,7 @@
     transition: border-color 0.2s, background-color 0.2s;
     margin-bottom: 8px;
 }
-.orderProductRow:hover { border-color: #93c5fd; background-color: #f8faff; }
+.orderProductRow:not(.orderProductRowDisabled):hover { border-color: #93c5fd; background-color: #f8faff; }
 
 .orderProductRowSelected {
     border-color: #2563eb;
@@ -608,6 +608,11 @@
 .orderProductRowDisabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.orderProductRowDisabled:hover {
+    border-color: #e5e7eb;
+    background-color: #fff;
 }
 
 .blockedLabel {

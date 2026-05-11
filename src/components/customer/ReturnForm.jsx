@@ -68,7 +68,13 @@ export default function ReturnForm({ onBack }) {
     const [ordersLoading, setOrdersLoading] = useState(false);
 
     const queryClient = useQueryClient();
-    const { data: myClaims = [] } = useMyClaims(showOrderModal);
+    const {
+        data: myClaims = [],
+        isLoading: claimsLoading,
+        isFetching: claimsFetching,
+        isError: claimsError,
+    } = useMyClaims(showOrderModal);
+    const isClaimsChecking = showOrderModal && (claimsLoading || claimsFetching);
 
     const blockedOrderItemIds = useMemo(
         () => new Set(
@@ -78,6 +84,7 @@ export default function ReturnForm({ onBack }) {
         ),
         [myClaims]
     );
+    const selectedItemBlocked = selectedItem ? blockedOrderItemIds.has(selectedItem.orderItemId) : false;
 
     const fileInputRef = useRef(null);
 
@@ -113,13 +120,31 @@ export default function ReturnForm({ onBack }) {
     };
 
     const handleItemSelect = (order, item) => {
+        if (isClaimsChecking || claimsError || blockedOrderItemIds.has(item.orderItemId)) return;
         setSelectedOrder(order);
         setSelectedItem(item);
         setShowOrderModal(false);
     };
 
+    const handleNextStep = () => {
+        if (!selectedItem) { alert("상품을 선택해주세요."); return; }
+        if (claimsError) { alert("교환/반품 신청 내역 확인 후 다시 시도해주세요."); return; }
+        if (selectedItemBlocked) {
+            alert("이미 교환/반품 신청 내역이 있는 상품입니다.");
+            setStep(1);
+            return;
+        }
+        setStep(2);
+    };
+
     const handleSubmit = async () => {
         if (!selectedItem) { alert("교환/반품할 상품을 선택해주세요."); return; }
+        if (claimsError) { alert("교환/반품 신청 내역 확인 후 다시 시도해주세요."); return; }
+        if (selectedItemBlocked) {
+            alert("이미 교환/반품 신청 내역이 있는 상품입니다.");
+            setStep(1);
+            return;
+        }
         if (!reason) { alert("신청 사유를 선택해주세요."); return; }
 
         setSubmitting(true);
@@ -132,22 +157,31 @@ export default function ReturnForm({ onBack }) {
                 ...(detail && { detail }),
                 ...(type === "EXCHANGE" && exchangeOption && { exchangeOption }),
             };
-            const created = await createClaim(payload);
 
-            if (images.length > 0 && created?.claimId) {
-                for (let i = 0; i < images.length; i++) {
-                    const formData = new FormData();
-                    formData.append("file", images[i].file);
-                    formData.append("sortOrder", i);
-                    await uploadClaimAttachment(created.claimId, formData);
-                }
+            let created;
+            try {
+                created = await createClaim(payload);
+                queryClient.invalidateQueries({ queryKey: ["claims", "my"] });
+            } catch (error) {
+                alert(error.response?.data?.message || "신청에 실패했습니다. 다시 시도해주세요.");
+                return;
             }
 
-            queryClient.invalidateQueries({ queryKey: ["claims", "my"] });
+            try {
+                if (images.length > 0 && created?.claimId) {
+                    for (let i = 0; i < images.length; i++) {
+                        const formData = new FormData();
+                        formData.append("file", images[i].file);
+                        formData.append("sortOrder", i);
+                        await uploadClaimAttachment(created.claimId, formData);
+                    }
+                }
+            } catch {
+                alert("신청은 완료됐지만 첨부파일 업로드에 실패했습니다. 신청 내역에서 상태를 확인해주세요.");
+            }
+
             setSubmittedClaim(created);
             setStep(3);
-        } catch {
-            alert("신청에 실패했습니다. 다시 시도해주세요.");
         } finally {
             setSubmitting(false);
         }
@@ -256,7 +290,7 @@ export default function ReturnForm({ onBack }) {
 
                     <div className={styles.stepActions}>
                         <button className={styles.ghostBtn} onClick={onBack}><ChevronLeft size={16} /> 이전으로</button>
-                        <button className={styles.primaryBtn} onClick={() => { if (!selectedItem) { alert("상품을 선택해주세요."); return; } setStep(2); }}>
+                        <button className={styles.primaryBtn} onClick={handleNextStep}>
                             다음 단계 <ChevronRight size={16} />
                         </button>
                     </div>
@@ -393,21 +427,36 @@ export default function ReturnForm({ onBack }) {
                                     </div>
                                     {order.orderItems.map(item => {
                                         const isBlocked = blockedOrderItemIds.has(item.orderItemId);
+                                        const isDisabled = isClaimsChecking || claimsError || isBlocked;
                                         return (
                                             <div
                                                 key={item.orderItemId}
-                                                className={`${styles.orderProductRow} ${selectedItem?.orderItemId === item.orderItemId ? styles.orderProductRowSelected : ""} ${isBlocked ? styles.orderProductRowDisabled : ""}`}
-                                                onClick={() => { if (!isBlocked) handleItemSelect(order, item); }}
+                                                className={`${styles.orderProductRow} ${selectedItem?.orderItemId === item.orderItemId ? styles.orderProductRowSelected : ""} ${isDisabled ? styles.orderProductRowDisabled : ""}`}
+                                                onClick={() => handleItemSelect(order, item)}
+                                                onKeyDown={(event) => {
+                                                    if (event.key !== "Enter" && event.key !== " ") return;
+                                                    event.preventDefault();
+                                                    handleItemSelect(order, item);
+                                                }}
+                                                role="button"
+                                                tabIndex={isDisabled ? -1 : 0}
+                                                aria-disabled={isDisabled}
                                             >
                                                 <div className={styles.productImgPlaceholder}><Package size={20} /></div>
                                                 <div className={styles.productInfo}>
                                                     <p className={styles.productName}>{item.productName}</p>
                                                     <p className={styles.productMeta}>수량: {item.quantity}개 · {item.productPrice?.toLocaleString()}원</p>
-                                                    {isBlocked && (
+                                                    {isClaimsChecking && (
+                                                        <p className={styles.blockedLabel}>교환/반품 신청 내역을 확인 중입니다</p>
+                                                    )}
+                                                    {claimsError && (
+                                                        <p className={styles.blockedLabel}>신청 내역 확인에 실패했습니다</p>
+                                                    )}
+                                                    {!isClaimsChecking && !claimsError && isBlocked && (
                                                         <p className={styles.blockedLabel}>이미 교환/반품 신청 내역이 있습니다</p>
                                                     )}
                                                 </div>
-                                                {!isBlocked && selectedItem?.orderItemId === item.orderItemId && (
+                                                {!isDisabled && selectedItem?.orderItemId === item.orderItemId && (
                                                     <span className={styles.selectedBadge}>선택됨</span>
                                                 )}
                                             </div>
