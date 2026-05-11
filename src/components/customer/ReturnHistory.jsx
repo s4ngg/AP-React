@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronDown, ChevronUp, Package, RotateCcw, ArrowLeftRight } from "lucide-react";
 import styles from "./ReturnHistory.module.css";
-import { getMyClaims } from "../../api/claimApi.js";
+import { useMyClaims } from "../../query/useClaimQuery.js";
 
 const CLAIM_TYPE_LABEL = { RETURN: "반품", EXCHANGE: "교환" };
 
@@ -57,20 +57,12 @@ function ProgressBar({ status }) {
 }
 
 export default function ReturnHistory({ onBack }) {
-    const [claims, setClaims] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [expandedId, setExpandedId] = useState(null);
     const [filter, setFilter] = useState("전체");
+    const { data: claims = [], isLoading, isFetching, isError } = useMyClaims();
+    const loading = isLoading || isFetching;
 
     const FILTERS = ["전체", "반품", "교환"];
-
-    useEffect(() => {
-        setLoading(true);
-        getMyClaims()
-            .then(res => setClaims(res.data?.data || []))
-            .catch(() => setClaims([]))
-            .finally(() => setLoading(false));
-    }, []);
 
     const filtered = claims.filter(item => {
         if (filter === "전체") return true;
@@ -102,14 +94,21 @@ export default function ReturnHistory({ onBack }) {
                 <p style={{ padding: "40px 0", textAlign: "center", color: "#6b7280" }}>불러오는 중...</p>
             )}
 
-            {!loading && filtered.length === 0 && (
+            {!loading && isError && (
+                <div className={styles.empty}>
+                    <Package size={40} />
+                    <p>신청 내역을 불러오지 못했습니다.</p>
+                </div>
+            )}
+
+            {!loading && !isError && filtered.length === 0 && (
                 <div className={styles.empty}>
                     <Package size={40} />
                     <p>신청 내역이 없습니다.</p>
                 </div>
             )}
 
-            {!loading && (
+            {!loading && !isError && (
                 <div className={styles.list}>
                     {filtered.map(item => {
                         const st = STATUS_CONFIG[item.status] ?? { label: item.status, bg: "#f3f4f6", color: "#6b7280" };
