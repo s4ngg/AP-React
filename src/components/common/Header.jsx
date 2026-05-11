@@ -14,7 +14,7 @@ const navLinks = [
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isLoggedIn, logout, adminToken } = useAuthStore()
+  const { user, isLoggedIn, logout, sellerToken, adminToken } = useAuthStore()
   const { items } = useCartStore()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -23,6 +23,7 @@ export default function Header() {
   const [parentCategories, setParentCategories] = useState([])
   const [childCategoriesByParentId, setChildCategoriesByParentId] = useState({})
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     let isMounted = true
@@ -74,6 +75,13 @@ export default function Header() {
     alert("아직 준비중인 기능입니다.")
   }
 
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery("")
+    }
+  }
+
   const userInitial = user?.name?.charAt(0) || "MY"
   const hoveredParentCategory = parentCategories.find(
     (category) => category.parentCategoryId === hoveredCategoryId
@@ -109,8 +117,14 @@ export default function Header() {
           <Link to="/" className={styles.logo}>AllPick</Link>
 
           <div className={styles.searchBar}>
-            <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
-            <button className={styles.searchBtn} aria-label="검색">
+            <input
+              type="text"
+              placeholder="찾으시는 상품을 검색해보세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
               <Search size={18} />
             </button>
           </div>
@@ -123,10 +137,10 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-                {user?.isSeller && (
+                {isLoggedIn && sellerToken && (
                   <Link to="/seller" className={styles.iconBtn}>
                     <Store size={20} />
-                    <span>셀러</span>
+                    <span>판매자 관리</span>
                   </Link>
                 )}
 
@@ -146,7 +160,8 @@ export default function Header() {
                   <span>회원가입</span>
                 </Link>
               </>
-            )}
+            )
+            }
 
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20} />
@@ -160,7 +175,16 @@ export default function Header() {
               <Headphones size={20} />
               <span>고객센터</span>
             </Link>
-
+            {/* 아래 추가 */}
+            {isLoggedIn && sellerToken && (
+              <Link
+                to="/seller"
+                className={styles.mobileMenuItem}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                판매자 관리
+              </Link>
+            )}
             <button
               className={styles.mobileMenuBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -168,12 +192,18 @@ export default function Header() {
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-          </div>
-        </div>
+          </div >
+        </div >
 
         <div className={styles.mobileSearch}>
-          <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
-          <button className={styles.searchBtn} aria-label="검색">
+          <input
+            type="text"
+            placeholder="찾으시는 상품을 검색해보세요"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+          <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
             <Search size={18} />
           </button>
         </div>
@@ -234,7 +264,7 @@ export default function Header() {
             </button>
           ))}
         </div>
-      </nav>
+      </nav >
 
       {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
@@ -323,6 +353,6 @@ export default function Header() {
           </div>
         </div>
       )}
-    </header>
+    </header >
   )
 }

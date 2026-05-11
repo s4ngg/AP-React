@@ -163,7 +163,11 @@ export default function ReturnForm({ onBack }) {
                 created = await createClaim(payload);
                 queryClient.invalidateQueries({ queryKey: ["claims", "my"] });
             } catch (error) {
-                alert(error.response?.data?.message || "신청에 실패했습니다. 다시 시도해주세요.");
+                if (error.response?.status === 409) {
+                    alert("이미 진행 중인 교환/반품 신청이 있습니다.\n마이페이지에서 기존 신청을 취소한 후 다시 시도해주세요.");
+                } else {
+                    alert(error.response?.data?.message || "신청에 실패했습니다. 다시 시도해주세요.");
+                }
                 return;
             }
 

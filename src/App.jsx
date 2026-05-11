@@ -52,13 +52,20 @@ const AdminRoute = ({ children }) => {
   return adminToken ? children : <Navigate to="/admin/login" replace />
 }
 
+const SellerRoute = ({ children }) => {
+  const { isLoggedIn, user } = useAuthStore()
+  if (!isLoggedIn) return <Navigate to="/login" replace />
+  if (!user?.isSeller) return <Navigate to="/" replace />
+  return children
+}
+
 function AppContent() {
   const location = useLocation()
-  const isAdminPage = location.pathname.startsWith("/admin")
+  const hideHeader = location.pathname.startsWith("/seller") || location.pathname.startsWith("/admin")
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {!isAdminPage && <Header />}
+      {!hideHeader && <Header />}
       <div style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<MainPage />} />
@@ -95,14 +102,14 @@ function AppContent() {
           <Route path="/admin/faqs" element={<AdminRoute><AdminFAQPage /></AdminRoute>} />
           <Route path="/admin/inquiries" element={<AdminRoute><AdminInquiryPage /></AdminRoute>} />
           <Route path="/admin/accounts" element={<AdminRoute><AdminAccountPage /></AdminRoute>} />
-          <Route path="/seller" element={<SellerDashboardPage />} />
-          <Route path="/seller/products" element={<SellerProductsPage />} />
-          <Route path="/seller/orders" element={<SellerOrdersPage />} />
-          <Route path="/seller/refunds" element={<SellerRefundPage />} />
-          <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
+          <Route path="/seller" element={<SellerRoute><SellerDashboardPage /></SellerRoute>} />
+          <Route path="/seller/products" element={<SellerRoute><SellerProductsPage /></SellerRoute>} />
+          <Route path="/seller/orders" element={<SellerRoute><SellerOrdersPage /></SellerRoute>} />
+          <Route path="/seller/refunds" element={<SellerRoute><SellerRefundPage /></SellerRoute>} />
+          <Route path="/seller/inquiries" element={<SellerRoute><SellerInquiryPage /></SellerRoute>} />
         </Routes>
       </div>
-      {!isAdminPage && <Footer />}
+      {!hideHeader && <Footer />}
     </div>
   )
 }
@@ -114,5 +121,4 @@ function App() {
     </BrowserRouter>
   )
 }
-
 export default App

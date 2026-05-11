@@ -425,3 +425,26 @@
   font-weight: 500;
   flex: 1;
 }
+.actionBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.statusRevertBtn {
+  padding: 4px 12px;
+  font-size: 12px;
+  border: 1px solid #9ca3af;
+  background: #fff;
+  color: #6b7280;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.statusRevertBtn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
