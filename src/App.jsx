@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import OrderPage from "./pages/order/OrderPage"
 import Header from "./components/common/Header"
 import Footer from "./components/common/Footer"
@@ -51,11 +51,13 @@ const AdminRoute = ({ children }) => {
 }
 
 
-function App() {
+function AppContent() {
+  const location = useLocation()
+  const hideHeader = location.pathname.startsWith("/seller") || location.pathname.startsWith("/admin")
+
   return (
-    <BrowserRouter>
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Header />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {!hideHeader && <Header />}
         <div style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<MainPage />} />
@@ -97,8 +99,15 @@ function App() {
             <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
           </Routes>
         </div>
-        <Footer />
+        {!hideHeader && <Footer />}
       </div>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   )
 }
