@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Plus, Trash2 } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminFAQPage.module.css"
 import { getFaqs, createFaq, deleteFaq } from "../../api/faqApi"
 
@@ -149,7 +150,7 @@ export default function AdminFAQPage() {
                       </td>
                       <td className={styles.questionCell}>{faq.title}</td>
                       <td className={styles.answerCell}>{faq.content}</td>
-                      <td>{faq.createdAt?.slice(0, 10)}</td>
+                      <td>{formatDate(faq.createdAt)}</td>
                       <td>
                         <button
                           className={styles.deleteBtn}
