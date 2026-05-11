@@ -54,11 +54,11 @@ const AdminRoute = ({ children }) => {
 
 function AppContent() {
   const location = useLocation()
-  const isAdminPage = location.pathname.startsWith("/admin")
+  const hideHeader = location.pathname.startsWith("/seller") || location.pathname.startsWith("/admin")
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {!isAdminPage && <Header />}
+      {!hideHeader && <Header />}
       <div style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<MainPage />} />
@@ -102,7 +102,7 @@ function AppContent() {
           <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
         </Routes>
       </div>
-      {!isAdminPage && <Footer />}
+      {!hideHeader && <Footer />}
     </div>
   )
 }
