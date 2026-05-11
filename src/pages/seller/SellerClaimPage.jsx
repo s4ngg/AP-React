@@ -51,9 +51,8 @@ export default function SellerClaimPage() {
         if (!window.confirm("클레임을 승인하시겠습니까?")) return
         try {
             await approveClaim(claimId)
-            setClaims((prev) =>
-                prev.map((c) => (c.claimId === claimId ? { ...c, status: "COMPLETED" } : c))
-            )
+            const data = await getSellerClaims()
+            setClaims(data ?? [])
         } catch {
             alert("승인 처리 중 오류가 발생했습니다.")
         }
