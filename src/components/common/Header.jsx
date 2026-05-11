@@ -23,6 +23,7 @@ export default function Header() {
   const [parentCategories, setParentCategories] = useState([])
   const [childCategoriesByParentId, setChildCategoriesByParentId] = useState({})
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     let isMounted = true
@@ -74,6 +75,13 @@ export default function Header() {
     alert("아직 준비중인 기능입니다.")
   }
 
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery("")
+    }
+  }
+
   const userInitial = user?.name?.charAt(0) || "MY"
   const hoveredParentCategory = parentCategories.find(
     (category) => category.parentCategoryId === hoveredCategoryId
@@ -109,8 +117,14 @@ export default function Header() {
           <Link to="/" className={styles.logo}>AllPick</Link>
 
           <div className={styles.searchBar}>
-            <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
-            <button className={styles.searchBtn} aria-label="검색">
+            <input
+              type="text"
+              placeholder="찾으시는 상품을 검색해보세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
               <Search size={18} />
             </button>
           </div>
@@ -172,8 +186,14 @@ export default function Header() {
         </div>
 
         <div className={styles.mobileSearch}>
-          <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
-          <button className={styles.searchBtn} aria-label="검색">
+          <input
+            type="text"
+            placeholder="찾으시는 상품을 검색해보세요"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+          <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
             <Search size={18} />
           </button>
         </div>
