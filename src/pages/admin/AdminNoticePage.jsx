@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Plus, Trash2, Pin } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminNoticePage.module.css"
 import { getNotices, createNotice, deleteNotice} from "../../api/noticeApi.js"
 
@@ -104,7 +105,7 @@ export default function AdminNoticePage() {
                           <span className={styles.pinnedMark}>Y</span>
                         )}
                       </td>
-                      <td>{notice.createdAt?.slice(0, 10)}</td>
+                      <td>{formatDate(notice.createdAt)}</td>
                       <td>
                         <button
                           className={styles.deleteBtn}

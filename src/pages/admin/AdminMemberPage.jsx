@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { Search, CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminMemberPage.module.css"
 import { approveSeller, rejectSeller } from "../../api/sellerApi"
 import {
@@ -133,10 +134,6 @@ export default function AdminMemberPage() {
       .catch(() => alert("거절 처리에 실패했습니다."))
   }
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "-"
-    return dateStr.slice(0, 10)
-  }
 
   return (
     <div className={styles.adminLayout}>
