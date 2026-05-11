@@ -35,7 +35,7 @@ const isAdminRequest = (url = "") =>
   url.startsWith("/api/admin/") || url.startsWith("/api/admins") || isAdminClaimRequest(url)
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",
+  baseURL: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8080" : ""),
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -50,7 +50,7 @@ api.interceptors.request.use(
 
     if (isAdminRequest(config.url) && adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`
-    } else if (config.url?.includes("/products") && sellerToken) {
+    } else if (config.url?.startsWith("/api/seller") && sellerToken) {
       config.headers.Authorization = `Bearer ${sellerToken}`
     } else if (token) {
       config.headers.Authorization = `Bearer ${token}`

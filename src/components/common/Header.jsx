@@ -38,7 +38,7 @@ export default function Header() {
   const handleNavClick = () => {
     alert("아직 준비중인 기능입니다.")
   }
-
+  const sellerToken = useAuthStore((state) => state.sellerToken)
   const userInitial = user?.name?.charAt(0) || "MY"
 
   return (
@@ -54,9 +54,9 @@ export default function Header() {
           <Link to="/" className={styles.logo}>AllPick</Link>
 
           <div className={styles.searchBar}>
-            <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
+            <input type="text" placeholder="찾으시는 상품을 검색해보세요"/>
             <button className={styles.searchBtn} aria-label="검색">
-              <Search size={18} />
+              <Search size={18}/>
             </button>
           </div>
 
@@ -68,33 +68,33 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-                {user?.isSeller && (
+                {sellerToken && (
                   <Link to="/seller" className={styles.iconBtn}>
-                    <Store size={20} />
+                    <Store size={20}/>
                     <span>셀러</span>
                   </Link>
                 )}
 
                 <button className={styles.logoutBtn} onClick={handleLogout}>
-                  <LogOut size={20} />
+                  <LogOut size={20}/>
                   <span>로그아웃</span>
                 </button>
               </>
             ) : (
               <>
                 <Link to="/login" className={styles.iconBtn}>
-                  <User size={20} />
+                  <User size={20}/>
                   <span>로그인</span>
                 </Link>
                 <Link to="/signup" className={styles.iconBtn}>
-                  <User size={20} />
+                  <User size={20}/>
                   <span>회원가입</span>
                 </Link>
               </>
             )}
 
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
-              <ShoppingCart size={20} />
+              <ShoppingCart size={20}/>
               <span>장바구니</span>
               {cartCount > 0 && (
                 <span className={styles.cartBadge}>{cartCount}</span>
@@ -102,7 +102,7 @@ export default function Header() {
             </Link>
 
             <Link to="/customer" className={styles.iconBtn}>
-              <Headphones size={20} />
+              <Headphones size={20}/>
               <span>고객센터</span>
             </Link>
 
@@ -111,15 +111,15 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="메뉴"
             >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {mobileMenuOpen ? <X size={20}/> : <Menu size={20}/>}
             </button>
           </div>
         </div>
 
         <div className={styles.mobileSearch}>
-          <input type="text" placeholder="찾으시는 상품을 검색해보세요" />
+          <input type="text" placeholder="찾으시는 상품을 검색해보세요"/>
           <button className={styles.searchBtn} aria-label="검색">
-            <Search size={18} />
+            <Search size={18}/>
           </button>
         </div>
 
@@ -134,7 +134,7 @@ export default function Header() {
               type="button"
               onClick={() => navigate("/products")}
             >
-              카테고리 <ChevronDown size={16} />
+              카테고리 <ChevronDown size={16}/>
             </button>
 
             {categoryOpen && (
@@ -257,10 +257,10 @@ export default function Header() {
                   className={styles.mobileLoginBtn}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <User size={15} /> {user?.name || "마이페이지"}
+                  <User size={15}/> {user?.name || "마이페이지"}
                 </Link>
                 <button className={styles.mobileLogoutBtn} onClick={handleLogout}>
-                  <LogOut size={15} /> 로그아웃
+                  <LogOut size={15}/> 로그아웃
                 </button>
               </>
             ) : (

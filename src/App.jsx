@@ -49,7 +49,10 @@ const AdminRoute = ({ children }) => {
   const adminToken = useAuthStore((state) => state.adminToken)
   return adminToken ? children : <Navigate to="/admin/login" replace />
 }
-
+const SellerRoute = ({ children }) => {
+  const sellerToken = useAuthStore((state) => state.sellerToken)
+  return sellerToken ? children : <Navigate to="/login" replace />
+}
 
 function App() {
   return (
@@ -90,11 +93,11 @@ function App() {
             <Route path="/admin/refunds" element={<AdminRoute><AdminRefundPage /></AdminRoute>} />
             <Route path="/admin/notices" element={<AdminRoute><AdminNoticePage /></AdminRoute>} />
             <Route path="/admin/faqs" element={<AdminRoute><AdminFAQPage /></AdminRoute>} />
-            <Route path="/seller" element={<SellerDashboardPage />} />
-            <Route path="/seller/products" element={<SellerProductsPage />} />
-            <Route path="/seller/orders" element={<SellerOrdersPage />} />
-            <Route path="/seller/refunds" element={<SellerRefundPage />} />
-            <Route path="/seller/inquiries" element={<SellerInquiryPage />} />
+            <Route path="/seller" element={<SellerRoute><SellerDashboardPage /></SellerRoute>} />
+<Route path="/seller/products" element={<SellerRoute><SellerProductsPage /></SellerRoute>} />
+<Route path="/seller/orders" element={<SellerRoute><SellerOrdersPage /></SellerRoute>} />
+<Route path="/seller/refunds" element={<SellerRoute><SellerRefundPage /></SellerRoute>} />
+<Route path="/seller/inquiries" element={<SellerRoute><SellerInquiryPage /></SellerRoute>} />
           </Routes>
         </div>
         <Footer />

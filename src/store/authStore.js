@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+
 const useAuthStore = create(
   persist(
     (set) => ({
@@ -27,5 +28,9 @@ const useAuthStore = create(
     }
   )
 )
+
+export const useIsSeller = () => 
+  useAuthStore(s => Boolean(s.sellerToken));
+
 
 export default useAuthStore

@@ -19,19 +19,26 @@ export default function TermsPage() {
   }, [formData.emailVerified, navigate]);
 
   useEffect(() => {
-    // 백엔드 응답: { message: "약관 조회 성공", data: [...] }
-    // getTerms()는 response.data를 반환하므로 res = { message, data: [...] }
-    getTerms().then((res) => {
-      const terms = res.data ?? [];
-      setTermItems(terms.map((term) => ({
-        id: term.termsType,
-        label: term.title,
-        required: term.required ?? term.isRequired ?? false,
-        content: term.content,
-      })));
-    }).catch(() => {
-      setError("약관 정보를 불러오는데 실패했습니다.");
-    });
+    setTermItems([
+      {
+        id: "SERVICE",
+        label: "서비스 이용약관",
+        required: true,
+        content: "제1조 (목적)\n본 약관은 AllPick(이하 '회사')이 제공하는 서비스 이용에 관한 조건 및 절차, 회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.\n\n제2조 (정의)\n'서비스'란 회사가 제공하는 전자상거래 관련 제반 서비스를 의미합니다.\n\n제3조 (약관의 효력 및 변경)\n본 약관은 서비스 화면에 게시하거나 기타의 방법으로 공지함으로써 효력이 발생합니다.",
+      },
+      {
+        id: "PRIVACY",
+        label: "개인정보 수집 및 이용 동의",
+        required: true,
+        content: "제1조 (수집하는 개인정보 항목)\n회사는 회원가입, 서비스 이용을 위해 아래의 개인정보를 수집합니다.\n- 필수항목: 이메일, 비밀번호, 이름, 휴대폰 번호\n- 선택항목: 주소\n\n제2조 (개인정보의 수집 및 이용목적)\n회원 관리, 서비스 제공, 구매 및 결제 처리, 고객 상담 응대\n\n제3조 (개인정보의 보유 및 이용기간)\n회원 탈퇴 시까지 보유하며, 관계 법령에 따라 일정 기간 보관될 수 있습니다.",
+      },
+      {
+        id: "MARKETING",
+        label: "마케팅 정보 수신 동의",
+        required: false,
+        content: "제1조 (마케팅 정보 수신)\n회사는 이용자의 동의를 받아 이메일, SMS 등을 통해 신상품, 이벤트, 할인 정보를 발송할 수 있습니다.\n\n제2조 (동의 철회)\n이용자는 언제든지 마케팅 수신 동의를 철회할 수 있으며, 마이페이지에서 설정 변경이 가능합니다.",
+      },
+    ]);
   }, []);
 
   const handleCheck = (id, checked) => setFormData({ [id]: checked });
