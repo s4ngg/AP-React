@@ -465,7 +465,13 @@ export default function MyPage() {
                         {order.orderItems?.map((item) => (
                           <div key={item.orderItemId} className={styles.orderItem}>
                             <div className={styles.orderItemInfo}>
-                              <p className={styles.orderItemName}>{item.productName}</p>
+                              <p
+                                className={styles.orderItemName}
+                                onClick={() => navigate(`/products/${item.productId}`)}
+                                style={{ cursor: "pointer", textDecoration: "underline" }}
+                              >
+                                {item.productName}
+                              </p>
                               <p className={styles.orderItemMeta}>{item.quantity}개</p>
                               <p className={styles.orderItemPrice}>{Number(item.totalPrice).toLocaleString()}원</p>
                             </div>
