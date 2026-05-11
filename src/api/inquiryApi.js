@@ -3,6 +3,10 @@ import api from "./index";
 export const createInquiry = (data) => api.post("/api/inquiries", data);
 export const getMyInquiries = () => api.get("/api/inquiries/my");
 export const cancelInquiry = (inquiryId) => api.patch(`/api/inquiries/${inquiryId}/cancel`);
-
-// 특정 문의 상세 조회 (현재 미사용 - 문의 상세 페이지 구현 시 사용)
 export const getInquiryById = (inquiryId) => api.get(`/api/inquiries/${inquiryId}`);
+
+// ─── 관리자 ───────────────────────────────────────────────────────────────────
+export const getAdminInquiries = () =>
+  api.get("/api/inquiries/admin").then((res) => res.data.data);
+export const postAdminAnswer = (inquiryId, content) =>
+  api.post(`/api/inquiries/${inquiryId}/answers/admin`, { content }).then((res) => res.data.data);
