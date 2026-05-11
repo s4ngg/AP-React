@@ -1,12 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
     AlertCircle, ChevronRight, ChevronLeft,
     Package, RotateCcw, ArrowLeftRight, MapPin, Truck, X, Camera
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./ReturnForm.module.css";
 import { createClaim } from "../../api/claimApi.js";
 import { getMyOrders } from "../../api/orderApi.js";
 import { uploadClaimAttachment } from "../../api/attachmentApi.js";
+import { useMyClaims } from "../../query/useClaimQuery.js";
+
+const ACTIVE_CLAIM_STATUSES = ["SUBMITTED", "IN_PROGRESS", "COMPLETED"];
 
 const RETURN_REASONS = [
     { value: "", label: "사유를 선택해주세요" },
@@ -63,6 +67,18 @@ export default function ReturnForm({ onBack }) {
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
 
+    const queryClient = useQueryClient();
+    const { data: myClaims = [] } = useMyClaims(showOrderModal);
+
+    const blockedOrderItemIds = useMemo(
+        () => new Set(
+            myClaims
+                .filter(c => ACTIVE_CLAIM_STATUSES.includes(c.status))
+                .map(c => c.orderItemId)
+        ),
+        [myClaims]
+    );
+
     const fileInputRef = useRef(null);
 
     const reasons = type === "RETURN" ? RETURN_REASONS : EXCHANGE_REASONS;
@@ -116,8 +132,7 @@ export default function ReturnForm({ onBack }) {
                 ...(detail && { detail }),
                 ...(type === "EXCHANGE" && exchangeOption && { exchangeOption }),
             };
-            const res = await createClaim(payload);
-            const created = res.data?.data;
+            const created = await createClaim(payload);
 
             if (images.length > 0 && created?.claimId) {
                 for (let i = 0; i < images.length; i++) {
@@ -128,6 +143,7 @@ export default function ReturnForm({ onBack }) {
                 }
             }
 
+            queryClient.invalidateQueries({ queryKey: ["claims", "my"] });
             setSubmittedClaim(created);
             setStep(3);
         } catch {
@@ -375,22 +391,28 @@ export default function ReturnForm({ onBack }) {
                                         <span className={styles.orderDate}>{formatDate(order.orderedAt)}</span>
                                         <span className={styles.orderId}>{order.orderNumber}</span>
                                     </div>
-                                    {order.orderItems.map(item => (
-                                        <div
-                                            key={item.orderItemId}
-                                            className={`${styles.orderProductRow} ${selectedItem?.orderItemId === item.orderItemId ? styles.orderProductRowSelected : ""}`}
-                                            onClick={() => handleItemSelect(order, item)}
-                                        >
-                                            <div className={styles.productImgPlaceholder}><Package size={20} /></div>
-                                            <div className={styles.productInfo}>
-                                                <p className={styles.productName}>{item.productName}</p>
-                                                <p className={styles.productMeta}>수량: {item.quantity}개 · {item.productPrice?.toLocaleString()}원</p>
+                                    {order.orderItems.map(item => {
+                                        const isBlocked = blockedOrderItemIds.has(item.orderItemId);
+                                        return (
+                                            <div
+                                                key={item.orderItemId}
+                                                className={`${styles.orderProductRow} ${selectedItem?.orderItemId === item.orderItemId ? styles.orderProductRowSelected : ""} ${isBlocked ? styles.orderProductRowDisabled : ""}`}
+                                                onClick={() => { if (!isBlocked) handleItemSelect(order, item); }}
+                                            >
+                                                <div className={styles.productImgPlaceholder}><Package size={20} /></div>
+                                                <div className={styles.productInfo}>
+                                                    <p className={styles.productName}>{item.productName}</p>
+                                                    <p className={styles.productMeta}>수량: {item.quantity}개 · {item.productPrice?.toLocaleString()}원</p>
+                                                    {isBlocked && (
+                                                        <p className={styles.blockedLabel}>이미 교환/반품 신청 내역이 있습니다</p>
+                                                    )}
+                                                </div>
+                                                {!isBlocked && selectedItem?.orderItemId === item.orderItemId && (
+                                                    <span className={styles.selectedBadge}>선택됨</span>
+                                                )}
                                             </div>
-                                            {selectedItem?.orderItemId === item.orderItemId && (
-                                                <span className={styles.selectedBadge}>선택됨</span>
-                                            )}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ))}
                         </div>

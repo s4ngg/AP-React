@@ -67,7 +67,7 @@ export default function ReturnHistory({ onBack }) {
     useEffect(() => {
         setLoading(true);
         getMyClaims()
-            .then(res => setClaims(res.data?.data || []))
+            .then(data => setClaims(data || []))
             .catch(() => setClaims([]))
             .finally(() => setLoading(false));
     }, []);
