@@ -1,13 +1,31 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { CheckCircle } from "lucide-react"
 import styles from "./OrderPage.module.css"
+import axios from "axios"
+import useCartStore from "../../store/cartStore"
+import useAuthStore from "../../store/authStore"
 
 export default function OrderSuccessPage() {
     const [searchParams] = useSearchParams()
     const orderNumber = searchParams.get("orderNumber")
     const paymentKey = searchParams.get("paymentKey")
     const amount = searchParams.get("amount")
+    const { clearCart } = useCartStore()
+    const { token } = useAuthStore()
+
+    useEffect(() => {
+        if (orderNumber && paymentKey && amount) {
+            axios.post(`${import.meta.env.VITE_API_URL}/api/orders/confirm`, null, {
+                params: { orderNumber, paymentKey, amount },
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(() => {
+                clearCart()
+            })
+            .catch((e) => console.error("결제 확인 실패", e))
+        }
+    }, [])
 
     return (
         <div className={styles.completePage}>
