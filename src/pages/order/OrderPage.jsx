@@ -47,7 +47,6 @@ export default function OrderPage() {
   const [showCouponList, setShowCouponList] = useState(false)
 
   useEffect(() => {
-    // 배송지는 JWT로 조회
     getDeliveryAddresses()
       .then((data) => {
         setAddresses(data ?? [])
@@ -56,7 +55,6 @@ export default function OrderPage() {
       })
       .catch(() => { })
 
-    // 쿠폰은 memberId PathVariable 필요 → getMember로 id 먼저 조회
     getMember()
       .then((data) => {
         getUnusedCoupons(data.id)
@@ -113,7 +111,7 @@ export default function OrderPage() {
   }
 
   const handlePay = async () => {
-    if (!selectedPay || !selectedAddressId || orderItems.length === 0) return
+    if (!selectedPay || !selectedAddressId || orderItems.length === 0 || totalPrice === 0) return
 
     setIsLoading(true)
     try {
@@ -121,7 +119,7 @@ export default function OrderPage() {
         addressId: selectedAddressId,
         memberCouponId: selectedCouponId ?? null,
         paymentMethod: selectedPay,
-        shippingFee: shippingFee,   // 추가
+        shippingFee: shippingFee,
         orderItems: orderItems.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
@@ -132,10 +130,9 @@ export default function OrderPage() {
       }
       const result = await createOrder(requestBody)
 
-      // 토스 결제창 띄우기
       const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY)
       await tossPayments.requestPayment("카드", {
-        amount: Math.max(0, totalPrice),
+        amount: totalPrice,
         orderId: result.orderNumber,
         orderName: orderItems[0]?.product.name + (orderItems.length > 1 ? ` 외 ${orderItems.length - 1}건` : ""),
         customerName: authUser?.name ?? "고객",
@@ -422,10 +419,15 @@ export default function OrderPage() {
               주문 내용을 확인하였으며,<br />
               구매 진행에 동의합니다.
             </p>
+            {totalPrice === 0 && (
+              <p style={{ color: "#ef4444", fontSize: 13, textAlign: "center", marginBottom: 8 }}>
+                쿠폰 할인 금액이 결제 금액을 초과하여 결제할 수 없습니다.
+              </p>
+            )}
             <button
               className={styles.payBtn}
               onClick={handlePay}
-              disabled={isLoading || !selectedAddressId}
+              disabled={isLoading || !selectedAddressId || totalPrice === 0}
             >
               {isLoading ? "결제 처리 중..." : `${totalPrice.toLocaleString()}원 결제하기`}
             </button>
