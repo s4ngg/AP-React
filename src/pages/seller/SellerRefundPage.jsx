@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
 import { CheckCircle, XCircle, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerClaims, approveClaim, rejectClaim } from "../../api/sellerApi"
+import { getSellerClaims, approveClaim, rejectClaim, getClaimDetail, getClaimAttachments } from "../../api/sellerApi"
 import styles from "./SellerRefundPage.module.css"
 
 const CLAIM_TYPE_LABEL = { EXCHANGE: "교환", RETURN: "환불" }
@@ -79,6 +78,14 @@ export default function SellerRefundPage() {
     }
   }
 
+  const handleOpenDetail = async (req) => {
+    const [detail, attachments] = await Promise.all([
+      getClaimDetail(req.claimId),
+      getClaimAttachments(req.claimId),
+    ])
+    setSelectedRequest({ ...req, ...detail, attachments: attachments ?? [] })
+  }
+
   return (
     <div className={styles.sellerLayout}>
       <SellerSidebar />
@@ -131,7 +138,7 @@ export default function SellerRefundPage() {
                       <td>
                         <button
                           className={styles.buyerBtn}
-                          onClick={() => setSelectedRequest(req)}
+                          onClick={() => handleOpenDetail(req)}
                         >
                           상세보기
                         </button>
@@ -226,6 +233,21 @@ export default function SellerRefundPage() {
                       {selectedRequest.createdAt?.slice(0, 10)}
                     </span>
                   </div>
+                  {selectedRequest.attachments?.length > 0 && (
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>첨부 이미지</span>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {selectedRequest.attachments.map((att) => (
+                          <img
+                            key={att.attachmentId}
+                            src={att.fileUrl}
+                            alt="클레임 첨부"
+                            style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #eee" }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

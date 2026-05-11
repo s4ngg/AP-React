@@ -1,10 +1,9 @@
-import { useState, useMemo, useEffect } from "react"  // ← useEffect 추가
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { X, Search } from "lucide-react"
 import { Link } from "react-router-dom"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import styles from "./SellerOrdersPage.module.css"
-
-// initialOrders 전체 삭제
+import { getSellerOrders, updateSellerOrderStatus } from "../../api/sellerApi"
 
 const STATUS_TABS = ["전체", "결제완료", "상품준비중", "배송중", "배송완료", "취소"]
 
@@ -28,6 +27,24 @@ const NEXT_STATUS_LABEL = {
   배송중: "배송 완료",
 }
 
+const STATUS_TO_BACKEND = {
+  결제완료: "PENDING",
+  상품준비중: "PAID",
+  배송중: "SHIPPING",
+  배송완료: "DELIVERED",
+}
+const PREV_STATUS_MAP = {
+  상품준비중: "결제완료",
+  배송중: "상품준비중",
+  배송완료: "배송중",
+}
+
+const PREV_STATUS_LABEL = {
+  상품준비중: "결제완료로 되돌리기",
+  배송중: "준비중으로 되돌리기",
+  배송완료: "배송중으로 되돌리기",
+}
+
 const SEARCH_TYPES = [
   { value: "memberName", label: "구매자명" },
   { value: "memberPhone", label: "연락처" },
@@ -43,23 +60,25 @@ const SEARCH_PLACEHOLDERS = {
 }
 
 export default function SellerOrdersPage() {
-  const [orders, setOrders] = useState([])        // ← 빈 배열로 변경
-  const [loading, setLoading] = useState(true)    // ← 추가
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("전체")
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [searchType, setSearchType] = useState("memberName")
   const [searchTerm, setSearchTerm] = useState("")
   const [appliedSearch, setAppliedSearch] = useState({ type: "memberName", term: "" })
 
-  // ← 추가: 추후 API 연동
-  useEffect(() => {
-    // TODO: 백엔드 셀러 주문 API 연동 후 아래 주석 해제
-    // getSellerOrders()
-    //   .then((data) => setOrders(data ?? []))
-    //   .catch((err) => console.error("주문 목록 조회 실패", err))
-    //   .finally(() => setLoading(false))
-    setLoading(false)
+  const fetchOrders = useCallback(() => {
+    setLoading(true)
+    getSellerOrders()
+      .then((data) => setOrders(data ?? []))
+      .catch((err) => console.error("주문 목록 조회 실패", err))
+      .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
 
   const handleSearch = () => {
     setAppliedSearch({ type: searchType, term: searchTerm.trim() })
@@ -76,26 +95,48 @@ export default function SellerOrdersPage() {
     if (!term) return list
     const lower = term.toLowerCase()
     return list.filter((o) => {
-      if (type === "orderId") return o.id.toLowerCase().includes(lower)
-      if (type === "memberName") return o.memberName.includes(term)
-      if (type === "memberPhone") return o.memberPhone.includes(term)
-      if (type === "productName") return o.productName.toLowerCase().includes(lower)
+      if (type === "orderId") return o.orderNumber?.toLowerCase().includes(lower)
+      if (type === "memberName") return o.memberName?.includes(term)
+      if (type === "memberPhone") return o.memberPhone?.includes(term)
+      if (type === "productName") return o.productName?.toLowerCase().includes(lower)
       return true
     })
   }, [orders, activeTab, appliedSearch])
 
-  const handleStatusUpdate = (orderId, currentStatus) => {
+  const handleStatusUpdate = async (orderId, currentStatus) => {
     const nextStatus = NEXT_STATUS_MAP[currentStatus]
     if (!nextStatus) return
     if (!window.confirm(`상태를 "${nextStatus}"(으)로 변경하시겠습니까?`)) return
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
-    )
-    if (selectedOrder?.id === orderId) {
-      setSelectedOrder((prev) => ({ ...prev, status: nextStatus }))
+    const backendStatus = STATUS_TO_BACKEND[nextStatus]
+    try {
+      await updateSellerOrderStatus(orderId, backendStatus)
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId === orderId ? { ...o, status: nextStatus } : o))
+      )
+      if (selectedOrder?.orderId === orderId) {
+        setSelectedOrder((prev) => ({ ...prev, status: nextStatus }))
+      }
+    } catch {
+      alert("상태 변경에 실패했습니다.")
     }
   }
-
+  const handleStatusRevert = async (orderId, currentStatus) => {
+    const prevStatus = PREV_STATUS_MAP[currentStatus]
+    if (!prevStatus) return
+    if (!window.confirm(`상태를 "${prevStatus}"(으)로 되돌리시겠습니까?`)) return
+    const backendStatus = STATUS_TO_BACKEND[prevStatus]
+    try {
+      await updateSellerOrderStatus(orderId, backendStatus)
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId === orderId ? { ...o, status: prevStatus } : o))
+      )
+      if (selectedOrder?.orderId === orderId) {
+        setSelectedOrder((prev) => ({ ...prev, status: prevStatus }))
+      }
+    } catch {
+      alert("상태 되돌리기에 실패했습니다.")
+    }
+  }
   return (
     <div className={styles.sellerLayout}>
       <SellerSidebar />
@@ -144,9 +185,7 @@ export default function SellerOrdersPage() {
               >
                 {tab}
                 <span className={styles.tabCount}>
-                  {tab === "전체"
-                    ? orders.length
-                    : orders.filter((o) => o.status === tab).length}
+                  {tab === "전체" ? orders.length : orders.filter((o) => o.status === tab).length}
                 </span>
               </button>
             ))}
@@ -172,8 +211,8 @@ export default function SellerOrdersPage() {
                   <tr><td colSpan={7} className={styles.emptyRow}>해당 조건의 주문이 없습니다.</td></tr>
                 ) : (
                   filteredOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td className={styles.orderId}>{order.id}</td>
+                    <tr key={order.orderId}>
+                      <td className={styles.orderId}>{order.orderNumber}</td>
                       <td>
                         <button className={styles.buyerBtn} onClick={() => setSelectedOrder(order)}>
                           {order.memberName}
@@ -184,23 +223,31 @@ export default function SellerOrdersPage() {
                           {order.productName}
                         </Link>
                       </td>
-                      <td>{order.amount.toLocaleString()}원</td>
-                      <td>{order.createdAt}</td>
+                      <td>{Number(order.amount).toLocaleString()}원</td>
+                      <td>{order.orderedAt}</td>
                       <td>
                         <span className={`${styles.statusBadge} ${styles[STATUS_BADGE_CLASS[order.status]]}`}>
                           {order.status}
                         </span>
                       </td>
-                      <td>
-                        {NEXT_STATUS_MAP[order.status] && (
-                          <button
-                            className={styles.statusBtn}
-                            onClick={() => handleStatusUpdate(order.id, order.status)}
-                          >
-                            {NEXT_STATUS_LABEL[order.status]}
-                          </button>
-                        )}
-                      </td>
+                        <td className={styles.actionBtns}>
+                          {NEXT_STATUS_MAP[order.status] && (
+                            <button
+                              className={styles.statusBtn}
+                              onClick={() => handleStatusUpdate(order.orderId, order.status)}
+                            >
+                              {NEXT_STATUS_LABEL[order.status]}
+                            </button>
+                          )}
+                          {PREV_STATUS_MAP[order.status] && (
+                            <button
+                              className={styles.statusRevertBtn}
+                              onClick={() => handleStatusRevert(order.orderId, order.status)}
+                            >
+                              되돌리기
+                            </button>
+                          )}
+                        </td>
                     </tr>
                   ))
                 )}
@@ -223,11 +270,11 @@ export default function SellerOrdersPage() {
               <div className={styles.detailSection}>
                 <h3 className={styles.detailSectionTitle}>주문 정보</h3>
                 <div className={styles.detailGrid}>
-                  <div className={styles.detailRow}><span className={styles.detailLabel}>주문번호</span><span className={styles.detailValue}>{selectedOrder.id}</span></div>
+                  <div className={styles.detailRow}><span className={styles.detailLabel}>주문번호</span><span className={styles.detailValue}>{selectedOrder.orderNumber}</span></div>
                   <div className={styles.detailRow}><span className={styles.detailLabel}>상품명</span><span className={styles.detailValue}>{selectedOrder.productName}</span></div>
                   <div className={styles.detailRow}><span className={styles.detailLabel}>수량</span><span className={styles.detailValue}>{selectedOrder.quantity}개</span></div>
-                  <div className={styles.detailRow}><span className={styles.detailLabel}>결제금액</span><span className={styles.detailValue}>{selectedOrder.amount.toLocaleString()}원</span></div>
-                  <div className={styles.detailRow}><span className={styles.detailLabel}>주문일</span><span className={styles.detailValue}>{selectedOrder.createdAt}</span></div>
+                  <div className={styles.detailRow}><span className={styles.detailLabel}>결제금액</span><span className={styles.detailValue}>{Number(selectedOrder.amount).toLocaleString()}원</span></div>
+                  <div className={styles.detailRow}><span className={styles.detailLabel}>주문일</span><span className={styles.detailValue}>{selectedOrder.orderedAt}</span></div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>상태</span>
                     <span className={`${styles.statusBadge} ${styles[STATUS_BADGE_CLASS[selectedOrder.status]]}`}>{selectedOrder.status}</span>
@@ -257,9 +304,16 @@ export default function SellerOrdersPage() {
             </div>
             {NEXT_STATUS_MAP[selectedOrder.status] && (
               <div className={styles.modalFooter}>
-                <button className={styles.statusBtn} onClick={() => handleStatusUpdate(selectedOrder.id, selectedOrder.status)}>
-                  {NEXT_STATUS_LABEL[selectedOrder.status]}
-                </button>
+                {NEXT_STATUS_MAP[selectedOrder.status] && (
+                  <button className={styles.statusBtn} onClick={() => handleStatusUpdate(selectedOrder.orderId, selectedOrder.status)}>
+                    {NEXT_STATUS_LABEL[selectedOrder.status]}
+                  </button>
+                )}
+                {PREV_STATUS_MAP[selectedOrder.status] && (
+                  <button className={styles.statusRevertBtn} onClick={() => handleStatusRevert(selectedOrder.orderId, selectedOrder.status)}>
+                    {PREV_STATUS_LABEL[selectedOrder.status]}
+                  </button>
+                )}
               </div>
             )}
           </div>

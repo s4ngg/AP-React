@@ -10,19 +10,20 @@ const getToken = () => {
   }
 }
 
-const getSellerToken = () => {
-  try {
-    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
-    return authStorage?.state?.sellerToken ?? null
-  } catch {
-    return null
-  }
-}
+// getSellerToken 함수 삭제
 
 const getAdminToken = () => {
   try {
     const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
     return authStorage?.state?.adminToken ?? null
+  } catch {
+    return null
+  }
+}
+const getSellerToken = () => {
+  try {
+    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
+    return authStorage?.state?.sellerToken ?? null
   } catch {
     return null
   }
@@ -48,7 +49,7 @@ const isSellerRequest = (url = "") =>
   /^\/api\/inquiries\/[^/]+\/answers\/seller$/.test(url)
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

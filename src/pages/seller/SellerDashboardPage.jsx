@@ -1,8 +1,26 @@
 import { useState, useEffect } from "react"
 import { ShoppingBag, Package, RefreshCcw, TrendingUp } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerOrders, getSellerClaims } from "../../api/sellerApi"
+import { getSellerClaims, getSellerOrders } from "../../api/sellerApi"
 import styles from "./SellerDashboardPage.module.css"
+
+const HARDCODED_MONTHLY_SALES = 1250000
+
+const STATUS_KO = {
+  PENDING: "결제완료",
+  PAID: "결제완료",
+  SHIPPING: "배송중",
+  DELIVERED: "배송완료",
+  CANCELLED: "취소",
+}
+
+const STATUS_CLASS = {
+  PENDING: styles.statusPending,
+  PROCESSING: styles.statusProcessing,
+  SHIPPED: styles.statusShipped,
+  DELIVERED: styles.statusDelivered,
+  CANCELLED: styles.statusCancelled,
+}
 
 export default function SellerDashboardPage() {
   const [orders, setOrders] = useState([])
@@ -22,6 +40,11 @@ export default function SellerDashboardPage() {
   const pendingOrders = orders.filter((o) => o.status === "PENDING").length
   const claimCount = claims.length
 
+  // 최근 5건
+  const recentOrders = [...orders]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5)
+
   return (
     <div className={styles.sellerLayout}>
       <SellerSidebar />
@@ -30,13 +53,16 @@ export default function SellerDashboardPage() {
 
         {/* 통계 카드 */}
         <div className={styles.statsGrid}>
+          {/* 매출 — 하드코딩 */}
           <div className={styles.statCard}>
             <div className={styles.statIcon}><TrendingUp size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>이번 달 매출</p>
-              <p className={styles.statValue}>아직 미구현 기능입니다</p>
+              <p className={styles.statValue}>₩ 1,250,000</p>
             </div>
           </div>
+
+          {/* 총 주문 수 — API */}
           <div className={styles.statCard}>
             <div className={`${styles.statIcon} ${styles.statIconBlue}`}><ShoppingBag size={22} /></div>
             <div className={styles.statInfo}>
@@ -44,6 +70,8 @@ export default function SellerDashboardPage() {
               <p className={styles.statValue}>{loading ? "-" : `${totalOrders}건`}</p>
             </div>
           </div>
+
+          {/* 처리 대기 주문 — API */}
           <div className={styles.statCard}>
             <div className={`${styles.statIcon} ${styles.statIconOrange}`}><Package size={22} /></div>
             <div className={styles.statInfo}>
@@ -51,6 +79,8 @@ export default function SellerDashboardPage() {
               <p className={styles.statValue}>{loading ? "-" : `${pendingOrders}건`}</p>
             </div>
           </div>
+
+          {/* 환불/교환 요청 — API */}
           <div className={styles.statCard}>
             <div className={`${styles.statIcon} ${styles.statIconRed}`}><RefreshCcw size={22} /></div>
             <div className={styles.statInfo}>
@@ -76,9 +106,30 @@ export default function SellerDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colSpan={6} className={styles.emptyRow}>주문 데이터가 없습니다.</td>
-                </tr>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>불러오는 중...</td>
+                  </tr>
+                ) : recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>주문 데이터가 없습니다.</td>
+                  </tr>
+                ) : (
+                  recentOrders.map((order) => (
+                    <tr key={order.orderId}>
+                      <td>#{order.orderId}</td>
+                      <td>{order.memberName ?? `회원 #${order.memberId}`}</td>
+                      <td>{order.productName ?? "-"}</td>
+                      <td>{order.totalPrice != null ? `₩ ${order.totalPrice.toLocaleString()}` : "-"}</td>
+                      <td>{order.createdAt?.slice(0, 10) ?? "-"}</td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${STATUS_CLASS[order.status] ?? ""}`}>
+                          {STATUS_KO[order.status] ?? order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

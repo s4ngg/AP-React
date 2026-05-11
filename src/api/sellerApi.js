@@ -37,11 +37,14 @@ export const updateSeller = (sellerId, data) =>
 export const deleteSeller = (sellerId) =>
   api.delete(`/api/seller/auth/${sellerId}`).then((res) => res.data);
 
+export const getSellerClaims = () =>
+  api.get("/api/claims/seller").then((res) => res.data.data)
+
 export const getSellerOrders = () =>
   api.get("/api/seller/orders").then((res) => res.data.data)
 
-export const getSellerClaims = () =>
-  api.get("/api/claims/seller").then((res) => res.data.data)
+export const updateSellerOrderStatus = (orderId, status) =>
+  api.patch(`/api/seller/orders/${orderId}/status`, { status }).then((res) => res.data.data)
 
 export const approveClaim = (claimId) =>
   api.patch(`/api/claims/${claimId}/approve`).then((res) => res.data)
@@ -76,3 +79,16 @@ export const approveSeller = (sellerId) =>
  */
 export const rejectSeller = (sellerId, rejectReason) =>
   api.patch(`/api/admin/sellers/${sellerId}/reject`, { rejectReason }).then((res) => res.data)
+
+export const getClaimDetail = (claimId) =>
+  api.get(`/api/claims/${claimId}`).then((res) => res.data.data)
+
+export const getClaimAttachments = (claimId) =>
+  api.get(`/api/attachments/claim/${claimId}`).then((res) => res.data.data)
+/**
+ * 문의 답변 등록
+ * @param {number} inquiryId - 문의 ID
+ * @param {string} content   - 답변 내용
+ */
+export const replyToInquiry = (inquiryId, content) =>
+  api.post(`/api/inquiries/${inquiryId}/answers/seller`, { content }).then((res) => res.data)

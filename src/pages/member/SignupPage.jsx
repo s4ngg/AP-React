@@ -6,7 +6,8 @@ import { AuthLayout } from "../../components/common/AuthLayout";
 import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { useSignupStore } from "../../store/signup-store";
 import styles from "./SignupPage.module.css";
-import { checkEmailDuplicate, validateBusinessNumber, sendSmsCode, verifySmsCode } from "../../api/authApi";
+import { checkEmailDuplicate, validateBusinessNumber } from "../../api/authApi";
+import { sendSmsCode, verifySmsCode } from "../../api/authApi";
 
 export default function SignupPage({ isSeller = false }) {
   const navigate = useNavigate();
@@ -72,7 +73,6 @@ export default function SignupPage({ isSeller = false }) {
       setVerifyingCode(false);
     }
   };
-
   const formatPhone = (value) => {
     const digits = value.replace(/\D/g, "").slice(0, 11)
     if (digits.length < 4) return digits
@@ -219,8 +219,8 @@ export default function SignupPage({ isSeller = false }) {
                   {...register("email", {
                     required: "이메일을 입력해주세요",
                     pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "올바른 이메일 형식이 아닙니다" },
+                    onChange: () => { setEmailChecked(false); setEmailAvailable(false); },
                   })}
-                  onChange={() => { setEmailChecked(false); setEmailAvailable(false); }}
                 />
                 <button type="button" onClick={handleCheckEmail} disabled={checkingEmail || !email} className={styles.checkBtn}>
                   {checkingEmail ? "확인 중..." : "중복 확인"}
@@ -247,21 +247,22 @@ export default function SignupPage({ isSeller = false }) {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {password && (
-                <div className={styles.passwordValidation}>
-                  {[
-                    { key: "hasLength", label: "8자 이상" },
-                    { key: "hasLetter", label: "영문 포함" },
-                    { key: "hasUppercase", label: "대문자 포함" },
-                    { key: "hasNumber", label: "숫자 포함" },
-                    { key: "hasSpecial", label: "특수문자 포함" },
-                  ].map(({ key, label }) => (
-                    <span key={key} className={`${styles.validItem} ${passwordValidation[key] ? styles.validItemOk : styles.validItemFail}`}>
-                      {passwordValidation[key] ? <Check size={12} /> : <X size={12} />} {label}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div className={styles.passwordValidation}>
+                {[
+                  { key: "hasLength", label: "8자 이상" },
+                  { key: "hasLetter", label: "영문 포함" },
+                  { key: "hasUppercase", label: "대문자 포함" },
+                  { key: "hasNumber", label: "숫자 포함" },
+                  { key: "hasSpecial", label: "특수문자 포함" },
+                ].map(({ key, label }) => (
+                  <span key={key} className={`${styles.validItem} ${!password ? styles.validItemFail
+                    : passwordValidation[key] ? styles.validItemOk
+                      : styles.validItemFail}`}>
+                    {passwordValidation[key] ? <Check size={12} /> : <X size={12} />} {label}
+                  </span>
+                ))}
+              </div>
+
             </div>
 
             <div className={styles.fieldGroup}>
@@ -270,7 +271,7 @@ export default function SignupPage({ isSeller = false }) {
                 <input
                   type={showPasswordConfirm ? "text" : "password"}
                   placeholder="비밀번호를 다시 입력해주세요"
-                  className={`${styles.input} ${styles.inputWithButton} ${errors.passwordConfirm ? styles.inputError : ""}`}
+                  className={`${styles.input} ${styles.inputWithButton}`}
                   {...register("passwordConfirm", { required: "비밀번호 확인을 입력해주세요" })}
                 />
                 <button type="button" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} className={styles.eyeButton}>
@@ -329,6 +330,7 @@ export default function SignupPage({ isSeller = false }) {
               </div>
               {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
 
+              {/* 인증번호 입력 */}
               {phoneSent && !phoneVerified && (
                 <div className={styles.emailRow} style={{ marginTop: 8 }}>
                   <input

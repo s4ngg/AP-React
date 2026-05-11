@@ -130,8 +130,14 @@ export default function ReturnForm({ onBack }) {
 
             setSubmittedClaim(created);
             setStep(3);
-        } catch {
-            alert("신청에 실패했습니다. 다시 시도해주세요.");
+        } catch (err) {
+            // ↓ 이 부분만 수정
+            const status = err.response?.status;
+            if (status === 409) {
+                alert("이미 진행 중인 교환/반품 신청이 있습니다.\n마이페이지에서 기존 신청을 취소한 후 다시 시도해주세요.");
+            } else {
+                alert("신청에 실패했습니다. 다시 시도해주세요.");
+            }
         } finally {
             setSubmitting(false);
         }
