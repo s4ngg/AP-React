@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Search, X, Camera } from "lucide-react";
 import styles from "./InquiryForm.module.css";
 import { createInquiry, getMyInquiries, cancelInquiry } from "../../api/inquiryApi.js";
@@ -58,8 +58,8 @@ const formatDate = (dateStr) => {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 };
 
-export default function InquiryForm() {
-    const [view, setView] = useState("form"); // "form" | "complete" | "history"
+export default function InquiryForm({ initialView = "form", onBack }) {
+    const [view, setView] = useState(initialView); // "form" | "complete" | "history"
     const [inquiryType, setInquiryType] = useState("");
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -79,6 +79,15 @@ export default function InquiryForm() {
     const [openInquiryId, setOpenInquiryId] = useState(null);
 
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (initialView !== "history") return;
+        setHistoryLoading(true);
+        getMyInquiries()
+            .then((res) => setMyInquiries(res.data?.data || []))
+            .catch(() => setMyInquiries([]))
+            .finally(() => setHistoryLoading(false));
+    }, [initialView]);
 
     const resetForm = () => {
         setInquiryType("");
@@ -187,8 +196,8 @@ export default function InquiryForm() {
     if (view === "history") {
         return (
             <div className={styles.formContainer}>
-                <button className={styles.backBtn} onClick={() => setView("form")}>
-                    <ChevronLeft size={16} /> 문의하기로 돌아가기
+                <button className={styles.backBtn} onClick={() => onBack ? onBack() : setView("form")}>
+                    <ChevronLeft size={16} /> {onBack ? "고객센터 홈으로" : "문의하기로 돌아가기"}
                 </button>
                 <h4 className={styles.historyTitle}>내 문의 내역</h4>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from "react-router-dom";
-import { Headset, Megaphone, HelpCircle, MessageSquare, RotateCcw, ChevronRight, Search } from "lucide-react";
+import { Headset, Megaphone, HelpCircle, MessageSquare, RotateCcw, ChevronRight, Search, ClipboardList } from "lucide-react";
+import useAuthStore from "../../store/authStore.js";
 import styles from "./CustomerPage.module.css";
 import NoticeList from "../../components/customer/NoticeList.jsx";
 // import NoticeDetail from "../../components/customer/NoticeDetail.jsx";
@@ -11,7 +12,7 @@ import ReturnForm from "../../components/customer/ReturnForm.jsx";
 import ReturnHistory from "../../components/customer/ReturnHistory.jsx";
 import { getNotices } from "../../api/noticeApi.js";
 
-const VALID_TABS = ["home", "notice", "faq", "inquiry", "return"];
+const VALID_TABS = ["home", "notice", "faq", "inquiry", "return", "my-inquiries"];
 
 export default function CustomerPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -21,6 +22,7 @@ export default function CustomerPage() {
     const [returnView, setReturnView] = useState("guide");
     const [notices, setNotices] = useState([]);
     const [noticesLoading, setNoticesLoading] = useState(false);
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
     useEffect(() => {
         if (currentTab !== "notice" || notices.length > 0) return;
@@ -48,6 +50,7 @@ export default function CustomerPage() {
         { id: "notice", name: "공지사항", icon: <Megaphone size={18} /> },
         { id: "faq", name: "자주 묻는 질문", icon: <HelpCircle size={18} /> },
         { id: "inquiry", name: "1:1 문의", icon: <MessageSquare size={18} /> },
+        ...(isLoggedIn ? [{ id: "my-inquiries", name: "내 문의 내역", icon: <ClipboardList size={18} /> }] : []),
         { id: "return", name: "교환/반품 신청", icon: <RotateCcw size={18} /> },
     ];
 
@@ -92,14 +95,27 @@ export default function CustomerPage() {
                                 <button className={styles.cardBtn}>문의 등록 <ChevronRight size={16} /></button>
                             </div>
 
-                            <div className={styles.quickCard} onClick={() => handleTabChange("faq")}>
-                                <div className={styles.cardHeader}>
-                                    <div className={styles.iconCircle}><Search size={24} /></div>
-                                    <h4>자주 묻는 질문</h4>
+                            {isLoggedIn && (
+                                <div className={styles.quickCard} onClick={() => handleTabChange("my-inquiries")}>
+                                    <div className={styles.cardHeader}>
+                                        <div className={styles.iconCircle}><ClipboardList size={24} /></div>
+                                        <h4>내 문의 내역</h4>
+                                    </div>
+                                    <p>접수한 문의와 답변을 확인하세요.</p>
+                                    <button className={styles.cardBtnSub}>내역 조회 <ChevronRight size={16} /></button>
                                 </div>
-                                <p>카테고리별 FAQ를 확인하세요.</p>
-                                <button className={styles.cardBtnSub}>FAQ 조회 <ChevronRight size={16} /></button>
-                            </div>
+                            )}
+
+                            {!isLoggedIn && (
+                                <div className={styles.quickCard} onClick={() => handleTabChange("faq")}>
+                                    <div className={styles.cardHeader}>
+                                        <div className={styles.iconCircle}><Search size={24} /></div>
+                                        <h4>자주 묻는 질문</h4>
+                                    </div>
+                                    <p>카테고리별 FAQ를 확인하세요.</p>
+                                    <button className={styles.cardBtnSub}>FAQ 조회 <ChevronRight size={16} /></button>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -127,7 +143,15 @@ export default function CustomerPage() {
                     {/* 4. 1:1 문의 탭 */}
                     {currentTab === "inquiry" && <InquiryForm />}
 
-                    {/* 5. 교환/반품 탭 */}
+                    {/* 5. 내 문의 내역 탭 */}
+                    {currentTab === "my-inquiries" && (
+                        <InquiryForm
+                            initialView="history"
+                            onBack={() => handleTabChange("home")}
+                        />
+                    )}
+
+                    {/* 6. 교환/반품 탭 */}
                     {currentTab === "return" && (
                         returnView === "form"
                             ? <ReturnForm onBack={() => setReturnView("guide")} />
