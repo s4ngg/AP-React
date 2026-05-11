@@ -10,11 +10,13 @@ const useAuthStore = create(
       sellerToken: null,
       adminToken: null,
       adminRole: null,
+      adminName: null,
 
       setUser: (user, token) => set({ user, isLoggedIn: true, token }),
       setSellerToken: (sellerToken) => set({ sellerToken }),
       setAdminToken: (adminToken) => set({ adminToken }),
       setAdminRole: (adminRole) => set({ adminRole }),
+      setAdminName: (adminName) => set({ adminName }),
       logout: () =>
         set({
           user: null,
@@ -23,6 +25,7 @@ const useAuthStore = create(
           sellerToken: null,
           adminToken: null,
           adminRole: null,
+          adminName: null,
         }),
     }),
     {
