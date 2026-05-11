@@ -53,6 +53,9 @@ export const rejectClaim = (claimId, rejectReason) =>
 export const getSellerInquiries = () =>
   api.get("/api/inquiries/seller").then((res) => res.data.data)
 
+export const answerSellerInquiry = (inquiryId, content) =>
+  api.post(`/api/inquiries/${inquiryId}/answers/seller`, { content }).then((res) => res.data.data)
+
 /**
  * 판매자 본인 상품 목록 조회
  * GET /api/products/seller

@@ -39,6 +39,14 @@ const isAdminInquiryRequest = (url = "") =>
 const isAdminRequest = (url = "") =>
   (url.startsWith("/api/admin/") || (url.startsWith("/api/admins") && url !== "/api/admins/login") || isAdminClaimRequest(url) || isAdminInquiryRequest(url))
 
+const isSellerRequest = (url = "") =>
+  url.startsWith("/api/seller/") ||
+  url.startsWith("/api/sellers/") ||
+  url === "/api/products/seller" ||
+  url === "/api/claims/seller" ||
+  url === "/api/inquiries/seller" ||
+  /^\/api\/inquiries\/[^/]+\/answers\/seller$/.test(url)
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",
   timeout: 10000,
@@ -55,7 +63,7 @@ api.interceptors.request.use(
 
     if (isAdminRequest(config.url) && adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`
-    } else if (config.url?.includes("/products") && sellerToken) {
+    } else if (isSellerRequest(config.url) && sellerToken) {
       config.headers.Authorization = `Bearer ${sellerToken}`
     } else if (token) {
       config.headers.Authorization = `Bearer ${token}`
