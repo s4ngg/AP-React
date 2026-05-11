@@ -85,7 +85,11 @@ export default function AiRecommendSection() {
   const handleRefresh = async () => {
     setIsLoading(true)
     try {
-      const result = await getAiRecommendations(data.categories, [])
+      const userCategories = data.categories.length > 0
+        ? data.categories
+        : ["뷰티", "패션", "식품", "주류", "리빙"]
+
+      const result = await getAiRecommendations(userCategories, [])
       const recommendedCategories = result.recommendedCategories || []
 
       let products = []
