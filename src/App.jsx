@@ -97,10 +97,10 @@ function App() {
             <Route path="/admin/notices" element={<AdminRoute><AdminNoticePage /></AdminRoute>} />
             <Route path="/admin/faqs" element={<AdminRoute><AdminFAQPage /></AdminRoute>} />
             <Route path="/seller" element={<SellerRoute><SellerDashboardPage /></SellerRoute>} />
-<Route path="/seller/products" element={<SellerRoute><SellerProductsPage /></SellerRoute>} />
-<Route path="/seller/orders" element={<SellerRoute><SellerOrdersPage /></SellerRoute>} />
-<Route path="/seller/refunds" element={<SellerRoute><SellerRefundPage /></SellerRoute>} />
-<Route path="/seller/inquiries" element={<SellerRoute><SellerInquiryPage /></SellerRoute>} />
+            <Route path="/seller/products" element={<SellerRoute><SellerProductsPage /></SellerRoute>} />
+            <Route path="/seller/orders" element={<SellerRoute><SellerOrdersPage /></SellerRoute>} />
+            <Route path="/seller/refunds" element={<SellerRoute><SellerRefundPage /></SellerRoute>} />
+            <Route path="/seller/inquiries" element={<SellerRoute><SellerInquiryPage /></SellerRoute>} />
           </Routes>
         </div>
         <Footer />

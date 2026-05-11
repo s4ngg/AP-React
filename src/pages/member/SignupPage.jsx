@@ -267,7 +267,17 @@ export default function SignupPage({ isSeller = false }) {
 
             <div className={styles.fieldGroup}>
               <label className={styles.label}>비밀번호 확인</label>
-              <div className={styles.inputWrapper}></div>
+              <div className={styles.inputWrapper}>
+                <input
+                  type={showPasswordConfirm ? "text" : "password"}
+                  placeholder="비밀번호를 다시 입력해주세요"
+                  className={`${styles.input} ${styles.inputWithButton}`}
+                  {...register("passwordConfirm", { required: "비밀번호 확인을 입력해주세요" })}
+                />
+                <button type="button" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} className={styles.eyeButton}>
+                  {showPasswordConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {passwordConfirm && (
                 <p className={`${styles.passwordMatch} ${passwordsMatch ? styles.matchOk : styles.matchFail}`}>
                   {passwordsMatch ? <><Check size={14} /> 비밀번호가 일치합니다</> : <><X size={14} /> 비밀번호가 일치하지 않습니다</>}
