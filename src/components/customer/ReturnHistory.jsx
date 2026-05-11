@@ -59,7 +59,8 @@ function ProgressBar({ status }) {
 export default function ReturnHistory({ onBack }) {
     const [expandedId, setExpandedId] = useState(null);
     const [filter, setFilter] = useState("전체");
-    const { data: claims = [], isLoading: loading, isError } = useMyClaims();
+    const { data: claims = [], isLoading, isFetching, isError } = useMyClaims();
+    const loading = isLoading || isFetching;
 
     const FILTERS = ["전체", "반품", "교환"];
 
