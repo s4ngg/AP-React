@@ -213,7 +213,7 @@ export default function InquiryForm({ initialView = "form", onBack }) {
                 {!historyLoading && myInquiries.length === 0 && (
                     <p style={{ padding: "40px 0", textAlign: "center", color: "#6b7280" }}>접수된 문의가 없습니다.</p>
                 )}
-                {!historyLoading && myInquiries.map((inq) => {
+                {!historyLoading && myInquiries.filter(inq => inq.status !== "CANCELLED").map((inq) => {
                     const st = INQUIRY_STATUS_STYLE[inq.status] || {};
                     const isOpen = openInquiryId === inq.inquiryId;
                     return (
