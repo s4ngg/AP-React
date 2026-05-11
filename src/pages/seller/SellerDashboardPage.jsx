@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react"
 import { ShoppingBag, Package, RefreshCcw, TrendingUp } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
+<<<<<<< HEAD
 import { getSellerClaims, getSellerOrders } from "../../api/sellerApi"
+=======
+import { getSellerOrders, getSellerClaims } from "../../api/sellerApi"
+>>>>>>> 17af2183dd1521b84fc2524771620ae6e9ab8dcb
 import styles from "./SellerDashboardPage.module.css"
 
 const HARDCODED_MONTHLY_SALES = 1250000
@@ -40,11 +44,14 @@ export default function SellerDashboardPage() {
   const pendingOrders = orders.filter((o) => o.status === "PENDING").length
   const claimCount = claims.length
 
+<<<<<<< HEAD
   // 최근 5건
   const recentOrders = [...orders]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5)
 
+=======
+>>>>>>> 17af2183dd1521b84fc2524771620ae6e9ab8dcb
   return (
     <div className={styles.sellerLayout}>
       <SellerSidebar />
@@ -58,7 +65,11 @@ export default function SellerDashboardPage() {
             <div className={styles.statIcon}><TrendingUp size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>이번 달 매출</p>
+<<<<<<< HEAD
               <p className={styles.statValue}>₩ 1,250,000</p>
+=======
+              <p className={styles.statValue}>아직 미구현 기능입니다</p>
+>>>>>>> 17af2183dd1521b84fc2524771620ae6e9ab8dcb
             </div>
           </div>
 

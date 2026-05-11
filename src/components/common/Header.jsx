@@ -1,17 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones, Store } from "lucide-react"
 import useAuthStore from "../../store/authStore"
 import useCartStore from "../../store/cartStore"
+import { getChildCategories, getParentCategories } from "../../api/productApi"
 import styles from "./Header.module.css"
-
-const categoryData = {
-  뷰티: ["메이크업", "스킨케어", "남성화장품", "향수"],
-  패션: ["여성의류", "남성의류", "잡화·ACC"],
-  식품: ["과일·견과", "축산·수산", "디저트"],
-  주류: ["와인", "양주", "맥주·기타"],
-  리빙: ["캔들디퓨저 인센스", "조명·무드등", "가구·DIY", "침구·패브릭"],
-}
 
 const navLinks = [
   { name: "특별할인" },
@@ -27,7 +20,49 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
-  const [hoveredCategory, setHoveredCategory] = useState("뷰티")
+  const [parentCategories, setParentCategories] = useState([])
+  const [childCategoriesByParentId, setChildCategoriesByParentId] = useState({})
+  const [hoveredCategoryId, setHoveredCategoryId] = useState(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadCategories = async () => {
+      try {
+        const parentResponse = await getParentCategories()
+        const parents = parentResponse.data ?? []
+
+        const childEntries = await Promise.all(
+          parents.map(async (parent) => {
+            try {
+              const childResponse = await getChildCategories(parent.parentCategoryId)
+              return [parent.parentCategoryId, childResponse.data ?? []]
+            } catch {
+              return [parent.parentCategoryId, []]
+            }
+          })
+        )
+
+        if (!isMounted) return
+
+        setParentCategories(parents)
+        setChildCategoriesByParentId(Object.fromEntries(childEntries))
+        setHoveredCategoryId(parents[0]?.parentCategoryId ?? null)
+      } catch {
+        if (!isMounted) return
+
+        setParentCategories([])
+        setChildCategoriesByParentId({})
+        setHoveredCategoryId(null)
+      }
+    }
+
+    loadCategories()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -40,6 +75,26 @@ export default function Header() {
   }
 
   const userInitial = user?.name?.charAt(0) || "MY"
+  const hoveredParentCategory = parentCategories.find(
+    (category) => category.parentCategoryId === hoveredCategoryId
+  )
+  const hoveredChildCategories = hoveredCategoryId
+    ? childCategoriesByParentId[hoveredCategoryId] ?? []
+    : []
+
+  const moveToParentCategory = (category) => {
+    setCategoryOpen(false)
+    setMobileMenuOpen(false)
+    navigate(`/products?category=${encodeURIComponent(category.categoryName)}`)
+  }
+
+  const moveToChildCategory = (parentCategory, childCategory) => {
+    setCategoryOpen(false)
+    setMobileMenuOpen(false)
+    navigate(
+      `/products?category=${encodeURIComponent(parentCategory.categoryName)}&subCategory=${encodeURIComponent(childCategory.categoryName)}`
+    )
+  }
 
   return (
     <header className={styles.header}>
@@ -150,36 +205,28 @@ export default function Header() {
             {categoryOpen && (
               <div className={styles.categoryDropdown}>
                 <div className={styles.mainCategoryList}>
-                  {Object.keys(categoryData).map((categoryName) => (
+                  {parentCategories.map((category) => (
                     <button
-                      key={categoryName}
+                      key={category.parentCategoryId}
                       type="button"
-                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""}`}
-                      onMouseEnter={() => setHoveredCategory(categoryName)}
-                      onClick={() => {
-                        setCategoryOpen(false)
-                        navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-                      }}
+                      className={`${styles.mainCategoryItem} ${hoveredCategoryId === category.parentCategoryId ? styles.activeMainCategoryItem : ""}`}
+                      onMouseEnter={() => setHoveredCategoryId(category.parentCategoryId)}
+                      onClick={() => moveToParentCategory(category)}
                     >
-                      {categoryName}
+                      {category.categoryName}
                     </button>
                   ))}
                 </div>
 
                 <div className={styles.subCategoryList}>
-                  {categoryData[hoveredCategory].map((subCategory) => (
+                  {hoveredParentCategory && hoveredChildCategories.map((subCategory) => (
                     <button
-                      key={subCategory}
+                      key={subCategory.childCategoryId}
                       type="button"
                       className={styles.subCategoryItem}
-                      onClick={() => {
-                        setCategoryOpen(false)
-                        navigate(
-                          `/products?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`
-                        )
-                      }}
+                      onClick={() => moveToChildCategory(hoveredParentCategory, subCategory)}
                     >
-                      {subCategory}
+                      {subCategory.categoryName}
                     </button>
                   ))}
                 </div>
@@ -202,33 +249,25 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
           <p className={styles.mobileMenuLabel}>카테고리</p>
-          {Object.keys(categoryData).map((categoryName) => (
-            <div key={categoryName} className={styles.mobileCategoryGroup}>
+          {parentCategories.map((category) => (
+            <div key={category.parentCategoryId} className={styles.mobileCategoryGroup}>
               <button
                 type="button"
                 className={styles.mobileMenuItemButton}
-                onClick={() => {
-                  setMobileMenuOpen(false)
-                  navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-                }}
+                onClick={() => moveToParentCategory(category)}
               >
-                {categoryName}
+                {category.categoryName}
               </button>
 
               <div className={styles.mobileSubCategoryList}>
-                {categoryData[categoryName].map((subCategory) => (
+                {(childCategoriesByParentId[category.parentCategoryId] ?? []).map((subCategory) => (
                   <button
-                    key={subCategory}
+                    key={subCategory.childCategoryId}
                     type="button"
                     className={styles.mobileSubCategoryItem}
-                    onClick={() => {
-                      setMobileMenuOpen(false)
-                      navigate(
-                        `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
-                      )
-                    }}
+                    onClick={() => moveToChildCategory(category, subCategory)}
                   >
-                    {subCategory}
+                    {subCategory.categoryName}
                   </button>
                 ))}
               </div>

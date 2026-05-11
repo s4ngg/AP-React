@@ -1,14 +1,8 @@
 import { Link } from "react-router-dom"
+import { useEffect, useState } from "react"
 import { Phone, Mail } from "lucide-react"
+import { getParentCategories } from "../../api/productApi"
 import styles from "./Footer.module.css"
-
-const quickLinks = [
-  { name: "뷰티", href: "/products?category=beauty" },
-  { name: "패션", href: "/products?category=fashion" },
-  { name: "식품", href: "/products?category=food" },
-  { name: "주류", href: "/products?category=alcohol" },
-  { name: "리빙", href: "/products?category=living" },
-]
 
 const customerLinks = [
   { name: "공지사항", href: "/customer?tab=notice" },
@@ -18,13 +12,46 @@ const customerLinks = [
 ]
 
 export default function Footer() {
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadCategories = async () => {
+      try {
+        const response = await getParentCategories()
+        if (!isMounted) return
+
+        setCategories(response.data ?? [])
+      } catch {
+        if (!isMounted) return
+
+        setCategories([])
+      }
+    }
+
+    loadCategories()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const categoryNames = categories
+    .map((category) => category.categoryName)
+    .filter(Boolean)
+    .join(", ")
+  const description = categoryNames
+    ? `${categoryNames}까지 한 곳에서!`
+    : "AllPick에서 다양한 상품을 만나보세요!"
+
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div className={styles.grid}>
           <div>
             <Link to="/" className={styles.logo}>AllPick</Link>
-            <p className={styles.desc}>뷰티, 패션, 식품, 주류, 리빙까지 한 곳에서!</p>
+            <p className={styles.desc}>{description}</p>
             <div className={styles.contactList}>
               <div className={styles.contactItem}>
                 <Phone size={14} />
@@ -41,9 +68,11 @@ export default function Footer() {
           <div>
             <h3 className={styles.colTitle}>카테고리</h3>
             <ul className={styles.linkList}>
-              {quickLinks.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href}>{link.name}</Link>
+              {categories.map((category) => (
+                <li key={category.parentCategoryId}>
+                  <Link to={`/products?category=${encodeURIComponent(category.categoryName)}`}>
+                    {category.categoryName}
+                  </Link>
                 </li>
               ))}
             </ul>

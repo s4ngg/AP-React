@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { CheckCircle, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { formatDate } from "../../utils/format"
 import {
   getAdminClaims,
   rejectAdminClaim,
@@ -30,10 +31,6 @@ const pendingStatuses = ["SUBMITTED", "IN_PROGRESS"]
 
 const formatPrice = (amount) => Number(amount ?? 0).toLocaleString()
 
-const formatDate = (date) => {
-  if (!date) return "-"
-  return date.slice(0, 10)
-}
 
 export default function AdminRefundPage() {
   const [claims, setClaims] = useState([])

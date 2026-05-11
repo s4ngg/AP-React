@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import { getAdminOrders } from "../../api/adminApi"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminOrdersPage.module.css"
 
 const statusTabs = [
@@ -30,10 +31,6 @@ const statusBadgeClass = {
 
 const formatPrice = (amount) => Number(amount ?? 0).toLocaleString()
 
-const formatDate = (date) => {
-  if (!date) return "-"
-  return date.slice(0, 10)
-}
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([])
