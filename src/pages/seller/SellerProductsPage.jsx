@@ -34,7 +34,7 @@ const EMPTY_FORM = {
   thumbnailUrl: "",
   categoryId: "",
   categoryIds: [],
-  optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
+  optionList: [{ _id: Date.now(), optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
 
@@ -113,7 +113,7 @@ export default function SellerProductsPage() {
       ...prev,
       optionList: [
         ...prev.optionList,
-        { optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 },
+        { _id: Date.now(), optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 },
       ],
     }))
   }
@@ -134,6 +134,7 @@ export default function SellerProductsPage() {
       setFormData((prev) => ({ ...prev, thumbnailUrl: url }))
     } catch {
       e.target.value = ""
+      alert("이미지 업로드에 실패했습니다.")
     } finally {
       setIsUploading(false)
     }
@@ -164,9 +165,9 @@ export default function SellerProductsPage() {
         ...formData,
         price: Number(formData.price),
         childCategoryId: Number(formData.categoryId),
-        parentCategoryId: Number(selectedParentId),  // ← 이 줄 추가
+        parentCategoryId: Number(selectedParentId),
         description: formData.description.trim() || formData.productName,
-        optionList: formData.optionList.map((o) => ({
+        optionList: formData.optionList.map(({ _id, ...o }) => ({
           ...o,
           additionalPrice: Number(o.additionalPrice) || 0,
           stockQuantity: Number(o.stockQuantity) || 0,
@@ -210,8 +211,6 @@ export default function SellerProductsPage() {
     } catch (err) {
       const msg = err?.response?.data?.message || "수정 중 오류가 발생했습니다."
       alert(msg)
-      const fresh = await getSellerProducts().catch(() => null)
-      if (fresh) setProducts(fresh)
     } finally {
       setIsEditSubmitting(false)
     }
@@ -515,7 +514,7 @@ export default function SellerProductsPage() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>상품 옵션 *</label>
                   {formData.optionList.map((opt, idx) => (
-                    <div key={idx} className={styles.optionRow}>
+                    <div key={opt._id} className={styles.optionRow}>
                       <input className={styles.formInput} placeholder="옵션명 (예: 사이즈)" value={opt.optionName} onChange={(e) => handleOptionChange(idx, "optionName", e.target.value)} />
                       <input className={styles.formInput} placeholder="옵션값 (예: L)" value={opt.optionValue} onChange={(e) => handleOptionChange(idx, "optionValue", e.target.value)} />
                       <input
@@ -547,7 +546,7 @@ export default function SellerProductsPage() {
                 <button
                   type="submit"
                   className={styles.submitBtn}
-                  disabled={isSubmitting || (!!selectedParentId && !childCategoriesLoading && childCategories.length === 0)}
+                  disabled={isSubmitting || isUploading || (!!selectedParentId && !childCategoriesLoading && childCategories.length === 0)}
                 >
                   {isSubmitting ? "등록 중..." : "등록하기"}
                 </button>

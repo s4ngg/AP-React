@@ -10,8 +10,6 @@ const getToken = () => {
   }
 }
 
-// getSellerToken 함수 삭제
-
 const getAdminToken = () => {
   try {
     const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
@@ -58,6 +56,7 @@ const isSellerRequest = (url = "", method = "get") =>
   url.startsWith("/api/seller/") ||
   url.startsWith("/api/sellers/") ||
   url === "/api/products/seller" ||
+  url === "/api/products/images" ||
   isSellerProductMutationRequest(method, url) ||
   url === "/api/claims/seller" ||
   url === "/api/inquiries/seller" ||
@@ -73,6 +72,10 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"]
+    }
+
     const adminToken = getAdminToken()
     const sellerToken = getSellerToken()
     const token = getToken()

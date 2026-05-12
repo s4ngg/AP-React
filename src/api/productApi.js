@@ -35,9 +35,7 @@ export const uploadProductImage = (file) => {
   const formData = new FormData()
   formData.append("image", file)
   return api
-    .post("/api/products/images", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
+    .post("/api/products/images", formData)
     .then((res) => res.data.data)
 }
 export const updateProduct = (productId, data) =>
