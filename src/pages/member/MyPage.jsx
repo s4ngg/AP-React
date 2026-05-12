@@ -3,7 +3,7 @@ import styles from "./MyPage.module.css"
 import useAuthStore from "../../store/authStore"
 import { getMember, updateMember, changePassword, deleteMember } from "../../api/memberApi"
 import { getMemberCoupons } from "../../api/couponApi"
-import { getMembershipHistory } from "../../api/membershipApi"
+import { getMembershipHistory, getMembershipStatus } from "../../api/membershipApi"
 import {
   getMyOrders,
   cancelOrder,
@@ -83,6 +83,7 @@ export default function MyPage() {
   // 멤버십
   const [memberGrade, setMemberGrade] = useState("NORMAL")
   const [membershipHistory, setMembershipHistory] = useState([])
+  const [membershipStatus, setMembershipStatus] = useState(null)
   const [historyLoading, setHistoryLoading] = useState(false)
 
   // 쿠폰
@@ -176,7 +177,12 @@ export default function MyPage() {
   // 멤버십 탭 진입 시 API 호출
   useEffect(() => {
     if (activeTab !== "membership" || !memberId) return
-    const timeoutId = setTimeout(fetchMembershipHistory, 0)
+    const timeoutId = setTimeout(() => {
+      fetchMembershipHistory()
+      getMembershipStatus()
+        .then((data) => setMembershipStatus(data))
+        .catch(() => { })
+    }, 0)
     return () => clearTimeout(timeoutId)
   }, [activeTab, memberId, fetchMembershipHistory])
 
