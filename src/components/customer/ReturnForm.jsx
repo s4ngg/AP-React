@@ -402,7 +402,7 @@ export default function ReturnForm({ onBack }) {
                         />
                     </div>
 
-                    {isShippingFeeReason(reason) && (
+                    {isShippingFeeReason(reason) && pickup === "COURIER" && (
                         <div className={styles.feeInfoBox}>
                             <AlertCircle size={16} />
                             <p>{SHIPPING_FEE_NOTICE}</p>

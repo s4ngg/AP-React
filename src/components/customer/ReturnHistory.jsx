@@ -139,9 +139,9 @@ export default function ReturnHistory({ onBack }) {
                                         <span className={styles.typeBadge} style={{ backgroundColor: st.bg, color: st.color }}>
                                             {CLAIM_TYPE_LABEL[item.claimType]}
                                         </span>
-                                        <p className={styles.productName}>주문 상품 #{item.orderItemId}</p>
+                                        <p className={styles.productName}>{item.productName ?? `주문 상품 #${item.orderItemId}`}</p>
                                         <p className={styles.productOption}>{REASON_LABEL[item.reasonCode] ?? item.reasonCode}</p>
-                                        {item.refundAmount != null && (
+                                        {item.claimType === "RETURN" && item.refundAmount != null && (
                                             <p className={styles.productPrice}>
                                                 {Number(item.refundAmount) < 0
                                                     ? `추가 결제 ${Math.abs(Number(item.refundAmount)).toLocaleString()}원`
