@@ -90,7 +90,13 @@ api.interceptors.request.use(
 )
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data?.success === false) {
+      return Promise.reject(new Error(response.data.message || "요청에 실패했습니다."))
+    }
+
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
       const adminToken = getAdminToken()

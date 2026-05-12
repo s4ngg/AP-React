@@ -47,9 +47,18 @@ const PrivateRoute = ({ children }) => {
   return isLoggedIn ? children : <Navigate to="/login" replace />
 }
 
-const AdminRoute = ({ children }) => {
+const getAdminFallbackPath = (adminRole) => (adminRole === "CS_ADMIN" ? "/admin/refunds" : "/admin/login")
+
+const AdminRoute = ({ children, roles }) => {
   const adminToken = useAuthStore((state) => state.adminToken)
-  return adminToken ? children : <Navigate to="/admin/login" replace />
+  const adminRole = useAuthStore((state) => state.adminRole)
+
+  if (!adminToken) return <Navigate to="/admin/login" replace />
+  if (roles?.length && !roles.includes(adminRole)) {
+    return <Navigate to={getAdminFallbackPath(adminRole)} replace />
+  }
+
+  return children
 }
 
 const SellerRoute = ({ children }) => {
@@ -92,16 +101,16 @@ function AppContent() {
           <Route path="/seller-apply" element={<SellerApplyPage />} />
           <Route path="/seller-apply/complete" element={<SellerApplyCompletePage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
-          <Route path="/admin/members" element={<AdminRoute><AdminMemberPage /></AdminRoute>} />
-          <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
-          <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
-          <Route path="/admin/categories" element={<AdminRoute><AdminCategoryPage /></AdminRoute>} />
+          <Route path="/admin" element={<AdminRoute roles={["SUPER_ADMIN"]}><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin/members" element={<AdminRoute roles={["SUPER_ADMIN"]}><AdminMemberPage /></AdminRoute>} />
+          <Route path="/admin/products" element={<AdminRoute roles={["SUPER_ADMIN"]}><AdminProductsPage /></AdminRoute>} />
+          <Route path="/admin/orders" element={<AdminRoute roles={["SUPER_ADMIN"]}><AdminOrdersPage /></AdminRoute>} />
+          <Route path="/admin/categories" element={<AdminRoute roles={["SUPER_ADMIN"]}><AdminCategoryPage /></AdminRoute>} />
           <Route path="/admin/refunds" element={<AdminRoute><AdminRefundPage /></AdminRoute>} />
           <Route path="/admin/notices" element={<AdminRoute><AdminNoticePage /></AdminRoute>} />
           <Route path="/admin/faqs" element={<AdminRoute><AdminFAQPage /></AdminRoute>} />
           <Route path="/admin/inquiries" element={<AdminRoute><AdminInquiryPage /></AdminRoute>} />
-          <Route path="/admin/accounts" element={<AdminRoute><AdminAccountPage /></AdminRoute>} />
+          <Route path="/admin/accounts" element={<AdminRoute roles={["SUPER_ADMIN"]}><AdminAccountPage /></AdminRoute>} />
           <Route path="/seller" element={<SellerRoute><SellerDashboardPage /></SellerRoute>} />
           <Route path="/seller/products" element={<SellerRoute><SellerProductsPage /></SellerRoute>} />
           <Route path="/seller/orders" element={<SellerRoute><SellerOrdersPage /></SellerRoute>} />
