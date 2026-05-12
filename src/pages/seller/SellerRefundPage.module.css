@@ -32,6 +32,54 @@
   color: #6b7280;
 }
 
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #059669;
+}
+
+.tabActive {
+  color: #059669;
+  border-bottom-color: #059669;
+  font-weight: 600;
+}
+
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background-color: #f3f4f6;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
 .tableWrap {
   overflow-x: auto;
 }
@@ -126,6 +174,12 @@
   transition: background-color 0.15s;
 }
 
+.actionBtn:disabled,
+.buyerBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .approveBtn {
   background-color: #f0fdf4;
   color: #16a34a;
@@ -144,6 +198,21 @@
 
 .rejectBtn:hover {
   background-color: #fee2e2;
+}
+
+.cancelBtn {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.cancelBtn:hover {
+  background-color: #f9fafb;
+}
+
+.processedText {
+  font-size: 12px;
+  color: #9ca3af;
 }
 
 .notice {
@@ -168,6 +237,40 @@
 .typeExchange {
   background-color: #fff7ed;
   color: #ea580c;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statusSubmitted {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.statusProgress {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.statusCompleted {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.statusRejected {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.statusCancelled {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 /* 구매자 이름 버튼 */
@@ -296,6 +399,21 @@
   font-weight: 500;
   flex: 1;
 }
+
+.attachmentList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attachmentImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
 .rejectTextarea {
   width: 100%;
   border: 1px solid #e5e7eb;

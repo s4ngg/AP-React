@@ -8,7 +8,7 @@ const navItems = [
   { to: "/seller", label: "대시보드", icon: <LayoutDashboard size={18} />, end: true },
   { to: "/seller/products", label: "상품 관리", icon: <Package size={18} /> },
   { to: "/seller/orders", label: "주문 현황", icon: <ShoppingBag size={18} /> },
-  { to: "/seller/refunds", label: "환불/교환 처리", icon: <RefreshCcw size={18} /> },
+  { to: "/seller/refunds", label: "교환/반품 처리", icon: <RefreshCcw size={18} /> },
   { to: "/seller/inquiries", label: "문의 답변", icon: <MessageSquare size={18} /> },
 ]
 

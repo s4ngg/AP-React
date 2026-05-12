@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import styles from "./MyPage.module.css"
 import useAuthStore from "../../store/authStore"
 import { getMember, updateMember, changePassword, deleteMember } from "../../api/memberApi"
@@ -12,6 +12,7 @@ import {
   updateDeliveryAddress,
   deleteDeliveryAddress,
 } from "../../api/orderApi"
+import { getMyClaims } from "../../api/claimApi"
 import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket, Store } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
@@ -30,6 +31,32 @@ const STATUS_CLASS = {
   SHIPPING: "statusShipping",
   DELIVERED: "statusDone",
   CANCELLED: "statusCancel",
+}
+
+const CLAIM_TYPE_LABEL = { EXCHANGE: "교환", RETURN: "반품" }
+
+const CLAIM_STATUS_LABEL = {
+  SUBMITTED: "판매자 확인 대기",
+  IN_PROGRESS: "관리자 확인중",
+  COMPLETED: "처리완료",
+  REJECTED: "반려",
+  CANCELLED: "취소됨",
+}
+
+const CLAIM_STATUS_CLASS = {
+  SUBMITTED: "claimSubmitted",
+  IN_PROGRESS: "claimProgress",
+  COMPLETED: "claimCompleted",
+  REJECTED: "claimRejected",
+  CANCELLED: "claimCancelled",
+}
+
+const CLAIM_STATUS_PRIORITY = {
+  SUBMITTED: 5,
+  IN_PROGRESS: 4,
+  COMPLETED: 3,
+  REJECTED: 2,
+  CANCELLED: 1,
 }
 
 const GRADE_CONFIG = {
@@ -92,6 +119,8 @@ export default function MyPage() {
   // 주문
   const [orders, setOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
+  const [claims, setClaims] = useState([])
+  const [claimErrorMessage, setClaimErrorMessage] = useState("")
 
   // 배송지
   const [addresses, setAddresses] = useState([])
@@ -124,6 +153,16 @@ export default function MyPage() {
       .then((data) => setOrders(data ?? []))
       .catch(() => setOrders([]))
       .finally(() => setOrdersLoading(false))
+
+    getMyClaims()
+      .then((data) => {
+        setClaims(data ?? [])
+        setClaimErrorMessage("")
+      })
+      .catch(() => {
+        setClaims([])
+        setClaimErrorMessage("교환/반품 상태를 불러오지 못했습니다.")
+      })
   }, [])
 
   const fetchAddresses = useCallback(() => {
@@ -317,6 +356,30 @@ export default function MyPage() {
 
   const currentGradeConfig = GRADE_CONFIG[memberGrade] ?? GRADE_CONFIG.NORMAL
 
+  const claimByOrderItemId = useMemo(() => {
+    return claims.reduce((map, claim) => {
+      if (!claim.orderItemId) return map
+
+      const key = String(claim.orderItemId)
+      const current = map.get(key)
+      const claimPriority = CLAIM_STATUS_PRIORITY[claim.status] ?? 0
+      const currentPriority = CLAIM_STATUS_PRIORITY[current?.status] ?? 0
+
+      if (!current || claimPriority > currentPriority) {
+        map.set(key, claim)
+        return map
+      }
+
+      const claimDate = new Date(claim.createdAt ?? 0)
+      const currentDate = new Date(current.createdAt ?? 0)
+      if (claimPriority === currentPriority && claimDate > currentDate) {
+        map.set(key, claim)
+      }
+
+      return map
+    }, new Map())
+  }, [claims])
+
   return (
     <div className={styles.page}>
       <h1 className={styles.pageTitle}>마이페이지</h1>
@@ -450,6 +513,9 @@ export default function MyPage() {
                 </div>
               ) : (
                 <div className={styles.orderList}>
+                  {claimErrorMessage && (
+                    <p className={styles.claimErrorMessage}>{claimErrorMessage}</p>
+                  )}
                   {orders.map((order) => (
                     <div key={order.orderId} className={styles.orderCard}>
                       <div className={styles.orderHeader}>
@@ -462,21 +528,35 @@ export default function MyPage() {
                         </span>
                       </div>
                       <div className={styles.orderItems}>
-                        {order.orderItems?.map((item) => (
-                          <div key={item.orderItemId} className={styles.orderItem}>
-                            <div className={styles.orderItemInfo}>
-                              <p
-                                className={styles.orderItemName}
-                                onClick={() => navigate(`/products/${item.productId}`)}
-                                style={{ cursor: "pointer", textDecoration: "underline" }}
-                              >
-                                {item.productName}
-                              </p>
-                              <p className={styles.orderItemMeta}>{item.quantity}개</p>
-                              <p className={styles.orderItemPrice}>{Number(item.totalPrice).toLocaleString()}원</p>
+                        {order.orderItems?.map((item) => {
+                          const claim = claimByOrderItemId.get(String(item.orderItemId))
+
+                          return (
+                            <div key={item.orderItemId} className={styles.orderItem}>
+                              <div className={styles.orderItemInfo}>
+                                <button
+                                  type="button"
+                                  className={styles.orderItemName}
+                                  onClick={() => navigate(`/products/${item.productId}`)}
+                                >
+                                  {item.productName}
+                                </button>
+                                <p className={styles.orderItemMeta}>{item.quantity}개</p>
+                                <p className={styles.orderItemPrice}>{Number(item.totalPrice).toLocaleString()}원</p>
+                                {claim && (
+                                  <div className={styles.claimStatusBox}>
+                                    <span className={styles.claimType}>
+                                      {CLAIM_TYPE_LABEL[claim.claimType] ?? claim.claimType}
+                                    </span>
+                                    <span className={`${styles.claimStatus} ${styles[CLAIM_STATUS_CLASS[claim.status]]}`}>
+                                      {CLAIM_STATUS_LABEL[claim.status] ?? claim.status}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                       <div className={styles.orderFooter}>
                         <div className={styles.orderPriceInfo}>
