@@ -32,7 +32,7 @@ export default function CategorySection() {
       <div className={styles.inner}>
         <h2 className={styles.sectionTitle}>카테고리</h2>
         <div className={styles.grid}>
-          {categories.map((c) => {
+          {categories.filter((c) => iconMap[c.categoryName]).map((c) => {
             const meta = iconMap[c.categoryName] || { icon: Sparkles, iconBg: "#f3f4f6", iconColor: "#6b7280", image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=300&h=300&fit=crop" }
             const Icon = meta.icon
             return (
