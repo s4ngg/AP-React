@@ -175,16 +175,7 @@ export default function Header() {
               <Headphones size={20} />
               <span>고객센터</span>
             </Link>
-            {/* 아래 추가 */}
-            {isLoggedIn && sellerToken && (
-              <Link
-                to="/seller"
-                className={styles.mobileMenuItem}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                판매자 관리
-              </Link>
-            )}
+
             <button
               className={styles.mobileMenuBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
