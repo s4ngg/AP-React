@@ -36,7 +36,7 @@ export default function AdminInquiryPage() {
 
   useEffect(() => {
     getAdminInquiries()
-      .then((data) => setInquiries(data ?? []))
+      .then((data) => setInquiries((data ?? []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))))
       .catch(() => setLoadError(true))
   }, [])
 
