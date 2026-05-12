@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, uploadProductImage } from "../../api/productApi"
-
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories, uploadProductImage } from "../../api/productApi"
 const APPROVAL_CLASS = {
   APPROVED: styles.approvalAPPROVED,
   PENDING: styles.approvalPENDING,
@@ -53,7 +51,7 @@ export default function SellerProductsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const [isUploading, setIsUploading] = useState(false);
   // 가격 수정 모달
   const [editingProduct, setEditingProduct] = useState(null)
   const [editPrice, setEditPrice] = useState("")
@@ -130,11 +128,14 @@ export default function SellerProductsPage() {
   const handleThumbnailUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
+    setIsUploading(true)
     try {
       const url = await uploadProductImage(file)
       setFormData((prev) => ({ ...prev, thumbnailUrl: url }))
     } catch {
-      alert("이미지 업로드에 실패했습니다.")
+      e.target.value = ""
+    } finally {
+      setIsUploading(false)
     }
   }
   const handleCreateSubmit = async (e) => {
@@ -162,8 +163,8 @@ export default function SellerProductsPage() {
       const payload = {
         ...formData,
         price: Number(formData.price),
-        categoryId: Number(formData.categoryId),
-        childCategoryId: formData.childCategoryId ? Number(formData.childCategoryId) : null,
+        childCategoryId: Number(formData.categoryId),
+        parentCategoryId: Number(selectedParentId),  // ← 이 줄 추가
         description: formData.description.trim() || formData.productName,
         optionList: formData.optionList.map((o) => ({
           ...o,

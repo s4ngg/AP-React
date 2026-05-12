@@ -50,7 +50,7 @@ const isSellerProductMutationRequest = (method = "get", url = "") => {
 
   return (
     ["post", "patch", "delete"].includes(normalizedMethod) &&
-    /^\/api\/products(?:\/[^/]+)?$/.test(url)
+    /^\/api\/products(?:\/\d+)?$/.test(url)
   )
 }
 
