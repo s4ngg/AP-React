@@ -1,6 +1,6 @@
 .sellerLayout {
   display: flex;
-  min-height: calc(100vh - 120px);
+  height: 100vh;
 }
 
 .content {
@@ -73,6 +73,11 @@
   background-color: #f3f4f6;
 }
 
+.inquiryHeader:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
 .inquiryMeta {
   display: flex;
   align-items: center;
@@ -94,6 +99,14 @@
 
 .statusDotPending {
   background-color: #dc2626;
+}
+
+.statusDotProcessing {
+  background-color: #2563eb;
+}
+
+.statusDotCancelled {
+  background-color: #9ca3af;
 }
 
 .productName {
@@ -163,6 +176,16 @@
   color: #dc2626;
 }
 
+.answerBadgeProcessing {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.answerBadgeCancelled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
 /* 문의 본문 */
 .inquiryBody {
   padding: 16px;
@@ -195,6 +218,7 @@
   background-color: #f0fdf4;
   padding: 12px;
   border-radius: 8px;
+  margin-bottom: 12px;
 }
 
 .answerLabel {
@@ -215,6 +239,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 12px;
 }
 
 .answerTextarea {
@@ -269,4 +294,22 @@
   padding: 60px 0;
   color: #9ca3af;
   font-size: 14px;
+}
+
+.emptyText {
+  padding: 40px 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.errorText {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
 }

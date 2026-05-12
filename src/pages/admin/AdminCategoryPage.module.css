@@ -1,6 +1,6 @@
 .adminLayout {
   display: flex;
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
 }
 
 .content {
@@ -60,11 +60,13 @@
   gap: 8px;
   margin-bottom: 20px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .addInput {
   flex: 1;
-  max-width: 300px;
+  min-width: 180px;
+  max-width: 260px;
   padding: 10px 14px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -72,6 +74,21 @@
   color: #111827;
   outline: none;
   transition: border-color 0.15s;
+}
+
+.sortInput {
+  width: 96px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.sortInput:focus {
+  border-color: #2563eb;
 }
 
 .addInput:focus {
@@ -106,6 +123,43 @@
 
 .addBtn:hover {
   background-color: #1d4ed8;
+}
+
+.addBtn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.resetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.resetBtn:hover {
+  background-color: #f9fafb;
+}
+
+.parentSelector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.selectorLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
 }
 
 /* 테이블 */
@@ -152,6 +206,48 @@
 .nameCell {
   font-weight: 500;
   color: #111827;
+}
+
+.activeBadge,
+.hiddenBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.activeBadge {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.hiddenBadge {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.actionBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+  background-color: #eff6ff;
+  color: #2563eb;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.editBtn:hover {
+  background-color: #dbeafe;
 }
 
 .emptyRow {

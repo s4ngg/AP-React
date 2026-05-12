@@ -9,5 +9,8 @@ export const getFaqsByCategory = (category) =>
 export const createFaq = (data) =>
     api.post("/api/faqs", data).then((res) => res.data.data)
 
+export const updateFaq = (faqId, data) =>
+    api.put(`/api/faqs/${faqId}`, data).then((res) => res.data.data)
+
 export const deleteFaq = (faqId) =>
     api.delete(`/api/faqs/${faqId}`).then((res) => res.data)

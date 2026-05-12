@@ -1,25 +1,24 @@
 import { useState, useEffect } from "react"
 import { Link, useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingCart, Truck, Star, MessageCircle, FileText, Info, Pencil, X, Check } from "lucide-react"
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Truck, Star, FileText, Info, Pencil, X, Check } from "lucide-react"
 import useCartStore from "../../store/cartStore"
 import useAuthStore from "../../store/authStore"
 import { getProductDetail } from "../../api/productApi"
-import { getProductReviews, updateReview } from "../../api/reviewApi"
+import { getProductReviews, updateReview, createReview } from "../../api/reviewApi"
 import { addCartItem } from "../../api/cartApi"
+import { getMyOrders } from "../../api/orderApi"
 import styles from "./ProductDetailPage.module.css"
 
 const TAB_ICONS = {
   description: <FileText size={16} />,
   detail: <Info size={16} />,
   review: <Star size={16} />,
-  inquiry: <MessageCircle size={16} />,
 }
 
 const TABS = [
   { key: "description", label: "상품설명" },
   { key: "detail", label: "상세정보" },
   { key: "review", label: "후기" },
-  { key: "inquiry", label: "문의" },
 ]
 
 function StarRating({ rating, size = 16 }) {
@@ -56,10 +55,20 @@ export default function ProductDetailPage() {
   const [editHoverRating, setEditHoverRating] = useState(0)
   const [isUpdating, setIsUpdating] = useState(false)
 
+  // 리뷰 작성 관련 state
+  const [showWriteForm, setShowWriteForm] = useState(false)
+  const [writeOrderItemId, setWriteOrderItemId] = useState(null)
+  const [writeRating, setWriteRating] = useState(0)
+  const [writeHoverRating, setWriteHoverRating] = useState(0)
+  const [writeContent, setWriteContent] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [writeError, setWriteError] = useState("")
+  // 현재 상품에 대해 리뷰 작성 가능한 orderItemId 목록
+  const [writableOrderItems, setWritableOrderItems] = useState([])
+
   const [currentImg, setCurrentImg] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedOption, setSelectedOption] = useState(null)
-  const [isLiked, setIsLiked] = useState(false)
   const [activeTab, setActiveTab] = useState("description")
 
   useEffect(() => {
@@ -94,6 +103,29 @@ export default function ProductDetailPage() {
     }
     fetchReviews()
   }, [reviewPage, id])
+
+  // 로그인한 유저의 주문 내역에서 현재 상품의 배송완료 orderItemId 가져오기
+  useEffect(() => {
+    if (!user) return
+    const fetchWritableItems = async () => {
+      try {
+        const orders = await getMyOrders()
+        const items = []
+        for (const order of (orders || [])) {
+          if (order.status !== "DELIVERED") continue
+          for (const item of (order.orderItems || [])) {
+            if (String(item.productId) === String(id)) {
+              items.push({ orderItemId: item.orderItemId, selectedOption: item.selectedOption || "" })
+            }
+          }
+        }
+        setWritableOrderItems(items)
+      } catch {
+        // 비로그인 or 오류 시 조용히 무시
+      }
+    }
+    fetchWritableItems()
+  }, [user, id])
 
   if (loading) return <div className={styles.notFound}><p>상품 정보를 불러오는 중...</p></div>
   if (error || !product) {
@@ -140,6 +172,7 @@ export default function ProductDetailPage() {
         id: product.productId,
         name: product.productName,
         price: Number(product.price),
+        image: product.thumbnailUrl,
         thumbnailUrl: product.thumbnailUrl,
       },
       quantity,
@@ -167,6 +200,7 @@ export default function ProductDetailPage() {
         id: product.productId,
         name: product.productName,
         price: Number(product.price),
+        image: product.thumbnailUrl,
         thumbnailUrl: product.thumbnailUrl,
       },
       quantity,
@@ -224,10 +258,144 @@ export default function ProductDetailPage() {
                 <p className={styles.reviewCountText}>총 {reviews.length}개의 후기</p>
               </div>
               <div className={styles.reviewSummaryRight}>
-                {/* TODO: 주문 내역에서 orderItemId를 받아 리뷰 작성 페이지로 이동 구현 필요 */}
-                <p style={{ fontSize: 13, color: "#9ca3af" }}>구매 후 마이페이지에서 후기를 작성할 수 있습니다.</p>
+                {user ? (
+                  writableOrderItems.length > 0 ? (
+                    <button
+                      className={styles.writeReviewBtn}
+                      onClick={() => {
+                        setWriteOrderItemId(writableOrderItems[0].orderItemId)
+                        setShowWriteForm((v) => !v)
+                        setWriteRating(0)
+                        setWriteContent("")
+                        setWriteError("")
+                      }}
+                    >
+                      {showWriteForm ? "작성 취소" : "후기 작성하기"}
+                    </button>
+                  ) : (
+                    <p style={{ fontSize: 13, color: "#9ca3af" }}>구매 완료(배송완료) 후 후기를 작성할 수 있습니다.</p>
+                  )
+                ) : (
+                  <button className={styles.writeReviewBtn} onClick={() => navigate("/login")}>
+                    로그인 후 후기 작성
+                  </button>
+                )}
               </div>
             </div>
+
+            {/* 리뷰 작성 폼 */}
+            {showWriteForm && (
+              <div className={styles.writeReviewForm}>
+                <h4 className={styles.writeReviewTitle}>후기 작성</h4>
+
+                {/* 구매 건이 여러 개인 경우 선택 */}
+                {writableOrderItems.length > 1 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>주문 선택</label>
+                    <select
+                      value={writeOrderItemId || ""}
+                      onChange={(e) => setWriteOrderItemId(Number(e.target.value))}
+                      style={{ display: "block", marginTop: 4, padding: "6px 10px", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 13, width: "100%" }}
+                    >
+                      {writableOrderItems.map((item, i) => (
+                        <option key={item.orderItemId} value={item.orderItemId}>
+                          주문 {i + 1}{item.selectedOption ? ` (${item.selectedOption})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* 별점 */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>별점</label>
+                  <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onMouseEnter={() => setWriteHoverRating(s)}
+                        onMouseLeave={() => setWriteHoverRating(0)}
+                        onClick={() => setWriteRating(s)}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      >
+                        <Star
+                          size={24}
+                          fill={(writeHoverRating || writeRating) >= s ? "#f59e0b" : "none"}
+                          color={(writeHoverRating || writeRating) >= s ? "#f59e0b" : "#d1d5db"}
+                        />
+                      </button>
+                    ))}
+                    {writeRating > 0 && (
+                      <span style={{ fontSize: 13, color: "#f59e0b", alignSelf: "center", marginLeft: 4 }}>
+                        {["", "별로예요", "그저그래요", "보통이에요", "좋아요", "최고예요!"][writeRating]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 내용 */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>후기 내용</label>
+                  <textarea
+                    value={writeContent}
+                    onChange={(e) => setWriteContent(e.target.value)}
+                    placeholder="구매하신 상품에 대한 솔직한 후기를 10자 이상 작성해주세요."
+                    rows={4}
+                    style={{ display: "block", width: "100%", marginTop: 6, padding: "10px", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 14, resize: "vertical", boxSizing: "border-box" }}
+                  />
+                  <p style={{ fontSize: 12, color: writeContent.length < 10 ? "#ef4444" : "#9ca3af", marginTop: 4, textAlign: "right" }}>
+                    {writeContent.length}자 (최소 10자)
+                  </p>
+                </div>
+
+                {writeError && (
+                  <p style={{ fontSize: 13, color: "#ef4444", marginBottom: 8 }}>{writeError}</p>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <button
+                    onClick={() => { setShowWriteForm(false); setWriteError("") }}
+                    style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid #e5e7eb", background: "white", fontSize: 13, cursor: "pointer" }}
+                  >
+                    취소
+                  </button>
+                  <button
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      if (writeRating === 0) { setWriteError("별점을 선택해주세요."); return }
+                      if (writeContent.trim().length < 10) { setWriteError("후기를 10자 이상 작성해주세요."); return }
+                      setIsSubmitting(true)
+                      setWriteError("")
+                      try {
+                        const selectedOpt = writableOrderItems.find(i => i.orderItemId === writeOrderItemId)?.selectedOption || ""
+                        const res = await createReview({
+                          orderItemId: writeOrderItemId,
+                          rating: writeRating,
+                          content: writeContent.trim(),
+                          selectedOption: selectedOpt,
+                        })
+                        // 작성한 리뷰를 목록 맨 앞에 추가 (res.data = ReviewResponseDto)
+                        setReviews((prev) => [res.data, ...prev])
+                        setShowWriteForm(false)
+                        setWriteRating(0)
+                        setWriteContent("")
+                        // 이미 리뷰 쓴 아이템은 작성 가능 목록에서 제거
+                        setWritableOrderItems((prev) => prev.filter(i => i.orderItemId !== writeOrderItemId))
+                        alert("후기가 등록되었습니다.")
+                      } catch (err) {
+                        setWriteError(err.response?.data?.message || "후기 등록에 실패했습니다. 이미 작성한 후기가 있는지 확인해주세요.")
+                      } finally {
+                        setIsSubmitting(false)
+                      }
+                    }}
+                    style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: "#2563eb", color: "white", fontSize: 13, fontWeight: 500, cursor: "pointer", opacity: isSubmitting ? 0.7 : 1 }}
+                  >
+                    {isSubmitting ? "등록 중..." : "후기 등록"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {reviews.length === 0 ? (
               <div className={styles.emptyReview}>
@@ -242,7 +410,7 @@ export default function ProductDetailPage() {
                         <div>
                           <div className={styles.reviewHeader}>
                             <div style={{ display: "flex", gap: 4 }}>
-                              {[1,2,3,4,5].map((s) => (
+                              {[1, 2, 3, 4, 5].map((s) => (
                                 <button
                                   key={s}
                                   type="button"
@@ -280,9 +448,10 @@ export default function ProductDetailPage() {
                                 setIsUpdating(true)
                                 try {
                                   const res = await updateReview(review.reviewId, { rating: editRating, content: editContent.trim() })
+                                  const updated = res.data || res
                                   setReviews((prev) => prev.map((r) =>
                                     r.reviewId === review.reviewId
-                                      ? { ...r, rating: res.data.rating, content: res.data.content }
+                                      ? { ...r, rating: updated.rating ?? editRating, content: updated.content ?? editContent.trim() }
                                       : r
                                   ))
                                   setEditingReviewId(null)
@@ -305,7 +474,7 @@ export default function ProductDetailPage() {
                             <StarRating rating={review.rating} size={14} />
                             <span className={styles.reviewAuthor}>{review.writerName}</span>
                             <span className={styles.reviewDate}>{review.reviewDate}</span>
-                            {user?.name === review.writerName && (
+                            {(user?.name === review.writerName || user?.email === review.writerName) && (
                               <button
                                 onClick={() => {
                                   setEditingReviewId(review.reviewId)
@@ -342,27 +511,6 @@ export default function ProductDetailPage() {
                 )}
               </>
             )}
-          </div>
-        )
-
-      case "inquiry":
-        return (
-          <div className={styles.tabContent}>
-            <h3 className={styles.tabContentTitle}>상품 문의</h3>
-            <div className={styles.inquiryNotice}>
-              <p className={styles.inquiryNoticeTitle}>📌 문의 전 확인해주세요</p>
-              <ul className={styles.inquiryNoticeList}>
-                <li>상품 문의는 상품 관련 내용만 남겨주세요.</li>
-                <li>배송 관련 문의는 고객센터를 이용해주세요.</li>
-                <li>영업일 기준 1~2일 내에 답변 드립니다.</li>
-              </ul>
-            </div>
-            <div className={styles.inquiryForm}>
-              <textarea className={styles.inquiryTextarea} placeholder="상품에 대해 궁금한 점을 남겨주세요." rows={5} />
-              <div className={styles.inquiryBtnRow}>
-                <button className={styles.inquirySubmitBtn}>문의 등록</button>
-              </div>
-            </div>
           </div>
         )
 
@@ -488,9 +636,6 @@ export default function ProductDetailPage() {
 
           {/* 버튼 */}
           <div className={styles.actionBtns}>
-            <button className={styles.wishBtn} onClick={() => setIsLiked(!isLiked)} aria-label="위시리스트">
-              <Heart size={20} fill={isLiked ? "#ef4444" : "none"} color={isLiked ? "#ef4444" : "#9ca3af"} />
-            </button>
             <button className={styles.cartBtn} onClick={handleAddToCart}>
               <ShoppingCart size={18} /> 장바구니
             </button>

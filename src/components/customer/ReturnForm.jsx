@@ -1,12 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
     AlertCircle, ChevronRight, ChevronLeft,
     Package, RotateCcw, ArrowLeftRight, MapPin, Truck, X, Camera
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./ReturnForm.module.css";
 import { createClaim } from "../../api/claimApi.js";
 import { getMyOrders } from "../../api/orderApi.js";
 import { uploadClaimAttachment } from "../../api/attachmentApi.js";
+import { useMyClaims } from "../../query/useClaimQuery.js";
+
+const ACTIVE_CLAIM_STATUSES = ["SUBMITTED", "IN_PROGRESS", "COMPLETED"];
 
 const RETURN_REASONS = [
     { value: "", label: "사유를 선택해주세요" },
@@ -37,8 +41,12 @@ const REASON_LABEL = {
 };
 
 const SIMPLE_REASON_CODES = ["CHANGE_MIND", "SIZE_COLOR", "SIZE_CHANGE", "COLOR_CHANGE"];
+const SHIPPING_FEE_NOTICE = "단순 변심·사이즈/색상 변경 사유의 경우 왕복 배송비 6,000원이 환불 처리 과정에서 차감되거나 별도 안내될 수 있습니다.";
+const SHIPPING_FEE_SUMMARY = "왕복 배송비 6,000원 별도 안내";
 
 const MAX_IMAGES = 5;
+
+const isShippingFeeReason = (reasonCode) => SIMPLE_REASON_CODES.includes(reasonCode);
 
 const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -62,6 +70,25 @@ export default function ReturnForm({ onBack }) {
     const [showOrderModal, setShowOrderModal] = useState(false);
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
+
+    const queryClient = useQueryClient();
+    const {
+        data: myClaims = [],
+        isLoading: claimsLoading,
+        isFetching: claimsFetching,
+        isError: claimsError,
+    } = useMyClaims(showOrderModal);
+    const isClaimsChecking = showOrderModal && (claimsLoading || claimsFetching);
+
+    const blockedOrderItemIds = useMemo(
+        () => new Set(
+            myClaims
+                .filter(c => ACTIVE_CLAIM_STATUSES.includes(c.status))
+                .map(c => c.orderItemId)
+        ),
+        [myClaims]
+    );
+    const selectedItemBlocked = selectedItem ? blockedOrderItemIds.has(selectedItem.orderItemId) : false;
 
     const fileInputRef = useRef(null);
 
@@ -97,13 +124,31 @@ export default function ReturnForm({ onBack }) {
     };
 
     const handleItemSelect = (order, item) => {
+        if (isClaimsChecking || claimsError || blockedOrderItemIds.has(item.orderItemId)) return;
         setSelectedOrder(order);
         setSelectedItem(item);
         setShowOrderModal(false);
     };
 
+    const handleNextStep = () => {
+        if (!selectedItem) { alert("상품을 선택해주세요."); return; }
+        if (claimsError) { alert("교환/반품 신청 내역 확인 후 다시 시도해주세요."); return; }
+        if (selectedItemBlocked) {
+            alert("이미 교환/반품 신청 내역이 있는 상품입니다.");
+            setStep(1);
+            return;
+        }
+        setStep(2);
+    };
+
     const handleSubmit = async () => {
         if (!selectedItem) { alert("교환/반품할 상품을 선택해주세요."); return; }
+        if (claimsError) { alert("교환/반품 신청 내역 확인 후 다시 시도해주세요."); return; }
+        if (selectedItemBlocked) {
+            alert("이미 교환/반품 신청 내역이 있는 상품입니다.");
+            setStep(1);
+            return;
+        }
         if (!reason) { alert("신청 사유를 선택해주세요."); return; }
 
         setSubmitting(true);
@@ -116,28 +161,35 @@ export default function ReturnForm({ onBack }) {
                 ...(detail && { detail }),
                 ...(type === "EXCHANGE" && exchangeOption && { exchangeOption }),
             };
-            const res = await createClaim(payload);
-            const created = res.data?.data;
 
-            if (images.length > 0 && created?.claimId) {
-                for (let i = 0; i < images.length; i++) {
-                    const formData = new FormData();
-                    formData.append("file", images[i].file);
-                    formData.append("sortOrder", i);
-                    await uploadClaimAttachment(created.claimId, formData);
+            let created;
+            try {
+                created = await createClaim(payload);
+                queryClient.invalidateQueries({ queryKey: ["claims", "my"] });
+            } catch (error) {
+                if (error.response?.status === 409) {
+                    alert("이미 진행 중인 교환/반품 신청이 있습니다.\n마이페이지에서 기존 신청을 취소한 후 다시 시도해주세요.");
+                } else {
+                    alert(error.response?.data?.message || "신청에 실패했습니다. 다시 시도해주세요.");
                 }
+                return;
+            }
+
+            try {
+                if (images.length > 0 && created?.claimId) {
+                    for (let i = 0; i < images.length; i++) {
+                        const formData = new FormData();
+                        formData.append("file", images[i].file);
+                        formData.append("sortOrder", i);
+                        await uploadClaimAttachment(created.claimId, formData);
+                    }
+                }
+            } catch {
+                alert("신청은 완료됐지만 첨부파일 업로드에 실패했습니다. 신청 내역에서 상태를 확인해주세요.");
             }
 
             setSubmittedClaim(created);
             setStep(3);
-        } catch (err) {
-            // ↓ 이 부분만 수정
-            const status = err.response?.status;
-            if (status === 409) {
-                alert("이미 진행 중인 교환/반품 신청이 있습니다.\n마이페이지에서 기존 신청을 취소한 후 다시 시도해주세요.");
-            } else {
-                alert("신청에 실패했습니다. 다시 시도해주세요.");
-            }
         } finally {
             setSubmitting(false);
         }
@@ -174,6 +226,12 @@ export default function ReturnForm({ onBack }) {
                         <span>수거 방법</span>
                         <strong>{pickup === "COURIER" ? "택배 수거" : "직접 방문 반납"}</strong>
                     </div>
+                    {isShippingFeeReason(submittedClaim.reasonCode) && (
+                        <div className={styles.summaryRow}>
+                            <span>배송비 안내</span>
+                            <strong>{SHIPPING_FEE_SUMMARY}</strong>
+                        </div>
+                    )}
                 </div>
                 <div className={styles.completeActions}>
                     <button className={styles.primaryBtn} onClick={onBack}>고객센터 홈으로</button>
@@ -186,7 +244,7 @@ export default function ReturnForm({ onBack }) {
         <div className={styles.formContainer}>
             <div className={styles.guideBox}>
                 <AlertCircle size={18} />
-                <p>교환/반품은 상품 수령 후 <strong>7일 이내</strong>에만 신청 가능합니다. 단순 변심 시 배송비가 발생할 수 있습니다.</p>
+                <p>교환/반품은 상품 수령 후 <strong>7일 이내</strong>에만 신청 가능합니다. 단순 변심·사이즈/색상 변경 시 배송비가 발생할 수 있습니다.</p>
             </div>
 
             <div className={styles.stepBar}>
@@ -246,7 +304,7 @@ export default function ReturnForm({ onBack }) {
 
                     <div className={styles.stepActions}>
                         <button className={styles.ghostBtn} onClick={onBack}><ChevronLeft size={16} /> 이전으로</button>
-                        <button className={styles.primaryBtn} onClick={() => { if (!selectedItem) { alert("상품을 선택해주세요."); return; } setStep(2); }}>
+                        <button className={styles.primaryBtn} onClick={handleNextStep}>
                             다음 단계 <ChevronRight size={16} />
                         </button>
                     </div>
@@ -344,10 +402,10 @@ export default function ReturnForm({ onBack }) {
                         />
                     </div>
 
-                    {SIMPLE_REASON_CODES.includes(reason) && (
+                    {isShippingFeeReason(reason) && (
                         <div className={styles.feeInfoBox}>
                             <AlertCircle size={16} />
-                            <p>단순 변심·사이즈 변경 사유의 경우 왕복 배송비 <strong>6,000원</strong>이 부과됩니다.</p>
+                            <p>{SHIPPING_FEE_NOTICE}</p>
                         </div>
                     )}
 
@@ -381,22 +439,43 @@ export default function ReturnForm({ onBack }) {
                                         <span className={styles.orderDate}>{formatDate(order.orderedAt)}</span>
                                         <span className={styles.orderId}>{order.orderNumber}</span>
                                     </div>
-                                    {order.orderItems.map(item => (
-                                        <div
-                                            key={item.orderItemId}
-                                            className={`${styles.orderProductRow} ${selectedItem?.orderItemId === item.orderItemId ? styles.orderProductRowSelected : ""}`}
-                                            onClick={() => handleItemSelect(order, item)}
-                                        >
-                                            <div className={styles.productImgPlaceholder}><Package size={20} /></div>
-                                            <div className={styles.productInfo}>
-                                                <p className={styles.productName}>{item.productName}</p>
-                                                <p className={styles.productMeta}>수량: {item.quantity}개 · {item.productPrice?.toLocaleString()}원</p>
+                                    {order.orderItems.map(item => {
+                                        const isBlocked = blockedOrderItemIds.has(item.orderItemId);
+                                        const isDisabled = isClaimsChecking || claimsError || isBlocked;
+                                        return (
+                                            <div
+                                                key={item.orderItemId}
+                                                className={`${styles.orderProductRow} ${selectedItem?.orderItemId === item.orderItemId ? styles.orderProductRowSelected : ""} ${isDisabled ? styles.orderProductRowDisabled : ""}`}
+                                                onClick={() => handleItemSelect(order, item)}
+                                                onKeyDown={(event) => {
+                                                    if (event.key !== "Enter" && event.key !== " ") return;
+                                                    event.preventDefault();
+                                                    handleItemSelect(order, item);
+                                                }}
+                                                role="button"
+                                                tabIndex={isDisabled ? -1 : 0}
+                                                aria-disabled={isDisabled}
+                                            >
+                                                <div className={styles.productImgPlaceholder}><Package size={20} /></div>
+                                                <div className={styles.productInfo}>
+                                                    <p className={styles.productName}>{item.productName}</p>
+                                                    <p className={styles.productMeta}>수량: {item.quantity}개 · {item.productPrice?.toLocaleString()}원</p>
+                                                    {isClaimsChecking && (
+                                                        <p className={styles.blockedLabel}>교환/반품 신청 내역을 확인 중입니다</p>
+                                                    )}
+                                                    {claimsError && (
+                                                        <p className={styles.blockedLabel}>신청 내역 확인에 실패했습니다</p>
+                                                    )}
+                                                    {!isClaimsChecking && !claimsError && isBlocked && (
+                                                        <p className={styles.blockedLabel}>이미 교환/반품 신청 내역이 있습니다</p>
+                                                    )}
+                                                </div>
+                                                {!isDisabled && selectedItem?.orderItemId === item.orderItemId && (
+                                                    <span className={styles.selectedBadge}>선택됨</span>
+                                                )}
                                             </div>
-                                            {selectedItem?.orderItemId === item.orderItemId && (
-                                                <span className={styles.selectedBadge}>선택됨</span>
-                                            )}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ))}
                         </div>

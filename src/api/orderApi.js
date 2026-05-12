@@ -14,7 +14,7 @@ export const cancelOrder = (orderId) =>
 
 // 내 주문 목록 조회
 export const getMyOrders = () =>
-  api.get("/api/members/me/orders").then((res) => res.data.data)
+  api.get("/api/orders").then((res) => res.data.data)
 
 // 배송지 목록 조회 (JWT)
 export const getDeliveryAddresses = () =>

@@ -51,9 +51,8 @@ export default function SellerClaimPage() {
         if (!window.confirm("클레임을 승인하시겠습니까?")) return
         try {
             await approveClaim(claimId)
-            setClaims((prev) =>
-                prev.map((c) => (c.claimId === claimId ? { ...c, status: "COMPLETED" } : c))
-            )
+            const data = await getSellerClaims()
+            setClaims(data ?? [])
         } catch {
             alert("승인 처리 중 오류가 발생했습니다.")
         }
@@ -126,8 +125,10 @@ export default function SellerClaimPage() {
                                                 <td>{REASON_LABEL[claim.reasonCode] ?? claim.reasonCode}</td>
                                                 <td>{claim.pickupMethod === "COURIER" ? "택배" : "방문"}</td>
                                                 <td>
-                                                    {claim.refundAmount
-                                                        ? `${Number(claim.refundAmount).toLocaleString()}원`
+                                                    {claim.refundAmount != null
+                                                        ? Number(claim.refundAmount) < 0
+                                                            ? `추가 결제 ${Math.abs(Number(claim.refundAmount)).toLocaleString()}원`
+                                                            : `${Number(claim.refundAmount).toLocaleString()}원`
                                                         : "-"}
                                                 </td>
                                                 <td>{claim.createdAt?.slice(0, 10)}</td>

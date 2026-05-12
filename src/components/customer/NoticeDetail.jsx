@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Calendar, Eye } from "lucide-react";
+import { getNoticeById } from "../../api/noticeApi.js";
 import styles from "./NoticeDetail.module.css";
 
 export default function NoticeDetail({ noticeId, notices, onBack, onSelect }) {
     const currentIndex = notices.findIndex(n => n.noticeId === noticeId);
-    const notice = notices[currentIndex];
+    const baseNotice = notices[currentIndex];
+    const [notice, setNotice] = useState(baseNotice ?? null);
     const prevNotice = currentIndex > 0 ? notices[currentIndex - 1] : null;
     const nextNotice = currentIndex < notices.length - 1 ? notices[currentIndex + 1] : null;
+    const fetchedId = useRef(null);
+
+    useEffect(() => {
+        if (fetchedId.current === noticeId) return;
+        fetchedId.current = noticeId;
+        getNoticeById(noticeId)
+            .then(setNotice)
+            .catch(() => {})
+    }, [noticeId]);
 
     if (!notice) {
         return (

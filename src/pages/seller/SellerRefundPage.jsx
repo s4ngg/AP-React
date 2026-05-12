@@ -17,6 +17,9 @@ const REASON_LABEL = {
   ETC: "기타",
 }
 const TYPE_CLASS = { EXCHANGE: "typeExchange", RETURN: "typeRefund" }
+const PROCESSABLE_STATUS = "SUBMITTED"
+
+const isProcessableClaim = (claim) => claim?.status === PROCESSABLE_STATUS
 
 export default function SellerRefundPage() {
   const [requests, setRequests] = useState([])
@@ -29,7 +32,7 @@ export default function SellerRefundPage() {
     getSellerClaims()
       .then((data) =>
         setRequests(
-          (data ?? []).filter((c) => c.status === "SUBMITTED")
+          (data ?? []).filter(isProcessableClaim)
         )
       )
       .catch((err) => console.error("환불/교환 목록 조회 실패", err))
@@ -38,6 +41,11 @@ export default function SellerRefundPage() {
 
   const handleApprove = async (claimId) => {
     const target = requests.find((r) => r.claimId === claimId)
+    if (!isProcessableClaim(target)) {
+      alert("이미 처리된 요청입니다.")
+      return
+    }
+
     const typeLabel = CLAIM_TYPE_LABEL[target?.claimType] ?? "요청"
     if (!window.confirm(`${typeLabel} 요청을 승인하시겠습니까?`)) return
     try {
@@ -51,6 +59,14 @@ export default function SellerRefundPage() {
 
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) return
+    const target = requests.find((r) => r.claimId === rejectModalId)
+    if (!isProcessableClaim(target)) {
+      alert("이미 처리된 요청입니다.")
+      setRejectModalId(null)
+      setRejectReason("")
+      return
+    }
+
     try {
       await rejectClaim(rejectModalId, rejectReason)
       setRequests((prev) => prev.filter((r) => r.claimId !== rejectModalId))
@@ -128,29 +144,33 @@ export default function SellerRefundPage() {
                         </button>
                       </td>
                       <td>
-                        {req.refundAmount
-                          ? `${Number(req.refundAmount).toLocaleString()}원`
+                        {req.refundAmount != null
+                          ? Number(req.refundAmount) < 0
+                              ? `추가 결제 ${Math.abs(Number(req.refundAmount)).toLocaleString()}원`
+                              : `${Number(req.refundAmount).toLocaleString()}원`
                           : "-"}
                       </td>
                       <td>{req.pickupMethod === "COURIER" ? "택배" : "방문"}</td>
                       <td>{req.createdAt?.slice(0, 10)}</td>
                       <td>
-                        <div className={styles.actionGroup}>
-                          <button
-                            className={`${styles.actionBtn} ${styles.approveBtn}`}
-                            onClick={() => handleApprove(req.claimId)}
-                          >
-                            <CheckCircle size={14} />
-                            승인
-                          </button>
-                          <button
-                            className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                            onClick={() => setRejectModalId(req.claimId)}
-                          >
-                            <XCircle size={14} />
-                            거절
-                          </button>
-                        </div>
+                        {isProcessableClaim(req) && (
+                          <div className={styles.actionGroup}>
+                            <button
+                              className={`${styles.actionBtn} ${styles.approveBtn}`}
+                              onClick={() => handleApprove(req.claimId)}
+                            >
+                              <CheckCircle size={14} />
+                              승인
+                            </button>
+                            <button
+                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                              onClick={() => setRejectModalId(req.claimId)}
+                            >
+                              <XCircle size={14} />
+                              거절
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -201,11 +221,13 @@ export default function SellerRefundPage() {
                       {selectedRequest.pickupMethod === "COURIER" ? "택배" : "방문"}
                     </span>
                   </div>
-                  {selectedRequest.refundAmount && (
+                  {selectedRequest.refundAmount != null && (
                     <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>환불금액</span>
+                      <span className={styles.detailLabel}>
+                        {Number(selectedRequest.refundAmount) < 0 ? "추가 결제 금액" : "환불금액"}
+                      </span>
                       <span className={styles.detailValue}>
-                        {Number(selectedRequest.refundAmount).toLocaleString()}원
+                        {Math.abs(Number(selectedRequest.refundAmount)).toLocaleString()}원
                       </span>
                     </div>
                   )}
@@ -233,25 +255,27 @@ export default function SellerRefundPage() {
                 </div>
               </div>
             </div>
-            <div className={styles.modalFooter}>
-              <button
-                className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                onClick={() => {
-                  setSelectedRequest(null)
-                  setRejectModalId(selectedRequest.claimId)
-                }}
-              >
-                <XCircle size={14} />
-                거절
-              </button>
-              <button
-                className={`${styles.actionBtn} ${styles.approveBtn}`}
-                onClick={() => handleApprove(selectedRequest.claimId)}
-              >
-                <CheckCircle size={14} />
-                승인
-              </button>
-            </div>
+            {isProcessableClaim(selectedRequest) && (
+              <div className={styles.modalFooter}>
+                <button
+                  className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                  onClick={() => {
+                    setSelectedRequest(null)
+                    setRejectModalId(selectedRequest.claimId)
+                  }}
+                >
+                  <XCircle size={14} />
+                  거절
+                </button>
+                <button
+                  className={`${styles.actionBtn} ${styles.approveBtn}`}
+                  onClick={() => handleApprove(selectedRequest.claimId)}
+                >
+                  <CheckCircle size={14} />
+                  승인
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

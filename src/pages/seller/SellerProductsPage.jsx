@@ -24,6 +24,44 @@ const EMPTY_FORM = {
   productImageList: [],
 }
 
+const createEmptyForm = (categoryId = "") => ({
+  ...EMPTY_FORM,
+  categoryId,
+  optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
+  productImageList: [],
+})
+
+const getErrorMessage = (error) =>
+  error.response?.data?.message || error.message || "처리 중 오류가 발생했습니다."
+
+const toNullableText = (value) => {
+  const text = value?.trim()
+  return text ? text : null
+}
+
+const buildCreatePayload = (formData) => ({
+  ...formData,
+  price: Number(formData.price),
+  categoryId: Number(formData.categoryId),
+  description: formData.description || formData.productName,
+  productImageList: formData.productImageList.length > 0
+    ? formData.productImageList
+    : formData.thumbnailUrl
+      ? [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }]
+      : [],
+})
+
+const buildUpdatePayload = (formData) => ({
+  productName: toNullableText(formData.productName),
+  brand: toNullableText(formData.brand),
+  price: formData.price ? Number(formData.price) : null,
+  thumbnailUrl: toNullableText(formData.thumbnailUrl),
+  description: toNullableText(formData.description),
+  manufacturer: toNullableText(formData.manufacturer),
+  origin: toNullableText(formData.origin),
+  precaution: toNullableText(formData.precaution),
+})
+
 export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
@@ -42,6 +80,8 @@ export default function SellerProductsPage() {
 
   // 상세 모달
   const [viewingProduct, setViewingProduct] = useState(null)
+  const [parentCategories, setParentCategories] = useState([])
+  const [categoryLoading, setCategoryLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -52,6 +92,20 @@ export default function SellerProductsPage() {
       const list = categoryRes?.data ?? categoryRes ?? []
       setCategories(Array.isArray(list) ? list : [])
     }).finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    getParentCategories()
+      .then((res) => {
+        const categories = res.data ?? []
+        setParentCategories(categories)
+        setFormData((prev) => {
+          if (prev.categoryId || categories.length === 0) return prev
+          return { ...prev, categoryId: String(categories[0].parentCategoryId) }
+        })
+      })
+      .catch(() => setParentCategories([]))
+      .finally(() => setCategoryLoading(false))
   }, [])
 
   const filteredProducts = useMemo(() => {

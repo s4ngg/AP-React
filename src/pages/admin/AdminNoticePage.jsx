@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
-import { Plus, Trash2, Pin } from "lucide-react"
+import { Plus, Trash2, Pin, Pencil, X } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminNoticePage.module.css"
-import { getNotices, createNotice, deleteNotice} from "../../api/noticeApi.js"
+import { getNotices, createNotice, updateNotice, deleteNotice } from "../../api/noticeApi.js"
 
 
 export default function AdminNoticePage() {
@@ -15,19 +16,47 @@ export default function AdminNoticePage() {
   }, [])
 
   const [newTitle, setNewTitle] = useState("")
+  const [newContent, setNewContent] = useState("")
   const [newIsPinned, setNewIsPinned] = useState(false)
+
+  const [editTarget, setEditTarget] = useState(null)
+  const [editTitle, setEditTitle] = useState("")
+  const [editContent, setEditContent] = useState("")
+  const [editIsPinned, setEditIsPinned] = useState(false)
 
   const handleAdd = (e) => {
     e.preventDefault()
     const title = newTitle.trim()
     if (!title) return
-    createNotice({ title, content: "", fixed: newIsPinned })
+    createNotice({ title, content: newContent.trim(), fixed: newIsPinned })
         .then((data) => {
           setNotices((prev) => [data, ...prev])
           setNewTitle("")
+          setNewContent("")
           setNewIsPinned(false)
         })
         .catch(() => alert("공지사항 등록에 실패했습니다."))
+  }
+
+  const openEdit = (notice) => {
+    setEditTarget(notice)
+    setEditTitle(notice.title)
+    setEditContent(notice.content ?? "")
+    setEditIsPinned(notice.fixed)
+  }
+
+  const closeEdit = () => setEditTarget(null)
+
+  const handleEdit = (e) => {
+    e.preventDefault()
+    const title = editTitle.trim()
+    if (!title) return
+    updateNotice(editTarget.noticeId, { title, content: editContent.trim(), fixed: editIsPinned })
+      .then((data) => {
+        setNotices((prev) => prev.map((n) => n.noticeId === data.noticeId ? data : n))
+        closeEdit()
+      })
+      .catch(() => alert("수정에 실패했습니다."))
   }
 
   const handleDelete = (id, title) => {
@@ -46,25 +75,36 @@ export default function AdminNoticePage() {
         <div className={styles.section}>
           {/* 등록 폼 */}
           <form className={styles.addForm} onSubmit={handleAdd}>
-            <input
-              type="text"
-              className={styles.addInput}
-              placeholder="공지사항 제목 입력"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-            />
-            <label className={styles.pinLabel}>
+            <div className={styles.addFields}>
               <input
-                type="checkbox"
-                checked={newIsPinned}
-                onChange={(e) => setNewIsPinned(e.target.checked)}
+                type="text"
+                className={styles.addInput}
+                placeholder="공지사항 제목 입력"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
               />
-              상단 고정
-            </label>
-            <button type="submit" className={styles.addBtn}>
-              <Plus size={15} />
-              등록
-            </button>
+              <textarea
+                className={styles.addTextarea}
+                placeholder="공지사항 본문 입력"
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className={styles.addActions}>
+              <label className={styles.pinLabel}>
+                <input
+                  type="checkbox"
+                  checked={newIsPinned}
+                  onChange={(e) => setNewIsPinned(e.target.checked)}
+                />
+                상단 고정
+              </label>
+              <button type="submit" className={styles.addBtn}>
+                <Plus size={15} />
+                등록
+              </button>
+            </div>
           </form>
 
           {/* 테이블 */}
@@ -104,8 +144,15 @@ export default function AdminNoticePage() {
                           <span className={styles.pinnedMark}>Y</span>
                         )}
                       </td>
-                      <td>{notice.createdAt?.slice(0, 10)}</td>
-                      <td>
+                      <td>{formatDate(notice.createdAt)}</td>
+                      <td className={styles.actionCell}>
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => openEdit(notice)}
+                          aria-label="수정"
+                        >
+                          <Pencil size={14} />
+                        </button>
                         <button
                           className={styles.deleteBtn}
                           onClick={() => handleDelete(notice.noticeId, notice.title)}
@@ -121,6 +168,49 @@ export default function AdminNoticePage() {
             </table>
           </div>
         </div>
+
+        {/* 수정 모달 */}
+        {editTarget && (
+          <div className={styles.modalOverlay} onClick={closeEdit}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>공지사항 수정</h2>
+                <button className={styles.modalCloseBtn} onClick={closeEdit} aria-label="닫기">
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleEdit} className={styles.modalForm}>
+                <div className={styles.addFields}>
+                  <input
+                    type="text"
+                    className={styles.addInput}
+                    placeholder="공지사항 제목"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                  />
+                  <textarea
+                    className={styles.addTextarea}
+                    placeholder="공지사항 본문 입력"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    rows={6}
+                  />
+                </div>
+                <div className={styles.addActions}>
+                  <label className={styles.pinLabel}>
+                    <input
+                      type="checkbox"
+                      checked={editIsPinned}
+                      onChange={(e) => setEditIsPinned(e.target.checked)}
+                    />
+                    상단 고정
+                  </label>
+                  <button type="submit" className={styles.addBtn}>저장</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

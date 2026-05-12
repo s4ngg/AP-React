@@ -3,6 +3,7 @@ import { CheckCircle, Search, XCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import {
   approveAdminProduct,
+  getAdminParentCategories,
   getAdminProducts,
   rejectAdminProduct,
 } from "../../api/adminApi"
@@ -33,6 +34,7 @@ const formatPrice = (price) => Number(price ?? 0).toLocaleString()
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([])
+  const [parentCategories, setParentCategories] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY)
   const [loading, setLoading] = useState(false)
@@ -46,17 +48,23 @@ export default function AdminProductsPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  const fetchCategories = useCallback(() => {
+    getAdminParentCategories()
+      .then((data) => setParentCategories(data ?? []))
+      .catch(() => {})
+  }, [])
+
   useEffect(() => {
-    const timeoutId = setTimeout(fetchProducts, 0)
+    const timeoutId = setTimeout(() => {
+      fetchProducts()
+      fetchCategories()
+    }, 0)
     return () => clearTimeout(timeoutId)
-  }, [fetchProducts])
+  }, [fetchProducts, fetchCategories])
 
   const filterCategories = useMemo(() => {
-    const categories = products
-      .map((product) => product.parentCategoryName)
-      .filter(Boolean)
-    return [ALL_CATEGORY, ...new Set(categories)]
-  }, [products])
+    return [ALL_CATEGORY, ...parentCategories.map((c) => c.categoryName)]
+  }, [parentCategories])
 
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()

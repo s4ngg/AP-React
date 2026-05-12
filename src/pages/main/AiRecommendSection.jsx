@@ -98,23 +98,24 @@ export default function AiRecommendSection() {
         if (categoryId) {
           const res = await spring.get(`/api/products?categoryId=${categoryId}&size=2`)
           const items = res.data?.data?.content || []
-          products = [
-            ...products,
-            ...items.map((p) => ({
-              id: p.productId,
-              name: p.productName,
-              price: Number(p.price),
-              originalPrice: null,
-              image: p.thumbnailUrl,
-            })),
-          ]
+          const newItems = items.map((p) => ({
+            id: p.productId,
+            name: p.productName,
+            price: Number(p.price),
+            originalPrice: null,
+            image: p.thumbnailUrl,
+          }))
+          products = [...products, ...newItems]
         }
       }
+      const uniqueProducts = products.filter(
+        (p, index, self) => index === self.findIndex((t) => t.id === p.id)
+      )
 
       setData({
         categories: recommendedCategories,
         keywords: result.keywords || [],
-        products,
+        products: uniqueProducts,
       })
     } catch (e) {
       console.error("AI 추천 실패", e)

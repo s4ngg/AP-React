@@ -43,9 +43,6 @@ export const getSellerClaims = () =>
 export const getSellerOrders = () =>
   api.get("/api/seller/orders").then((res) => res.data.data)
 
-export const updateSellerOrderStatus = (orderId, status) =>
-  api.patch(`/api/seller/orders/${orderId}/status`, { status }).then((res) => res.data.data)
-
 export const approveClaim = (claimId) =>
   api.patch(`/api/claims/${claimId}/approve`).then((res) => res.data)
 
@@ -55,6 +52,9 @@ export const rejectClaim = (claimId, rejectReason) =>
 // 수정: /api/inquiries/my → /api/inquiries/seller (판매자용 엔드포인트)
 export const getSellerInquiries = () =>
   api.get("/api/inquiries/seller").then((res) => res.data.data)
+
+export const answerSellerInquiry = (inquiryId, content) =>
+  api.post(`/api/inquiries/${inquiryId}/answers/seller`, { content }).then((res) => res.data.data)
 
 /**
  * 판매자 본인 상품 목록 조회

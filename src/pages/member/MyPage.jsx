@@ -74,7 +74,7 @@ export default function MyPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false)
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
 
-  const { logout } = useAuthStore()
+  const { logout, user } = useAuthStore()
 
   // 회원 정보
   const [memberInfo, setMemberInfo] = useState(null)
@@ -465,7 +465,13 @@ export default function MyPage() {
                         {order.orderItems?.map((item) => (
                           <div key={item.orderItemId} className={styles.orderItem}>
                             <div className={styles.orderItemInfo}>
-                              <p className={styles.orderItemName}>{item.productName}</p>
+                              <p
+                                className={styles.orderItemName}
+                                onClick={() => navigate(`/products/${item.productId}`)}
+                                style={{ cursor: "pointer", textDecoration: "underline" }}
+                              >
+                                {item.productName}
+                              </p>
                               <p className={styles.orderItemMeta}>{item.quantity}개</p>
                               <p className={styles.orderItemPrice}>{Number(item.totalPrice).toLocaleString()}원</p>
                             </div>
@@ -473,9 +479,14 @@ export default function MyPage() {
                         ))}
                       </div>
                       <div className={styles.orderFooter}>
-                        <span className={styles.orderTotal}>
-                          총 결제 금액 <strong>{Number(order.totalAmount).toLocaleString()}원</strong>
-                        </span>
+                        <div className={styles.orderPriceInfo}>
+                          <span className={styles.orderShipping}>
+                            배송비 <strong>{Number(order.shippingFee ?? 0) === 0 ? "무료" : `${Number(order.shippingFee).toLocaleString()}원`}</strong>
+                          </span>
+                          <span className={styles.orderTotal}>
+                            총 결제 금액 <strong>{(Number(order.totalAmount) + Number(order.shippingFee ?? 0)).toLocaleString()}원</strong>
+                          </span>
+                        </div>
                         {order.status === "PENDING" && (
                           <button
                             className={styles.cancelOrderBtn}
@@ -710,11 +721,15 @@ export default function MyPage() {
           {/* 판매자 신청 */}
           {activeTab === "seller" && (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>판매자 신청</h2>
+              <h2 className={styles.sectionTitle}>{user?.isSeller ? "판매자 관리" : "판매자 신청"}</h2>
               <div className={styles.withdrawalWrap}>
                 <div className={styles.withdrawalWarning}>
                   <Store size={20} color="#6366f1" />
-                  <p className={styles.withdrawalWarningText}>판매자로 전환하면 상품을 등록하고 판매할 수 있어요.</p>
+                  <p className={styles.withdrawalWarningText}>
+                    {user?.isSeller
+                      ? "판매자 페이지에서 상품을 등록하고 관리할 수 있어요."
+                      : "판매자로 전환하면 상품을 등록하고 판매할 수 있어요."}
+                  </p>
                 </div>
                 <ul className={styles.withdrawalList}>
                   <li>상품 등록 및 관리</li>
@@ -723,9 +738,9 @@ export default function MyPage() {
                 </ul>
                 <button
                   className={styles.saveBtn}
-                  onClick={() => navigate("/seller-apply")}
+                  onClick={() => navigate(user?.isSeller ? "/seller/products" : "/seller-apply")}
                 >
-                  판매자 신청하기
+                  {user?.isSeller ? "상품 관리로 이동" : "판매자 신청하기"}
                 </button>
               </div>
             </div>
@@ -746,7 +761,7 @@ export default function MyPage() {
                   <li>작성한 리뷰 및 문의</li>
                 </ul>
                 <p className={styles.withdrawalNotice}>
-                  탈퇴 후에는 동일한 이메일로 재가입이 가능하나, 기존 데이터는 복구되지 않습니다.
+                  탈퇴 후에는 동일한 이메일로 재가입할 수 없으며, 기존 데이터는 복구되지 않습니다.
                 </p>
                 {!showWithdrawConfirm ? (
                   <button className={styles.withdrawalBtn} onClick={() => setShowWithdrawConfirm(true)}>
