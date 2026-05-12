@@ -76,8 +76,8 @@ export default function ProductGrid() {
     const fetchProducts = async () => {
       try {
         const res = await getProductList(page)
-        const content = res.data?.content || []
-        const totalPages = res.data?.totalPages || 0
+        const content = res.data?.content || res.content || []
+        const totalPages = res.data?.totalPages ?? res.totalPages ?? 0
         setDisplayProducts(prev => page === 0 ? content : [...prev, ...content])
         setHasMore(page < totalPages - 1)
       } catch {
