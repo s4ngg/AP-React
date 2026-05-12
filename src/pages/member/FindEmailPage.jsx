@@ -11,7 +11,18 @@ export default function FindEmailPage() {
   const [error, setError] = useState("");
   const [foundEmail, setFoundEmail] = useState("");
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+
+  const handlePhoneChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+    let formatted = digits;
+    if (digits.length > 7) {
+      formatted = `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+    } else if (digits.length > 3) {
+      formatted = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    }
+    setValue("phone", formatted, { shouldValidate: true });
+  };
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -59,6 +70,7 @@ export default function FindEmailPage() {
                 required: "휴대폰 번호를 입력해주세요",
                 pattern: { value: /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/, message: "010-0000-0000 형식으로 입력해주세요" },
               })}
+              onChange={handlePhoneChange}
             />
             {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
           </div>
