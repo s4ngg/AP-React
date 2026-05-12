@@ -4,10 +4,8 @@ import SellerSidebar from "../../components/seller/SellerSidebar"
 import { getSellerClaims, getSellerOrders } from "../../api/sellerApi"
 import styles from "./SellerDashboardPage.module.css"
 
-const HARDCODED_MONTHLY_SALES = 1250000
-
-const STATUS_KO = {
-  PENDING: "결제완료",
+const STATUS_LABEL = {
+  PENDING: "결제대기",
   PAID: "결제완료",
   SHIPPING: "배송중",
   DELIVERED: "배송완료",
@@ -15,34 +13,50 @@ const STATUS_KO = {
 }
 
 const STATUS_CLASS = {
-  PENDING: styles.statusPending,
-  PROCESSING: styles.statusProcessing,
-  SHIPPED: styles.statusShipped,
-  DELIVERED: styles.statusDelivered,
-  CANCELLED: styles.statusCancelled,
+  PENDING: styles.statusPreparing,
+  PAID: styles.statusPaid,
+  SHIPPING: styles.statusShipping,
+  DELIVERED: styles.statusDone,
+  CANCELLED: styles.statusCancel,
 }
+
+const formatDate = (value) => {
+  if (!value) return "-"
+  return value.slice(0, 10)
+}
+
+const formatPrice = (value) => Number(value ?? 0).toLocaleString()
+
+const getStatusLabel = (order) => order.statusLabel ?? STATUS_LABEL[order.status] ?? order.status ?? "-"
 
 export default function SellerDashboardPage() {
   const [orders, setOrders] = useState([])
   const [claims, setClaims] = useState([])
   const [loading, setLoading] = useState(true)
+  const [ordersError, setOrdersError] = useState("")
 
   useEffect(() => {
     Promise.allSettled([getSellerOrders(), getSellerClaims()])
       .then(([ordersResult, claimsResult]) => {
-        if (ordersResult.status === "fulfilled") setOrders(ordersResult.value ?? [])
+        if (ordersResult.status === "fulfilled") {
+          setOrders(ordersResult.value ?? [])
+          setOrdersError("")
+        } else {
+          setOrders([])
+          setOrdersError("주문 데이터를 불러오지 못했습니다.")
+        }
         if (claimsResult.status === "fulfilled") setClaims(claimsResult.value ?? [])
       })
       .finally(() => setLoading(false))
   }, [])
 
   const totalOrders = orders.length
-  const pendingOrders = orders.filter((o) => o.status === "PENDING").length
+  const pendingOrders = orders.filter((o) => o.status === "PAID").length
   const claimCount = claims.length
 
   // 최근 5건
   const recentOrders = [...orders]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .sort((a, b) => new Date(b.orderedAt) - new Date(a.orderedAt))
     .slice(0, 5)
 
   return (
@@ -53,12 +67,12 @@ export default function SellerDashboardPage() {
 
         {/* 통계 카드 */}
         <div className={styles.statsGrid}>
-          {/* 매출 — 하드코딩 */}
+          {/* 매출 */}
           <div className={styles.statCard}>
             <div className={styles.statIcon}><TrendingUp size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>이번 달 매출</p>
-              <p className={styles.statValue}>₩ 1,250,000</p>
+              <p className={styles.statValue}>아직 미구현 기능입니다</p>
             </div>
           </div>
 
@@ -67,7 +81,7 @@ export default function SellerDashboardPage() {
             <div className={`${styles.statIcon} ${styles.statIconBlue}`}><ShoppingBag size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>총 주문 수</p>
-              <p className={styles.statValue}>{loading ? "-" : `${totalOrders}건`}</p>
+              <p className={styles.statValue}>{loading || ordersError ? "-" : `${totalOrders}건`}</p>
             </div>
           </div>
 
@@ -76,7 +90,7 @@ export default function SellerDashboardPage() {
             <div className={`${styles.statIcon} ${styles.statIconOrange}`}><Package size={22} /></div>
             <div className={styles.statInfo}>
               <p className={styles.statLabel}>처리 대기 주문</p>
-              <p className={styles.statValue}>{loading ? "-" : `${pendingOrders}건`}</p>
+              <p className={styles.statValue}>{loading || ordersError ? "-" : `${pendingOrders}건`}</p>
             </div>
           </div>
 
@@ -110,21 +124,25 @@ export default function SellerDashboardPage() {
                   <tr>
                     <td colSpan={6} className={styles.emptyRow}>불러오는 중...</td>
                   </tr>
+                ) : ordersError ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>{ordersError}</td>
+                  </tr>
                 ) : recentOrders.length === 0 ? (
                   <tr>
                     <td colSpan={6} className={styles.emptyRow}>주문 데이터가 없습니다.</td>
                   </tr>
                 ) : (
                   recentOrders.map((order) => (
-                    <tr key={order.orderId}>
-                      <td>#{order.orderId}</td>
-                      <td>{order.memberName ?? `회원 #${order.memberId}`}</td>
+                    <tr key={order.orderItemId ?? order.orderId}>
+                      <td className={styles.orderId}>{order.orderNumber}</td>
+                      <td>{order.memberName ?? "-"}</td>
                       <td>{order.productName ?? "-"}</td>
-                      <td>{order.totalPrice != null ? `₩ ${order.totalPrice.toLocaleString()}` : "-"}</td>
-                      <td>{order.createdAt?.slice(0, 10) ?? "-"}</td>
+                      <td>{order.totalPrice != null ? `${formatPrice(order.totalPrice)}원` : "-"}</td>
+                      <td>{formatDate(order.orderedAt)}</td>
                       <td>
                         <span className={`${styles.statusBadge} ${STATUS_CLASS[order.status] ?? ""}`}>
-                          {STATUS_KO[order.status] ?? order.status}
+                          {getStatusLabel(order)}
                         </span>
                       </td>
                     </tr>
