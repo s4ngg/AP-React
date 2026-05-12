@@ -199,9 +199,9 @@ export default function AdminMemberPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredBuyers.map((buyer) => (
+                      filteredBuyers.map((buyer, index) => (
                         <tr key={buyer.id}>
-                          <td className={styles.idCell}>{buyer.id}</td>
+                          <td className={styles.idCell}>{index + 1}</td>
                           <td className={styles.nameCell}>{buyer.name}</td>
                           <td>{buyer.email}</td>
                           <td>{formatDate(buyer.createdAt)}</td>
@@ -276,9 +276,9 @@ export default function AdminMemberPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredSellers.map((seller) => (
+                      filteredSellers.map((seller, index) => (
                         <tr key={seller.sellerId}>
-                          <td className={styles.idCell}>{seller.sellerId}</td>
+                          <td className={styles.idCell}>{index + 1}</td>
                           <td className={styles.nameCell}>{seller.businessName}</td>
                           <td>{seller.businessNumber}</td>
                           <td>{seller.representativeName}</td>
@@ -349,9 +349,9 @@ export default function AdminMemberPage() {
                         </td>
                       </tr>
                     ) : (
-                      pendingSellers.map((seller) => (
+                      pendingSellers.map((seller, index) => (
                         <tr key={seller.sellerId}>
-                          <td className={styles.idCell}>{seller.sellerId}</td>
+                          <td className={styles.idCell}>{index + 1}</td>
                           <td className={styles.nameCell}>{seller.businessName}</td>
                           <td>{seller.businessNumber}</td>
                           <td>{seller.representativeName}</td>
