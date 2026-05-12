@@ -479,9 +479,14 @@ export default function MyPage() {
                         ))}
                       </div>
                       <div className={styles.orderFooter}>
-                        <span className={styles.orderTotal}>
-                          총 결제 금액 <strong>{Number(order.totalAmount).toLocaleString()}원</strong>
-                        </span>
+                        <div className={styles.orderPriceInfo}>
+                          <span className={styles.orderShipping}>
+                            배송비 <strong>{Number(order.shippingFee ?? 0) === 0 ? "무료" : `${Number(order.shippingFee).toLocaleString()}원`}</strong>
+                          </span>
+                          <span className={styles.orderTotal}>
+                            총 결제 금액 <strong>{(Number(order.totalAmount) + Number(order.shippingFee ?? 0)).toLocaleString()}원</strong>
+                          </span>
+                        </div>
                         {order.status === "PENDING" && (
                           <button
                             className={styles.cancelOrderBtn}
