@@ -46,6 +46,17 @@
   font-weight: 600;
 }
 
+.typeBadge {
+  display: inline-block;
+  padding: 2px 10px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* 문의 목록 */
 .inquiryList {
   display: flex;
@@ -235,14 +246,20 @@
 }
 
 /* 답변 작성 폼 */
-.answerForm {
+.replyForm {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 12px;
 }
 
-.answerTextarea {
+.replyLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.replyTextarea {
   width: 100%;
   padding: 12px;
   border: 1px solid #d1d5db;
@@ -255,16 +272,27 @@
   box-sizing: border-box;
 }
 
-.answerTextarea:focus {
+.replyTextarea:focus {
   border-color: #059669;
 }
 
-.answerActions {
+.replyActions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.submitBtn {
+.replyCount {
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.replyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 20px;
   background-color: #059669;
   color: #ffffff;
@@ -276,11 +304,11 @@
   transition: background-color 0.15s;
 }
 
-.submitBtn:hover:not(:disabled) {
+.replyButton:hover:not(:disabled) {
   background-color: #047857;
 }
 
-.submitBtn:disabled {
+.replyButton:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
