@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import styles from "./ProductGrid.module.css"
 import useCartStore from "../../store/cartStore"
 import { getProductList } from "../../api/productApi"
 
 const sortOptions = [
-  { label: "최신순",    value: "latest" },
-  { label: "가격낮은순", value: "price_asc" },
-  { label: "가격높은순", value: "price_desc" },
-  { label: "인기순",    value: "popular" },
+  { label: "최신순",    value: "latest",     sort: "createdAt,desc" },
+  { label: "가격낮은순", value: "price_asc",  sort: "price,asc" },
+  { label: "가격높은순", value: "price_desc", sort: "price,desc" },
+  { label: "인기순",    value: "popular",    sort: "createdAt,desc" },
 ]
 
 function ProductCard({ product }) {
@@ -20,14 +20,6 @@ function ProductCard({ product }) {
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null
-
-  const handleAddCart = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    addItem(product)
-    setToastVisible(true)
-    setTimeout(() => setToastVisible(false), 2000)
-  }
 
   return (
     <Link to={`/products/${product.productId}`} className={styles.card}>
@@ -41,7 +33,11 @@ function ProductCard({ product }) {
         {product.badge && <span className={styles.badge}>{product.badge}</span>}
         <button
           className={styles.wishBtn}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLiked(!liked) }}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setLiked(!liked)
+          }}
           aria-label="위시리스트"
         >
           <Heart size={16} fill={liked ? "#ef4444" : "none"} color={liked ? "#ef4444" : "#9ca3af"} />
@@ -73,35 +69,42 @@ export default function ProductGrid() {
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true)
-      try {
-        // getProductList → response.data 반환
-        // response.data = ApiResponse { success, message, data: Page { content, totalPages, ... } }
-        const apiResponse = await getProductList(page)
-        const pageData = apiResponse?.data
-        const content = Array.isArray(pageData?.content) ? pageData.content : []
-        const totalPages = pageData?.totalPages ?? 0
-        setDisplayProducts(prev => page === 0 ? content : [...prev, ...content])
-        setHasMore(page < totalPages - 1)
-      } catch {
-        if (page === 0) setDisplayProducts([])
-      } finally {
-        setLoading(false)
-      }
+  const currentSortParam = sortOptions.find((o) => o.value === activeSort)?.sort ?? "createdAt,desc"
+
+  const fetchProducts = useCallback(async (targetPage, sortParam) => {
+    setLoading(true)
+    try {
+      const apiResponse = await getProductList(targetPage, 8, sortParam)
+      // getProductList → response.data = ApiResponse { data: Page { content, totalPages } }
+      const pageData = apiResponse?.data
+      const content = Array.isArray(pageData?.content) ? pageData.content : []
+      const totalPages = pageData?.totalPages ?? 0
+      setDisplayProducts((prev) => targetPage === 0 ? content : [...prev, ...content])
+      setHasMore(targetPage < totalPages - 1)
+    } catch {
+      if (targetPage === 0) setDisplayProducts([])
+    } finally {
+      setLoading(false)
     }
-    fetchProducts()
+  }, [])
+
+  // 정렬 변경 시 → 초기화 후 page 0 재조회
+  useEffect(() => {
+    setDisplayProducts([])
+    setPage(0)
+    fetchProducts(0, currentSortParam)
+  }, [activeSort])
+
+  // 더보기로 page 증가 시 → 추가 조회 (page > 0일 때만)
+  useEffect(() => {
+    if (page === 0) return
+    fetchProducts(page, currentSortParam)
   }, [page])
 
-  const sortedProducts = [...displayProducts].sort((a, b) => {
-    const priceA = parseFloat(a.price) || 0
-    const priceB = parseFloat(b.price) || 0
-    if (activeSort === "price_asc") return priceA - priceB
-    if (activeSort === "price_desc") return priceB - priceA
-    if (activeSort === "popular") return (b.reviewCount || 0) - (a.reviewCount || 0)
-    return 0
-  })
+  const handleSortChange = (value) => {
+    if (value === activeSort) return
+    setActiveSort(value)
+  }
 
   return (
     <section className={styles.section}>
@@ -112,7 +115,7 @@ export default function ProductGrid() {
             {sortOptions.map((o) => (
               <button
                 key={o.value}
-                onClick={() => setActiveSort(o.value)}
+                onClick={() => handleSortChange(o.value)}
                 className={`${styles.sortBtn} ${activeSort === o.value ? styles.sortBtnActive : ""}`}
               >
                 {o.label}
@@ -120,19 +123,21 @@ export default function ProductGrid() {
             ))}
           </div>
         </div>
-        {sortedProducts.length === 0 && !loading ? (
+        {displayProducts.length === 0 && !loading ? (
           <p style={{ textAlign: "center", color: "#9ca3af", padding: "40px 0" }}>
             상품 준비 중입니다.
           </p>
         ) : (
           <div className={styles.grid}>
-            {sortedProducts.map((p) => <ProductCard key={p.productId} product={p} />)}
+            {displayProducts.map((p) => (
+              <ProductCard key={p.productId} product={p} />
+            ))}
           </div>
         )}
         {hasMore && (
           <button
             className={styles.moreBtn}
-            onClick={() => setPage(prev => prev + 1)}
+            onClick={() => setPage((prev) => prev + 1)}
             disabled={loading}
           >
             {loading ? "로딩 중..." : "더보기"}
