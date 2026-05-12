@@ -76,8 +76,10 @@ export default function ProductGrid() {
     const fetchProducts = async () => {
       try {
         const res = await getProductList(page)
-        const content = res.data?.content || res.content || []
-        const totalPages = res.data?.totalPages ?? res.totalPages ?? 0
+        // ApiResponse 래퍼: res = { success, message, data: { content, totalPages, ... } }
+        const pageData = res?.data ?? res
+        const content = pageData?.content ?? []
+        const totalPages = pageData?.totalPages ?? 0
         setDisplayProducts(prev => page === 0 ? content : [...prev, ...content])
         setHasMore(page < totalPages - 1)
       } catch {
@@ -88,8 +90,11 @@ export default function ProductGrid() {
   }, [page])
 
   const sortedProducts = [...displayProducts].sort((a, b) => {
-    if (activeSort === "price_asc") return Number(a.price) - Number(b.price)
-    if (activeSort === "price_desc") return Number(b.price) - Number(a.price)
+    const priceA = parseFloat(a.price) || 0
+    const priceB = parseFloat(b.price) || 0
+    if (activeSort === "price_asc") return priceA - priceB
+    if (activeSort === "price_desc") return priceB - priceA
+    if (activeSort === "popular") return (b.reviewCount || 0) - (a.reviewCount || 0)
     return 0
   })
 
