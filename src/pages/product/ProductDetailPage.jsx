@@ -172,6 +172,7 @@ export default function ProductDetailPage() {
         id: product.productId,
         name: product.productName,
         price: Number(product.price),
+        image: product.thumbnailUrl,
         thumbnailUrl: product.thumbnailUrl,
       },
       quantity,
@@ -199,6 +200,7 @@ export default function ProductDetailPage() {
         id: product.productId,
         name: product.productName,
         price: Number(product.price),
+        image: product.thumbnailUrl,
         thumbnailUrl: product.thumbnailUrl,
       },
       quantity,
@@ -308,7 +310,7 @@ export default function ProductDetailPage() {
                 <div style={{ marginBottom: 12 }}>
                   <label style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>별점</label>
                   <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
-                    {[1,2,3,4,5].map((s) => (
+                    {[1, 2, 3, 4, 5].map((s) => (
                       <button
                         key={s}
                         type="button"
@@ -408,7 +410,7 @@ export default function ProductDetailPage() {
                         <div>
                           <div className={styles.reviewHeader}>
                             <div style={{ display: "flex", gap: 4 }}>
-                              {[1,2,3,4,5].map((s) => (
+                              {[1, 2, 3, 4, 5].map((s) => (
                                 <button
                                   key={s}
                                   type="button"

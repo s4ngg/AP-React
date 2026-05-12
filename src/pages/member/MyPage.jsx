@@ -115,7 +115,7 @@ export default function MyPage() {
         setMemberGrade(data.grade ?? "NORMAL")
         setForm({ phone: data.phone ?? "", address: data.address ?? "", addressDetail: "" })
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const fetchOrders = useCallback(() => {
@@ -479,9 +479,14 @@ export default function MyPage() {
                         ))}
                       </div>
                       <div className={styles.orderFooter}>
-                        <span className={styles.orderTotal}>
-                          총 결제 금액 <strong>{Number(order.totalAmount).toLocaleString()}원</strong>
-                        </span>
+                        <div className={styles.orderPriceInfo}>
+                          <span className={styles.orderShipping}>
+                            배송비 <strong>{Number(order.shippingFee ?? 0) === 0 ? "무료" : `${Number(order.shippingFee).toLocaleString()}원`}</strong>
+                          </span>
+                          <span className={styles.orderTotal}>
+                            총 결제 금액 <strong>{(Number(order.totalAmount) + Number(order.shippingFee ?? 0)).toLocaleString()}원</strong>
+                          </span>
+                        </div>
                         {order.status === "PENDING" && (
                           <button
                             className={styles.cancelOrderBtn}
@@ -649,7 +654,23 @@ export default function MyPage() {
                     </p>
                   </div>
                 </div>
-                <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
+                {(() => {
+                  const gradeOrder = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
+                  const currentIndex = gradeOrder.indexOf(memberGrade)
+                  const nextGrade = gradeOrder[currentIndex + 1]
+                  if (!nextGrade) return (
+                    <p className={styles.gradeNotice}>최고 등급입니다! 매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
+                  )
+                  return (
+                    <div>
+                      <p className={styles.gradeNotice}>
+                        다음 등급 <strong style={{ color: GRADE_CONFIG[nextGrade].color }}>{GRADE_CONFIG[nextGrade].label}</strong>까지{" "}
+                        <strong>{GRADE_CONFIG[nextGrade].minAmount.toLocaleString()}원</strong> 이상 구매 필요
+                      </p>
+                      <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
+                    </div>
+                  )
+                })()}
               </div>
 
               <div className={styles.gradeCriteria}>
@@ -756,7 +777,7 @@ export default function MyPage() {
                   <li>작성한 리뷰 및 문의</li>
                 </ul>
                 <p className={styles.withdrawalNotice}>
-                  탈퇴 후에는 동일한 이메일로 재가입이 가능하나, 기존 데이터는 복구되지 않습니다.
+                  탈퇴 후에는 동일한 이메일로 재가입할 수 없으며, 기존 데이터는 복구되지 않습니다.
                 </p>
                 {!showWithdrawConfirm ? (
                   <button className={styles.withdrawalBtn} onClick={() => setShowWithdrawConfirm(true)}>
