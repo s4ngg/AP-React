@@ -34,6 +34,7 @@ const EMPTY_FORM = {
   description: "",
   thumbnailUrl: "",
   categoryId: "",
+  categoryIds: [],
   optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
@@ -42,6 +43,7 @@ export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [childCategories, setChildCategories] = useState([])
+  const [childCategoriesLoading, setChildCategoriesLoading] = useState(false)
   const [selectedParentId, setSelectedParentId] = useState("")
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -72,9 +74,16 @@ export default function SellerProductsPage() {
 
   useEffect(() => {
     if (!selectedParentId) { setChildCategories([]); return }
+    setChildCategoriesLoading(true)
     getChildCategories(selectedParentId)
-      .then((res) => setChildCategories(res.data ?? []))
+      .then((res) => {
+        const list = res?.data ?? res ?? []
+        const children = Array.isArray(list) ? list : []
+        setChildCategories(children)
+        setFormData((prev) => ({ ...prev, categoryId: "", categoryIds: [] }))
+      })
       .catch(() => setChildCategories([]))
+      .finally(() => setChildCategoriesLoading(false))
   }, [selectedParentId])
 
   const filteredProducts = useMemo(() => {
@@ -127,8 +136,8 @@ export default function SellerProductsPage() {
       alert("브랜드, 제조사, 원산지, 주의사항은 필수입니다.")
       return
     }
-    if (!formData.categoryId) {
-      alert("카테고리를 선택해주세요.")
+    if (!selectedParentId || formData.categoryIds.length === 0) {
+      alert("카테고리 소분류를 하나 이상 선택해주세요.")
       return
     }
     const invalidOption = formData.optionList.some((o) => !o.optionName.trim() || !o.optionValue.trim())
@@ -142,7 +151,7 @@ export default function SellerProductsPage() {
       const payload = {
         ...formData,
         price: Number(formData.price),
-        categoryId: Number(formData.categoryId),
+        categoryId: Number(formData.categoryIds[0]),
         description: formData.description.trim() || formData.productName,
         optionList: formData.optionList.map((o) => ({
           ...o,
@@ -424,7 +433,8 @@ export default function SellerProductsPage() {
                       value={selectedParentId}
                       onChange={(e) => {
                         setSelectedParentId(e.target.value)
-                        setFormData((prev) => ({ ...prev, categoryId: "" }))
+                        setFormData((prev) => ({ ...prev, categoryId: "", categoryIds: [] }))
+                        setChildCategories([])
                       }}
                     >
                       <option value="">대분류 선택</option>
@@ -434,21 +444,33 @@ export default function SellerProductsPage() {
                         </option>
                       ))}
                     </select>
-                    <select
-                      name="categoryId"
-                      className={styles.formInput}
-                      style={{ marginTop: 6 }}
-                      value={formData.categoryId}
-                      onChange={handleFormChange}
-                      disabled={!selectedParentId || childCategories.length === 0}
-                    >
-                      <option value="">소분류 선택</option>
-                      {childCategories.map((child) => (
-                        <option key={child.childCategoryId} value={child.childCategoryId}>
-                          {child.categoryName}
-                        </option>
-                      ))}
-                    </select>
+                    {selectedParentId && (
+                      <div style={{ marginTop: 6, border: "1px solid #ddd", borderRadius: 6, padding: "6px 10px", maxHeight: 160, overflowY: "auto" }}>
+                        {childCategoriesLoading ? (
+                          <p style={{ fontSize: 13, color: "#999", margin: 0 }}>불러오는 중...</p>
+                        ) : childCategories.length === 0 ? (
+                          <p style={{ fontSize: 13, color: "#e53935", margin: 0 }}>이 카테고리에는 소분류가 없습니다. 다른 대분류를 선택해주세요.</p>
+                        ) : (
+                          childCategories.map((child) => (
+                            <label key={child.childCategoryId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", cursor: "pointer", fontSize: 14 }}>
+                              <input
+                                type="radio"
+                                name="categoryId"
+                                checked={formData.categoryId === String(child.childCategoryId)}
+                                onChange={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    categoryId: String(child.childCategoryId),
+                                    categoryIds: [child.childCategoryId],
+                                  }))
+                                }
+                              />
+                              {child.categoryName}
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className={styles.formRow}>
@@ -505,7 +527,11 @@ export default function SellerProductsPage() {
               </div>
               <div className={styles.modalFooter}>
                 <button type="button" className={styles.cancelBtn} onClick={() => { setIsCreateOpen(false); setFormData(EMPTY_FORM) }}>취소</button>
-                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={isSubmitting || (!!selectedParentId && !childCategoriesLoading && childCategories.length === 0)}
+                >
                   {isSubmitting ? "등록 중..." : "등록하기"}
                 </button>
               </div>
