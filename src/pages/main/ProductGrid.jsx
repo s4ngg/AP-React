@@ -70,20 +70,25 @@ export default function ProductGrid() {
   const [activeSort, setActiveSort] = useState("latest")
   const [displayProducts, setDisplayProducts] = useState([])
   const [page, setPage] = useState(0)
-  const [hasMore, setHasMore] = useState(true)
+  const [hasMore, setHasMore] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true)
       try {
-        const res = await getProductList(page)
-        // ApiResponse 래퍼: res = { success, message, data: { content, totalPages, ... } }
-        const pageData = res?.data ?? res
-        const content = pageData?.content ?? []
+        // getProductList → response.data 반환
+        // response.data = ApiResponse { success, message, data: Page { content, totalPages, ... } }
+        const apiResponse = await getProductList(page)
+        const pageData = apiResponse?.data
+        const content = Array.isArray(pageData?.content) ? pageData.content : []
         const totalPages = pageData?.totalPages ?? 0
         setDisplayProducts(prev => page === 0 ? content : [...prev, ...content])
         setHasMore(page < totalPages - 1)
       } catch {
-        setDisplayProducts([])
+        if (page === 0) setDisplayProducts([])
+      } finally {
+        setLoading(false)
       }
     }
     fetchProducts()
@@ -115,7 +120,7 @@ export default function ProductGrid() {
             ))}
           </div>
         </div>
-        {sortedProducts.length === 0 ? (
+        {sortedProducts.length === 0 && !loading ? (
           <p style={{ textAlign: "center", color: "#9ca3af", padding: "40px 0" }}>
             상품 준비 중입니다.
           </p>
@@ -125,8 +130,12 @@ export default function ProductGrid() {
           </div>
         )}
         {hasMore && (
-          <button className={styles.moreBtn} onClick={() => setPage(p => p + 1)}>
-            더보기
+          <button
+            className={styles.moreBtn}
+            onClick={() => setPage(prev => prev + 1)}
+            disabled={loading}
+          >
+            {loading ? "로딩 중..." : "더보기"}
           </button>
         )}
       </div>
