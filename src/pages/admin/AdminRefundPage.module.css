@@ -143,3 +143,11 @@
 .rejectBtn:hover:not(:disabled) {
   background-color: #fee2e2;
 }
+
+.waitingText {
+  display: inline-block;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

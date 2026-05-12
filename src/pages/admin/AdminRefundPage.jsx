@@ -27,7 +27,8 @@ const statusLabel = {
   CANCELLED: "취소",
 }
 
-const pendingStatuses = ["SUBMITTED", "IN_PROGRESS"]
+const visibleStatuses = ["SUBMITTED", "IN_PROGRESS"]
+const ADMIN_PROCESSABLE_STATUS = "IN_PROGRESS"
 
 const formatPrice = (amount) => {
   const num = Number(amount ?? 0)
@@ -58,23 +59,37 @@ export default function AdminRefundPage() {
     () =>
       claims.filter(
         (claim) =>
-          claim.claimType === "RETURN" && pendingStatuses.includes(claim.status)
+          claim.claimType === "RETURN" && visibleStatuses.includes(claim.status)
       ),
     [claims]
   )
 
+  const adminProcessableCount = useMemo(
+    () => refundRequests.filter((claim) => claim.status === ADMIN_PROCESSABLE_STATUS).length,
+    [refundRequests]
+  )
+
   const handleApprove = (claim) => {
-    const nextStatus = claim.status === "SUBMITTED" ? "IN_PROGRESS" : "COMPLETED"
-    if (!window.confirm(`환불 요청을 ${statusLabel[nextStatus]} 상태로 변경하시겠습니까?`)) return
+    if (claim.status !== ADMIN_PROCESSABLE_STATUS) {
+      alert("판매자 확인이 완료된 환불 요청만 관리자 승인할 수 있습니다.")
+      return
+    }
+
+    if (!window.confirm("환불 요청을 최종 승인하시겠습니까?")) return
 
     setProcessingId(claim.claimId)
-    updateClaimStatus(claim.claimId, nextStatus)
+    updateClaimStatus(claim.claimId, "COMPLETED")
       .then(fetchClaims)
       .catch(() => alert("환불 승인 처리에 실패했습니다."))
       .finally(() => setProcessingId(null))
   }
 
   const handleReject = (claim) => {
+    if (claim.status !== ADMIN_PROCESSABLE_STATUS) {
+      alert("판매자 확인이 완료된 환불 요청만 관리자 거절할 수 있습니다.")
+      return
+    }
+
     const rejectReason = window.prompt("거절 사유를 입력해주세요.")
     if (rejectReason === null) return
     if (!rejectReason.trim()) {
@@ -97,7 +112,9 @@ export default function AdminRefundPage() {
 
         <div className={styles.section}>
           <div className={styles.countBar}>
-            <span className={styles.countText}>환불 요청 {refundRequests.length}건</span>
+            <span className={styles.countText}>
+              관리자 처리 대기 {adminProcessableCount}건 / 전체 환불 요청 {refundRequests.length}건
+            </span>
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -143,24 +160,28 @@ export default function AdminRefundPage() {
                       </td>
                       <td>{formatDate(claim.createdAt)}</td>
                       <td>
-                        <div className={styles.actionGroup}>
-                          <button
-                            className={`${styles.actionBtn} ${styles.approveBtn}`}
-                            onClick={() => handleApprove(claim)}
-                            disabled={processingId === claim.claimId}
-                          >
-                            <CheckCircle size={14} />
-                            승인
-                          </button>
-                          <button
-                            className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                            onClick={() => handleReject(claim)}
-                            disabled={processingId === claim.claimId}
-                          >
-                            <XCircle size={14} />
-                            거절
-                          </button>
-                        </div>
+                        {claim.status === ADMIN_PROCESSABLE_STATUS ? (
+                          <div className={styles.actionGroup}>
+                            <button
+                              className={`${styles.actionBtn} ${styles.approveBtn}`}
+                              onClick={() => handleApprove(claim)}
+                              disabled={processingId === claim.claimId}
+                            >
+                              <CheckCircle size={14} />
+                              승인
+                            </button>
+                            <button
+                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                              onClick={() => handleReject(claim)}
+                              disabled={processingId === claim.claimId}
+                            >
+                              <XCircle size={14} />
+                              거절
+                            </button>
+                          </div>
+                        ) : (
+                          <span className={styles.waitingText}>판매자 확인 대기</span>
+                        )}
                       </td>
                     </tr>
                   ))
