@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories } from "../../api/productApi"
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
 
 const APPROVAL_CLASS = {
@@ -41,6 +41,8 @@ const EMPTY_FORM = {
 export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
+  const [childCategories, setChildCategories] = useState([])
+  const [selectedParentId, setSelectedParentId] = useState("")
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -69,16 +71,11 @@ export default function SellerProductsPage() {
   }, [])
 
   useEffect(() => {
-    getParentCategories()
-      .then((res) => {
-        const categories = res.data ?? []
-        setFormData((prev) => {
-          if (prev.categoryId || categories.length === 0) return prev
-          return { ...prev, categoryId: String(categories[0].parentCategoryId) }
-        })
-      })
-      .catch(() => {})
-  }, [])
+    if (!selectedParentId) { setChildCategories([]); return }
+    getChildCategories(selectedParentId)
+      .then((res) => setChildCategories(res.data ?? []))
+      .catch(() => setChildCategories([]))
+  }, [selectedParentId])
 
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
@@ -422,11 +419,33 @@ export default function SellerProductsPage() {
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.formLabel}>카테고리 *</label>
-                    <select name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange}>
-                      <option value="">카테고리 선택</option>
+                    <select
+                      className={styles.formInput}
+                      value={selectedParentId}
+                      onChange={(e) => {
+                        setSelectedParentId(e.target.value)
+                        setFormData((prev) => ({ ...prev, categoryId: "" }))
+                      }}
+                    >
+                      <option value="">대분류 선택</option>
                       {categories.map((cat) => (
-                        <option key={cat.parentCategoryId ?? cat.categoryId} value={cat.parentCategoryId ?? cat.categoryId}>
+                        <option key={cat.parentCategoryId} value={cat.parentCategoryId}>
                           {cat.categoryName}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      name="categoryId"
+                      className={styles.formInput}
+                      style={{ marginTop: 6 }}
+                      value={formData.categoryId}
+                      onChange={handleFormChange}
+                      disabled={!selectedParentId || childCategories.length === 0}
+                    >
+                      <option value="">소분류 선택</option>
+                      {childCategories.map((child) => (
+                        <option key={child.childCategoryId} value={child.childCategoryId}>
+                          {child.categoryName}
                         </option>
                       ))}
                     </select>
