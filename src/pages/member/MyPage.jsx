@@ -761,7 +761,7 @@ export default function MyPage() {
                   <li>작성한 리뷰 및 문의</li>
                 </ul>
                 <p className={styles.withdrawalNotice}>
-                  탈퇴 후에는 동일한 이메일로 재가입이 가능하나, 기존 데이터는 복구되지 않습니다.
+                  탈퇴 후에는 동일한 이메일로 재가입할 수 없으며, 기존 데이터는 복구되지 않습니다.
                 </p>
                 {!showWithdrawConfirm ? (
                   <button className={styles.withdrawalBtn} onClick={() => setShowWithdrawConfirm(true)}>
