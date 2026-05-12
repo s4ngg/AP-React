@@ -115,7 +115,7 @@ export default function MyPage() {
         setMemberGrade(data.grade ?? "NORMAL")
         setForm({ phone: data.phone ?? "", address: data.address ?? "", addressDetail: "" })
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const fetchOrders = useCallback(() => {
@@ -654,7 +654,23 @@ export default function MyPage() {
                     </p>
                   </div>
                 </div>
-                <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
+                {(() => {
+                  const gradeOrder = ["NORMAL", "SILVER", "GOLD", "PLATINUM"]
+                  const currentIndex = gradeOrder.indexOf(memberGrade)
+                  const nextGrade = gradeOrder[currentIndex + 1]
+                  if (!nextGrade) return (
+                    <p className={styles.gradeNotice}>최고 등급입니다! 매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
+                  )
+                  return (
+                    <div>
+                      <p className={styles.gradeNotice}>
+                        다음 등급 <strong style={{ color: GRADE_CONFIG[nextGrade].color }}>{GRADE_CONFIG[nextGrade].label}</strong>까지{" "}
+                        <strong>{GRADE_CONFIG[nextGrade].minAmount.toLocaleString()}원</strong> 이상 구매 필요
+                      </p>
+                      <p className={styles.gradeNotice}>매월 1일 전월 구매금액 기준으로 갱신됩니다.</p>
+                    </div>
+                  )
+                })()}
               </div>
 
               <div className={styles.gradeCriteria}>
