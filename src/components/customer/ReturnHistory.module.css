@@ -303,6 +303,19 @@
 .infoRow strong { color: #111827; font-weight: 600; text-align: right; }
 
 .refundAmount { color: #2563eb !important; }
+.additionalCharge { color: #dc2626 !important; }
+.additionalPayBtn {
+  padding: 6px 14px;
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.additionalPayBtn:hover { background-color: #b91c1c; }
 
 @media (max-width: 640px) {
     .topBar { flex-direction: column; align-items: flex-start; }
