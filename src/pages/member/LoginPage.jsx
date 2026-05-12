@@ -5,6 +5,7 @@ import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { AuthLayout } from "../../components/common/AuthLayout";
 import { SocialLoginButtons } from "../../components/common/SocialLoginButtons";
 import { login } from "../../api/authApi";
+import { sellerLogin } from "../../api/sellerApi";
 import useAuthStore from "../../store/authStore";
 import styles from "./LoginPage.module.css";
 
@@ -27,10 +28,18 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await login({ email: data.email, password: data.password });
-      const { token, email, name, isSeller, seller, sellerToken } = res.data;
-      setUser({ email, name, isSeller: isSeller ?? seller ?? false }, token);
-      if (sellerToken) {
-        setSellerToken(sellerToken);
+      const { token, email, name, isSeller, seller } = res.data;
+      const isSellerUser = isSeller ?? seller ?? false;
+      setUser({ email, name, isSeller: isSellerUser }, token);
+      if (isSellerUser) {
+        try {
+          const sellerRes = await sellerLogin({ email: data.email, password: data.password });
+          if (sellerRes.data?.token) {
+            setSellerToken(sellerRes.data.token);
+          }
+        } catch {
+          // 판매자 토큰 발급 실패해도 일반 로그인은 유지
+        }
       }
       navigate("/");
     } catch {
