@@ -45,10 +45,20 @@ const isAdminRequest = (url = "") =>
   url.startsWith("/api/notices") ||
   url.startsWith("/api/faqs")
 
-const isSellerRequest = (url = "") =>
+const isSellerProductMutationRequest = (method = "get", url = "") => {
+  const normalizedMethod = method.toLowerCase()
+
+  return (
+    ["post", "patch", "delete"].includes(normalizedMethod) &&
+    /^\/api\/products(?:\/[^/]+)?$/.test(url)
+  )
+}
+
+const isSellerRequest = (url = "", method = "get") =>
   url.startsWith("/api/seller/") ||
   url.startsWith("/api/sellers/") ||
   url === "/api/products/seller" ||
+  isSellerProductMutationRequest(method, url) ||
   url === "/api/claims/seller" ||
   url === "/api/inquiries/seller" ||
   /^\/api\/inquiries\/[^/]+\/answers\/seller$/.test(url)
@@ -69,7 +79,7 @@ api.interceptors.request.use(
 
     if (isAdminRequest(config.url) && adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`
-    } else if (isSellerRequest(config.url) && sellerToken) {
+    } else if (isSellerRequest(config.url, config.method) && sellerToken) {
       config.headers.Authorization = `Bearer ${sellerToken}`
     } else if (token) {
       config.headers.Authorization = `Bearer ${token}`
