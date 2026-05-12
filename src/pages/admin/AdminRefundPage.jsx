@@ -29,7 +29,11 @@ const statusLabel = {
 
 const pendingStatuses = ["SUBMITTED", "IN_PROGRESS"]
 
-const formatPrice = (amount) => Number(amount ?? 0).toLocaleString()
+const formatPrice = (amount) => {
+  const num = Number(amount ?? 0)
+  if (num < 0) return `추가 결제 ${Math.abs(num).toLocaleString()}`
+  return num.toLocaleString()
+}
 
 
 export default function AdminRefundPage() {

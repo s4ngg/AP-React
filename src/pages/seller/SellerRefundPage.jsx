@@ -144,8 +144,10 @@ export default function SellerRefundPage() {
                         </button>
                       </td>
                       <td>
-                        {req.refundAmount
-                          ? `${Number(req.refundAmount).toLocaleString()}원`
+                        {req.refundAmount != null
+                          ? Number(req.refundAmount) < 0
+                              ? `추가 결제 ${Math.abs(Number(req.refundAmount)).toLocaleString()}원`
+                              : `${Number(req.refundAmount).toLocaleString()}원`
                           : "-"}
                       </td>
                       <td>{req.pickupMethod === "COURIER" ? "택배" : "방문"}</td>
@@ -219,11 +221,13 @@ export default function SellerRefundPage() {
                       {selectedRequest.pickupMethod === "COURIER" ? "택배" : "방문"}
                     </span>
                   </div>
-                  {selectedRequest.refundAmount && (
+                  {selectedRequest.refundAmount != null && (
                     <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>환불금액</span>
+                      <span className={styles.detailLabel}>
+                        {Number(selectedRequest.refundAmount) < 0 ? "추가 결제 금액" : "환불금액"}
+                      </span>
                       <span className={styles.detailValue}>
-                        {Number(selectedRequest.refundAmount).toLocaleString()}원
+                        {Math.abs(Number(selectedRequest.refundAmount)).toLocaleString()}원
                       </span>
                     </div>
                   )}

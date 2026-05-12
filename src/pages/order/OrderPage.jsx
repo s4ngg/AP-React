@@ -99,8 +99,9 @@ export default function OrderPage() {
       await addDeliveryAddress(addressForm)
       const data = await getDeliveryAddresses()
       setAddresses(data ?? [])
+      const defaultAddr = (data ?? []).find((a) => a.isDefault)
       const newAddr = (data ?? []).find((a) => a.address === addressForm.address)
-      if (newAddr) setSelectedAddressId(newAddr.addressId)
+      setSelectedAddressId(defaultAddr?.addressId ?? newAddr?.addressId ?? null)
       setAddressForm(emptyAddressForm)
       setShowAddressForm(false)
     } catch (e) {
@@ -345,23 +346,31 @@ export default function OrderPage() {
                     >
                       쿠폰 사용 안함
                     </button>
-                    {coupons.map((mc) => (
-                      <button
-                        key={mc.memberCouponId}
-                        className={`${styles.couponItem} ${selectedCouponId === mc.memberCouponId ? styles.couponItemActive : ""}`}
-                        onClick={() => { setSelectedCouponId(mc.memberCouponId); setShowCouponList(false) }}
-                      >
-                        <span className={styles.couponCode}>{mc.coupon.couponCode}</span>
-                        <span className={styles.couponDiscount}>
-                          {mc.coupon.discountType === "PERCENT"
-                            ? `${mc.coupon.discountValue}% 할인`
-                            : `${Number(mc.coupon.discountValue).toLocaleString()}원 할인`}
-                        </span>
-                        <span className={styles.couponCondition}>
-                          {Number(mc.coupon.minOrderAmount).toLocaleString()}원 이상 구매 시
-                        </span>
-                      </button>
-                    ))}
+                    {coupons.map((mc) => {
+                      const isEligible = totalProductPrice >= Number(mc.coupon.minOrderAmount)
+                      return (
+                        <button
+                          key={mc.memberCouponId}
+                          className={`${styles.couponItem} ${selectedCouponId === mc.memberCouponId ? styles.couponItemActive : ""} ${!isEligible ? styles.couponItemDisabled : ""}`}
+                          onClick={() => {
+                            if (!isEligible) return
+                            setSelectedCouponId(mc.memberCouponId)
+                            setShowCouponList(false)
+                          }}
+                          disabled={!isEligible}
+                        >
+                          <span className={styles.couponCode}>{mc.coupon.couponCode}</span>
+                          <span className={styles.couponDiscount}>
+                            {mc.coupon.discountType === "PERCENT"
+                              ? `${mc.coupon.discountValue}% 할인`
+                              : `${Number(mc.coupon.discountValue).toLocaleString()}원 할인`}
+                          </span>
+                          <span className={styles.couponCondition}>
+                            {Number(mc.coupon.minOrderAmount).toLocaleString()}원 이상 구매 시
+                          </span>
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </>

@@ -1,8 +1,10 @@
 import React from 'react';
 import { RotateCcw, Truck, CheckCircle, AlertCircle } from "lucide-react";
 import styles from "./ReturnGuide.module.css";
+import useAuthStore from "../../store/authStore";
 
 export default function ReturnGuide({ onApply, onInquiry }) {
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
     const steps = [
         { icon: <RotateCcw size={24} />, title: "신청 접수", desc: "마이페이지에서 신청" },
         { icon: <Truck size={24} />, title: "상품 회수", desc: "택배사 방문 수거" },
@@ -33,7 +35,9 @@ export default function ReturnGuide({ onApply, onInquiry }) {
 
             <div className={styles.actionArea}>
                 <button className={styles.primaryBtn} onClick={onApply}>교환/반품 신청하기</button>
-                <button className={styles.secondaryBtn} onClick={onInquiry}>1:1 상담하기</button>
+                {isLoggedIn && (
+                    <button className={styles.secondaryBtn} onClick={onInquiry}>신청 내역 보기</button>
+                )}
             </div>
         </div>
     );

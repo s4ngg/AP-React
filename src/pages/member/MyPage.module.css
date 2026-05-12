@@ -433,6 +433,22 @@
   background-color: #fafafa;
 }
 
+.orderPriceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderShipping {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.orderShipping strong {
+  color: #6b7280;
+  font-weight: 600;
+}
+
 .orderTotal {
   font-size: 13px;
   color: #6b7280;
