@@ -45,20 +45,26 @@ const isAdminRequest = (url = "") =>
   url.startsWith("/api/notices") ||
   url.startsWith("/api/faqs")
 
-const isSellerRequest = (url = "") =>
+const isSellerProductMutationRequest = (method = "get", url = "") => {
+  const normalizedMethod = method.toLowerCase()
+
+  return (
+    ["post", "patch", "delete"].includes(normalizedMethod) &&
+    /^\/api\/products(?:\/[^/]+)?$/.test(url)
+  )
+}
+
+const isSellerRequest = (url = "", method = "get") =>
   url.startsWith("/api/seller/") ||
   url.startsWith("/api/sellers/") ||
   url === "/api/products/seller" ||
+  isSellerProductMutationRequest(method, url) ||
   url === "/api/claims/seller" ||
   url === "/api/inquiries/seller" ||
   /^\/api\/inquiries\/[^/]+\/answers\/seller$/.test(url)
 
 const api = axios.create({
-<<<<<<< HEAD
-  baseURL: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8080" : ""),
-=======
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
->>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -73,11 +79,7 @@ api.interceptors.request.use(
 
     if (isAdminRequest(config.url) && adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`
-<<<<<<< HEAD
-    } else if (config.url?.startsWith("/api/seller") && sellerToken) {
-=======
-    } else if (isSellerRequest(config.url) && sellerToken) {
->>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
+    } else if (isSellerRequest(config.url, config.method) && sellerToken) {
       config.headers.Authorization = `Bearer ${sellerToken}`
     } else if (token) {
       config.headers.Authorization = `Bearer ${token}`

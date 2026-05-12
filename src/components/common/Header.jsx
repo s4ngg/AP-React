@@ -74,9 +74,6 @@ export default function Header() {
   const handleNavClick = () => {
     alert("아직 준비중인 기능입니다.")
   }
-<<<<<<< HEAD
-  const sellerToken = useAuthStore((state) => state.sellerToken)
-=======
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -85,7 +82,6 @@ export default function Header() {
     }
   }
 
->>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
   const userInitial = user?.name?.charAt(0) || "MY"
   const hoveredParentCategory = parentCategories.find(
     (category) => category.parentCategoryId === hoveredCategoryId
@@ -121,11 +117,6 @@ export default function Header() {
           <Link to="/" className={styles.logo}>AllPick</Link>
 
           <div className={styles.searchBar}>
-<<<<<<< HEAD
-            <input type="text" placeholder="찾으시는 상품을 검색해보세요"/>
-            <button className={styles.searchBtn} aria-label="검색">
-              <Search size={18}/>
-=======
             <input
               type="text"
               placeholder="찾으시는 상품을 검색해보세요"
@@ -135,7 +126,6 @@ export default function Header() {
             />
             <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
               <Search size={18} />
->>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
             </button>
           </div>
 
@@ -147,33 +137,26 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
-<<<<<<< HEAD
-                {sellerToken && (
-                  <Link to="/seller" className={styles.iconBtn}>
-                    <Store size={20}/>
-                    <span>셀러</span>
-=======
                 {isLoggedIn && sellerToken && (
                   <Link to="/seller" className={styles.iconBtn}>
                     <Store size={20} />
                     <span>판매자 관리</span>
->>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
                   </Link>
                 )}
 
                 <button className={styles.logoutBtn} onClick={handleLogout}>
-                  <LogOut size={20}/>
+                  <LogOut size={20} />
                   <span>로그아웃</span>
                 </button>
               </>
             ) : (
               <>
                 <Link to="/login" className={styles.iconBtn}>
-                  <User size={20}/>
+                  <User size={20} />
                   <span>로그인</span>
                 </Link>
                 <Link to="/signup" className={styles.iconBtn}>
-                  <User size={20}/>
+                  <User size={20} />
                   <span>회원가입</span>
                 </Link>
               </>
@@ -181,7 +164,7 @@ export default function Header() {
             }
 
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
-              <ShoppingCart size={20}/>
+              <ShoppingCart size={20} />
               <span>장바구니</span>
               {cartCount > 0 && (
                 <span className={styles.cartBadge}>{cartCount}</span>
@@ -189,7 +172,7 @@ export default function Header() {
             </Link>
 
             <Link to="/customer" className={styles.iconBtn}>
-              <Headphones size={20}/>
+              <Headphones size={20} />
               <span>고객센터</span>
             </Link>
             {/* 아래 추가 */}
@@ -207,17 +190,12 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="메뉴"
             >
-              {mobileMenuOpen ? <X size={20}/> : <Menu size={20}/>}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div >
         </div >
 
         <div className={styles.mobileSearch}>
-<<<<<<< HEAD
-          <input type="text" placeholder="찾으시는 상품을 검색해보세요"/>
-          <button className={styles.searchBtn} aria-label="검색">
-            <Search size={18}/>
-=======
           <input
             type="text"
             placeholder="찾으시는 상품을 검색해보세요"
@@ -227,7 +205,6 @@ export default function Header() {
           />
           <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
             <Search size={18} />
->>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
           </button>
         </div>
 
@@ -242,7 +219,7 @@ export default function Header() {
               type="button"
               onClick={() => navigate("/products")}
             >
-              카테고리 <ChevronDown size={16}/>
+              카테고리 <ChevronDown size={16} />
             </button>
 
             {categoryOpen && (
@@ -349,10 +326,10 @@ export default function Header() {
                   className={styles.mobileLoginBtn}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <User size={15}/> {user?.name || "마이페이지"}
+                  <User size={15} /> {user?.name || "마이페이지"}
                 </Link>
                 <button className={styles.mobileLogoutBtn} onClick={handleLogout}>
-                  <LogOut size={15}/> 로그아웃
+                  <LogOut size={15} /> 로그아웃
                 </button>
               </>
             ) : (
