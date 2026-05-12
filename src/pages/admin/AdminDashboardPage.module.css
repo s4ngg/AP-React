@@ -14,7 +14,13 @@
   font-size: 22px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+}
+
+.errorText {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #dc2626;
 }
 
 /* 통계 카드 */
@@ -122,6 +128,12 @@
   background-color: #f9fafb;
 }
 
+.emptyRow {
+  text-align: center;
+  padding: 32px 14px;
+  color: #9ca3af;
+}
+
 .orderId {
   font-family: monospace;
   font-size: 12px;
@@ -144,6 +156,7 @@
   font-weight: 600;
 }
 
+.statusPending { background-color: #f3f4f6; color: #4b5563; }
 .statusPaid { background-color: #eff6ff; color: #2563eb; }
 .statusShipping { background-color: #fff7ed; color: #ea580c; }
 .statusDelivered { background-color: #f0fdf4; color: #16a34a; }

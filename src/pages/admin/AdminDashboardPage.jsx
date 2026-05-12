@@ -1,44 +1,172 @@
+import { createElement, useEffect, useMemo, useState } from "react"
 import { Users, ShoppingBag, Package, TrendingUp } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { getAdminOrders, getAdminProducts, getMembers } from "../../api/adminApi"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminDashboardPage.module.css"
 
-// 임시 통계 데이터 (추후 API 연동 예정)
-const mockStats = [
-  { label: "총 회원 수", value: "1,248명", icon: Users, cardClass: "statCardBlue" },
-  { label: "오늘 주문 수", value: "37건", icon: ShoppingBag, cardClass: "statCardGreen" },
-  { label: "이번 달 매출", value: "8,420,000원", icon: TrendingUp, cardClass: "statCardPurple" },
-  { label: "전체 상품 수", value: "312개", icon: Package, cardClass: "statCardOrange" },
-]
-
-// 임시 최근 주문 데이터 (추후 API 연동 예정)
-const mockRecentOrders = [
-  { id: "AP-00000001", memberName: "김민수", productName: "[에스티로더] 갈색병 세럼 50ml", amount: 89000, status: "결제완료", createdAt: "2026-04-16" },
-  { id: "AP-00000002", memberName: "이영희", productName: "[나이키] 에어맥스 97 화이트", amount: 179000, status: "배송중", createdAt: "2026-04-15" },
-  { id: "AP-00000003", memberName: "박지성", productName: "[설화수] 윤조에센스 60ml", amount: 128000, status: "배송완료", createdAt: "2026-04-15" },
-  { id: "AP-00000004", memberName: "최수영", productName: "[유니클로] 린넨 블렌드 셔츠", amount: 39900, status: "취소", createdAt: "2026-04-14" },
-  { id: "AP-00000005", memberName: "정해인", productName: "[무인양품] 폴리에스터 이불커버", amount: 59000, status: "결제완료", createdAt: "2026-04-14" },
-]
+const SALES_STATUSES = new Set(["PAID", "SHIPPING", "DELIVERED"])
 
 const statusBadgeClass = {
-  "결제완료": "statusPaid",
-  "배송중": "statusShipping",
-  "배송완료": "statusDelivered",
-  "취소": "statusCancelled",
+  PENDING: "statusPending",
+  PAID: "statusPaid",
+  SHIPPING: "statusShipping",
+  DELIVERED: "statusDelivered",
+  CANCELLED: "statusCancelled",
+}
+
+const statusLabel = {
+  PENDING: "주문접수",
+  PAID: "결제완료",
+  SHIPPING: "배송중",
+  DELIVERED: "배송완료",
+  CANCELLED: "취소",
+}
+
+const getDateKey = (date = new Date()) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+}
+
+const getMonthKey = (date = new Date()) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+
+  return `${year}-${month}`
+}
+
+const formatCount = (value, unit) => `${Number(value ?? 0).toLocaleString()}${unit}`
+const formatPrice = (amount) => `${Number(amount ?? 0).toLocaleString()}원`
+
+const getSettledValue = (result) => (result.status === "fulfilled" ? result.value ?? [] : [])
+
+const hasFetchError = (errors) => Object.values(errors).some(Boolean)
+
+const getStatValue = ({ loading, hasError, value, unit }) => {
+  if (hasError) return "-"
+  if (loading) return "..."
+  return formatCount(value, unit)
 }
 
 export default function AdminDashboardPage() {
+  const [members, setMembers] = useState([])
+  const [orders, setOrders] = useState([])
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [loadErrors, setLoadErrors] = useState({})
+
+  useEffect(() => {
+    let ignore = false
+
+    const timeoutId = setTimeout(() => {
+      setLoading(true)
+      setLoadErrors({})
+
+      Promise.allSettled([getMembers(), getAdminOrders(), getAdminProducts()])
+        .then(([memberResult, orderResult, productResult]) => {
+          if (ignore) return
+
+          setMembers(getSettledValue(memberResult))
+          setOrders(getSettledValue(orderResult))
+          setProducts(getSettledValue(productResult))
+          setLoadErrors({
+            members: memberResult.status === "rejected",
+            orders: orderResult.status === "rejected",
+            products: productResult.status === "rejected",
+          })
+        })
+        .finally(() => {
+          if (!ignore) setLoading(false)
+        })
+    }, 0)
+
+    return () => {
+      ignore = true
+      clearTimeout(timeoutId)
+    }
+  }, [])
+
+  const todayKey = getDateKey()
+  const monthKey = getMonthKey()
+
+  const todayOrderCount = useMemo(
+    () => orders.filter((order) => order.orderedAt?.slice(0, 10) === todayKey).length,
+    [orders, todayKey]
+  )
+
+  const monthlySales = useMemo(
+    () =>
+      orders
+        .filter((order) => order.orderedAt?.slice(0, 7) === monthKey)
+        .filter((order) => SALES_STATUSES.has(order.status))
+        .reduce((sum, order) => sum + Number(order.totalAmount ?? 0), 0),
+    [orders, monthKey]
+  )
+
+  const dashboardStats = useMemo(
+    () => [
+      {
+        label: "총 회원 수",
+        value: getStatValue({
+          loading,
+          hasError: loadErrors.members,
+          value: members.length,
+          unit: "명",
+        }),
+        icon: Users,
+        cardClass: "statCardBlue",
+      },
+      {
+        label: "오늘 주문 수",
+        value: getStatValue({
+          loading,
+          hasError: loadErrors.orders,
+          value: todayOrderCount,
+          unit: "건",
+        }),
+        icon: ShoppingBag,
+        cardClass: "statCardGreen",
+      },
+      {
+        label: "이번 달 매출",
+        value: loadErrors.orders ? "-" : loading ? "..." : formatPrice(monthlySales),
+        icon: TrendingUp,
+        cardClass: "statCardPurple",
+      },
+      {
+        label: "전체 상품 수",
+        value: getStatValue({
+          loading,
+          hasError: loadErrors.products,
+          value: products.length,
+          unit: "개",
+        }),
+        icon: Package,
+        cardClass: "statCardOrange",
+      },
+    ],
+    [loadErrors, loading, members.length, monthlySales, products.length, todayOrderCount]
+  )
+
+  const recentOrders = useMemo(() => orders.slice(0, 5), [orders])
+
   return (
     <div className={styles.adminLayout}>
       <AdminSidebar />
       <main className={styles.content}>
         <h1 className={styles.pageTitle}>대시보드</h1>
+        {hasFetchError(loadErrors) && (
+          <p className={styles.errorText}>일부 대시보드 데이터를 불러오지 못했습니다.</p>
+        )}
 
-        {/* 통계 카드 */}
         <div className={styles.statsGrid}>
-          {mockStats.map(({ label, value, icon: Icon, cardClass }) => (
+          {dashboardStats.map(({ label, value, icon, cardClass }) => (
             <div key={label} className={`${styles.statCard} ${styles[cardClass]}`}>
               <div className={styles.statIconWrap}>
-                <Icon size={22} />
+                {createElement(icon, { size: 22 })}
               </div>
               <div>
                 <p className={styles.statLabel}>{label}</p>
@@ -48,7 +176,6 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        {/* 최근 주문 */}
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>최근 주문</h2>
           <div className={styles.tableWrap}>
@@ -64,20 +191,40 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {mockRecentOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className={styles.orderId}>{order.id}</td>
-                    <td>{order.memberName}</td>
-                    <td className={styles.ellipsis}>{order.productName}</td>
-                    <td>{order.amount.toLocaleString()}원</td>
-                    <td>{order.createdAt}</td>
-                    <td>
-                      <span className={`${styles.statusBadge} ${styles[statusBadgeClass[order.status]]}`}>
-                        {order.status}
-                      </span>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>
+                      최근 주문을 불러오는 중...
                     </td>
                   </tr>
-                ))}
+                ) : loadErrors.orders ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>
+                      최근 주문을 불러오지 못했습니다.
+                    </td>
+                  </tr>
+                ) : recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className={styles.emptyRow}>
+                      최근 주문이 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  recentOrders.map((order) => (
+                    <tr key={order.orderId}>
+                      <td className={styles.orderId}>{order.orderNumber}</td>
+                      <td>{order.memberName}</td>
+                      <td className={styles.ellipsis}>{order.productName}</td>
+                      <td>{formatPrice(order.totalAmount)}</td>
+                      <td>{formatDate(order.orderedAt)}</td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${styles[statusBadgeClass[order.status]] ?? ""}`}>
+                          {statusLabel[order.status] ?? order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
