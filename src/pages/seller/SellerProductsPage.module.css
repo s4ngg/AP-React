@@ -225,6 +225,14 @@
   background-color: #eff6ff;
 }
 
+.editBtn:disabled,
+.editBtn:disabled:hover {
+  border-color: #d1d5db;
+  color: #9ca3af;
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
 .deleteBtn {
   width: 32px;
   height: 32px;
@@ -282,6 +290,16 @@
   font-weight: 600;
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.approvalUnknown {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #f3f4f6;
+  color: #4b5563;
 }
 
 /* 모달 공통 */
@@ -404,6 +422,14 @@
 
 .editInDetailBtn:hover {
   background-color: #dbeafe;
+}
+
+.editInDetailBtn:disabled,
+.editInDetailBtn:disabled:hover {
+  border-color: #d1d5db;
+  color: #9ca3af;
+  background-color: #f3f4f6;
+  cursor: not-allowed;
 }
 
 .detailModalBody {

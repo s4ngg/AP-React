@@ -10,6 +10,20 @@ const APPROVAL_CLASS = {
   REJECTED: styles.approvalREJECTED,
 }
 
+const APPROVAL_LABEL = {
+  APPROVED: "승인완료",
+  PENDING: "승인대기",
+  REJECTED: "반려",
+}
+
+const EDIT_DISABLED_MESSAGE = "승인 대기 상태의 상품만 수정할 수 있습니다."
+
+const getApprovalLabel = (status) => APPROVAL_LABEL[status] ?? "문의 필요"
+
+const getApprovalClassName = (status) => APPROVAL_CLASS[status] ?? styles.approvalUnknown
+
+const isProductEditable = (product) => product?.approvalStatus === "PENDING"
+
 const EMPTY_FORM = {
   productName: "",
   brand: "",
@@ -23,44 +37,6 @@ const EMPTY_FORM = {
   optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
-
-const createEmptyForm = (categoryId = "") => ({
-  ...EMPTY_FORM,
-  categoryId,
-  optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
-  productImageList: [],
-})
-
-const getErrorMessage = (error) =>
-  error.response?.data?.message || error.message || "처리 중 오류가 발생했습니다."
-
-const toNullableText = (value) => {
-  const text = value?.trim()
-  return text ? text : null
-}
-
-const buildCreatePayload = (formData) => ({
-  ...formData,
-  price: Number(formData.price),
-  categoryId: Number(formData.categoryId),
-  description: formData.description || formData.productName,
-  productImageList: formData.productImageList.length > 0
-    ? formData.productImageList
-    : formData.thumbnailUrl
-      ? [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }]
-      : [],
-})
-
-const buildUpdatePayload = (formData) => ({
-  productName: toNullableText(formData.productName),
-  brand: toNullableText(formData.brand),
-  price: formData.price ? Number(formData.price) : null,
-  thumbnailUrl: toNullableText(formData.thumbnailUrl),
-  description: toNullableText(formData.description),
-  manufacturer: toNullableText(formData.manufacturer),
-  origin: toNullableText(formData.origin),
-  precaution: toNullableText(formData.precaution),
-})
 
 export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
@@ -80,8 +56,6 @@ export default function SellerProductsPage() {
 
   // 상세 모달
   const [viewingProduct, setViewingProduct] = useState(null)
-  const [parentCategories, setParentCategories] = useState([])
-  const [categoryLoading, setCategoryLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -98,14 +72,12 @@ export default function SellerProductsPage() {
     getParentCategories()
       .then((res) => {
         const categories = res.data ?? []
-        setParentCategories(categories)
         setFormData((prev) => {
           if (prev.categoryId || categories.length === 0) return prev
           return { ...prev, categoryId: String(categories[0].parentCategoryId) }
         })
       })
-      .catch(() => setParentCategories([]))
-      .finally(() => setCategoryLoading(false))
+      .catch(() => {})
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -198,6 +170,8 @@ export default function SellerProductsPage() {
   /* ── 수정(가격만) 핸들러 ── */
   const handleOpenEdit = (product, e) => {
     e?.stopPropagation()
+    if (!isProductEditable(product)) return
+
     setEditingProduct(product)
     setEditPrice(String(product.price ?? ""))
   }
@@ -211,15 +185,14 @@ export default function SellerProductsPage() {
     setIsEditSubmitting(true)
     try {
       await updateProduct(editingProduct.productId, { price: Number(editPrice) })
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.productId === editingProduct.productId ? { ...p, price: Number(editPrice) } : p
-        )
-      )
+      const fresh = await getSellerProducts()
+      setProducts(fresh ?? [])
       setEditingProduct(null)
     } catch (err) {
       const msg = err?.response?.data?.message || "수정 중 오류가 발생했습니다."
       alert(msg)
+      const fresh = await getSellerProducts().catch(() => null)
+      if (fresh) setProducts(fresh)
     } finally {
       setIsEditSubmitting(false)
     }
@@ -296,21 +269,22 @@ export default function SellerProductsPage() {
                       <td>{product.parentCategoryName ?? "-"}</td>
                       <td>{Number(product.price).toLocaleString()}원</td>
                       <td>
-                        <span className={APPROVAL_CLASS[product.approvalStatus] ?? ""}>
-                          {product.approvalStatus === "APPROVED" ? "승인완료"
-                            : product.approvalStatus === "REJECTED" ? "반려"
-                            : "승인대기"}
+                        <span className={getApprovalClassName(product.approvalStatus)}>
+                          {getApprovalLabel(product.approvalStatus)}
                         </span>
                       </td>
                       <td>
                         <div className={styles.actionBtns} onClick={(e) => e.stopPropagation()}>
-                          <button
-                            className={styles.editBtn}
-                            onClick={(e) => handleOpenEdit(product, e)}
-                            aria-label="가격 수정"
-                          >
-                            <Pencil size={14} />
-                          </button>
+                          <span title={isProductEditable(product) ? "가격 수정" : EDIT_DISABLED_MESSAGE}>
+                            <button
+                              className={styles.editBtn}
+                              onClick={(e) => handleOpenEdit(product, e)}
+                              disabled={!isProductEditable(product)}
+                              aria-label="가격 수정"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                          </span>
                           <button
                             className={styles.deleteBtn}
                             onClick={(e) => handleDelete(product.productId, product.productName, e)}
@@ -336,12 +310,18 @@ export default function SellerProductsPage() {
             <div className={styles.detailModalHeader}>
               <h2 className={styles.modalTitle}>{viewingProduct.productName}</h2>
               <div className={styles.detailModalActions}>
-                <button
-                  className={styles.editInDetailBtn}
-                  onClick={() => { setViewingProduct(null); handleOpenEdit(viewingProduct) }}
-                >
-                  <Pencil size={14} /> 가격 수정
-                </button>
+                <span title={isProductEditable(viewingProduct) ? "가격 수정" : EDIT_DISABLED_MESSAGE}>
+                  <button
+                    className={styles.editInDetailBtn}
+                    onClick={() => {
+                      setViewingProduct(null)
+                      handleOpenEdit(viewingProduct)
+                    }}
+                    disabled={!isProductEditable(viewingProduct)}
+                  >
+                    <Pencil size={14} /> 가격 수정
+                  </button>
+                </span>
                 <button className={styles.modalCloseBtn} onClick={() => setViewingProduct(null)}>
                   <X size={20} />
                 </button>
@@ -370,10 +350,8 @@ export default function SellerProductsPage() {
                 </div>
                 <div className={styles.productInfoRow}>
                   <span className={styles.productInfoLabel}>승인 상태</span>
-                  <span className={APPROVAL_CLASS[viewingProduct.approvalStatus] ?? ""}>
-                    {viewingProduct.approvalStatus === "APPROVED" ? "승인완료"
-                      : viewingProduct.approvalStatus === "REJECTED" ? "반려"
-                      : "승인대기"}
+                  <span className={getApprovalClassName(viewingProduct.approvalStatus)}>
+                    {getApprovalLabel(viewingProduct.approvalStatus)}
                   </span>
                 </div>
               </div>
