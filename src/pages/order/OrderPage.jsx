@@ -90,25 +90,26 @@ export default function OrderPage() {
   }
 
   const handleAddAddress = async () => {
-    if (!addressForm.recipientName || !addressForm.phone || !addressForm.address) {
-      alert("필수 항목을 입력해주세요.")
-      return
-    }
-    setIsAddingAddress(true)
-    try {
-      await addDeliveryAddress(addressForm)
-      const data = await getDeliveryAddresses()
-      setAddresses(data ?? [])
-      const newAddr = (data ?? []).find((a) => a.address === addressForm.address)
-      if (newAddr) setSelectedAddressId(newAddr.addressId)
-      setAddressForm(emptyAddressForm)
-      setShowAddressForm(false)
-    } catch (e) {
-      alert("배송지 추가 중 오류가 발생했습니다.")
-    } finally {
-      setIsAddingAddress(false)
-    }
+  if (!addressForm.recipientName || !addressForm.phone || !addressForm.address) {
+    alert("필수 항목을 입력해주세요.")
+    return
   }
+  setIsAddingAddress(true)
+  try {
+    await addDeliveryAddress(addressForm)
+    const data = await getDeliveryAddresses()
+    setAddresses(data ?? [])
+    const defaultAddr = (data ?? []).find((a) => a.isDefault)
+    const newAddr = (data ?? []).find((a) => a.address === addressForm.address)
+    setSelectedAddressId(defaultAddr?.addressId ?? newAddr?.addressId ?? null)
+    setAddressForm(emptyAddressForm)
+    setShowAddressForm(false)
+  } catch (e) {
+    alert("배송지 추가 중 오류가 발생했습니다.")
+  } finally {
+    setIsAddingAddress(false)
+  }
+}
 
   const handlePay = async () => {
     if (!selectedPay || !selectedAddressId || orderItems.length === 0 || totalPrice === 0) return
