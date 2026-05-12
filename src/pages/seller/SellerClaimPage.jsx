@@ -125,8 +125,10 @@ export default function SellerClaimPage() {
                                                 <td>{REASON_LABEL[claim.reasonCode] ?? claim.reasonCode}</td>
                                                 <td>{claim.pickupMethod === "COURIER" ? "택배" : "방문"}</td>
                                                 <td>
-                                                    {claim.refundAmount
-                                                        ? `${Number(claim.refundAmount).toLocaleString()}원`
+                                                    {claim.refundAmount != null
+                                                        ? Number(claim.refundAmount) < 0
+                                                            ? `추가 결제 ${Math.abs(Number(claim.refundAmount)).toLocaleString()}원`
+                                                            : `${Number(claim.refundAmount).toLocaleString()}원`
                                                         : "-"}
                                                 </td>
                                                 <td>{claim.createdAt?.slice(0, 10)}</td>

@@ -141,8 +141,12 @@ export default function ReturnHistory({ onBack }) {
                                         </span>
                                         <p className={styles.productName}>주문 상품 #{item.orderItemId}</p>
                                         <p className={styles.productOption}>{REASON_LABEL[item.reasonCode] ?? item.reasonCode}</p>
-                                        {item.refundAmount && (
-                                            <p className={styles.productPrice}>{Number(item.refundAmount).toLocaleString()}원</p>
+                                        {item.refundAmount != null && (
+                                            <p className={styles.productPrice}>
+                                                {Number(item.refundAmount) < 0
+                                                    ? `추가 결제 ${Math.abs(Number(item.refundAmount)).toLocaleString()}원`
+                                                    : `${Number(item.refundAmount).toLocaleString()}원`}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -179,10 +183,23 @@ export default function ReturnHistory({ onBack }) {
                                                     <strong>{item.exchangeOption}</strong>
                                                 </div>
                                             )}
-                                            {item.claimType === "RETURN" && item.refundAmount && (
+                                            {item.claimType === "RETURN" && item.refundAmount != null && (
                                                 <div className={styles.infoRow}>
-                                                    <span>환불 금액</span>
-                                                    <strong className={styles.refundAmount}>{Number(item.refundAmount).toLocaleString()}원</strong>
+                                                    <span>{Number(item.refundAmount) < 0 ? "추가 결제 금액" : "환불 금액"}</span>
+                                                    <strong className={Number(item.refundAmount) < 0 ? styles.additionalCharge : styles.refundAmount}>
+                                                        {Math.abs(Number(item.refundAmount)).toLocaleString()}원
+                                                    </strong>
+                                                </div>
+                                            )}
+                                            {item.claimType === "RETURN" && Number(item.refundAmount) < 0 && (
+                                                <div className={styles.infoRow}>
+                                                    <span></span>
+                                                    <button
+                                                        className={styles.additionalPayBtn}
+                                                        onClick={() => alert("추가 결제 기능은 현재 구현 예정입니다.")}
+                                                    >
+                                                        추가 결제하기
+                                                    </button>
                                                 </div>
                                             )}
                                             {item.completedAt && (
