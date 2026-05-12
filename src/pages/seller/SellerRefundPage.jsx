@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react"
-import { CheckCircle, XCircle, X } from "lucide-react"
+import { CheckCircle, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import { getClaimAttachments, getClaimDetail } from "../../api/sellerApi"
 import {
   useApproveClaimMutation,
-  useRejectClaimMutation,
   useSellerClaims,
 } from "../../query/useSellerClaimQuery"
 import styles from "./SellerRefundPage.module.css"
@@ -61,12 +60,9 @@ const formatAmount = (amount) => {
 export default function SellerRefundPage() {
   const { data: claims = [], isLoading, isError } = useSellerClaims()
   const approveMutation = useApproveClaimMutation()
-  const rejectMutation = useRejectClaimMutation()
 
   const [activeTab, setActiveTab] = useState("ALL")
   const [selectedRequest, setSelectedRequest] = useState(null)
-  const [rejectModalId, setRejectModalId] = useState(null)
-  const [rejectReason, setRejectReason] = useState("")
   const [processingId, setProcessingId] = useState(null)
   const [detailLoadingId, setDetailLoadingId] = useState(null)
 
@@ -96,41 +92,6 @@ export default function SellerRefundPage() {
       setSelectedRequest(null)
     } catch {
       alert("승인 처리 중 오류가 발생했습니다.")
-    } finally {
-      setProcessingId(null)
-    }
-  }
-
-  const handleRejectModalOpen = (claimId) => {
-    setRejectModalId(claimId)
-    setRejectReason("")
-  }
-
-  const handleRejectModalClose = () => {
-    setRejectModalId(null)
-    setRejectReason("")
-  }
-
-  const handleRejectSubmit = async () => {
-    if (!rejectReason.trim()) return
-
-    const target = claims.find((claim) => claim.claimId === rejectModalId)
-    if (!isProcessableClaim(target)) {
-      alert("이미 처리된 요청입니다.")
-      handleRejectModalClose()
-      return
-    }
-
-    setProcessingId(rejectModalId)
-    try {
-      await rejectMutation.mutateAsync({
-        claimId: rejectModalId,
-        rejectReason: rejectReason.trim(),
-      })
-      setSelectedRequest(null)
-      handleRejectModalClose()
-    } catch {
-      alert("거절 처리 중 오류가 발생했습니다.")
     } finally {
       setProcessingId(null)
     }
@@ -250,14 +211,6 @@ export default function SellerRefundPage() {
                               <CheckCircle size={14} />
                               승인
                             </button>
-                            <button
-                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                              onClick={() => handleRejectModalOpen(request.claimId)}
-                              disabled={processingId === request.claimId}
-                            >
-                              <XCircle size={14} />
-                              거절
-                            </button>
                           </div>
                         ) : (
                           <span className={styles.processedText}>처리 완료</span>
@@ -360,17 +313,6 @@ export default function SellerRefundPage() {
             {isProcessableClaim(selectedRequest) && (
               <div className={styles.modalFooter}>
                 <button
-                  className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                  onClick={() => {
-                    setSelectedRequest(null)
-                    handleRejectModalOpen(selectedRequest.claimId)
-                  }}
-                  disabled={processingId === selectedRequest.claimId}
-                >
-                  <XCircle size={14} />
-                  거절
-                </button>
-                <button
                   className={`${styles.actionBtn} ${styles.approveBtn}`}
                   onClick={() => handleApprove(selectedRequest.claimId)}
                   disabled={processingId === selectedRequest.claimId}
@@ -380,47 +322,6 @@ export default function SellerRefundPage() {
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {rejectModalId && (
-        <div className={styles.modalOverlay} onClick={handleRejectModalClose}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>거절 사유 입력</h2>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={handleRejectModalClose}
-                aria-label="닫기"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <textarea
-                className={styles.rejectTextarea}
-                placeholder="거절 사유를 입력하세요"
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                rows={4}
-              />
-              <div className={styles.modalFooter}>
-                <button
-                  className={`${styles.actionBtn} ${styles.cancelBtn}`}
-                  onClick={handleRejectModalClose}
-                >
-                  취소
-                </button>
-                <button
-                  className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                  onClick={handleRejectSubmit}
-                  disabled={!rejectReason.trim() || processingId === rejectModalId}
-                >
-                  거절 확정
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
