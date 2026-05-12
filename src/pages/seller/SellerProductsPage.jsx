@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, uploadProductImage } from "../../api/productApi"
 
 const APPROVAL_CLASS = {
   APPROVED: styles.approvalAPPROVED,
@@ -77,7 +77,7 @@ export default function SellerProductsPage() {
           return { ...prev, categoryId: String(categories[0].parentCategoryId) }
         })
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -120,6 +120,16 @@ export default function SellerProductsPage() {
     }))
   }
 
+  const handleThumbnailUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const url = await uploadProductImage(file)
+      setFormData((prev) => ({ ...prev, thumbnailUrl: url }))
+    } catch {
+      alert("이미지 업로드에 실패했습니다.")
+    }
+  }
   const handleCreateSubmit = async (e) => {
     e.preventDefault()
     if (!formData.productName.trim() || !formData.price || !formData.thumbnailUrl.trim()) {
@@ -146,6 +156,7 @@ export default function SellerProductsPage() {
         ...formData,
         price: Number(formData.price),
         categoryId: Number(formData.categoryId),
+        childCategoryId: formData.childCategoryId ? Number(formData.childCategoryId) : null,
         description: formData.description.trim() || formData.productName,
         optionList: formData.optionList.map((o) => ({
           ...o,
@@ -420,6 +431,7 @@ export default function SellerProductsPage() {
                     <label className={styles.formLabel}>판매가 (원) *</label>
                     <input type="number" name="price" className={styles.formInput} value={formData.price} onChange={handleFormChange} placeholder="0" min="0" />
                   </div>
+
                   <div className={styles.formGroup}>
                     <label className={styles.formLabel}>카테고리 *</label>
                     <select name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange}>
@@ -447,8 +459,11 @@ export default function SellerProductsPage() {
                   <input name="precaution" className={styles.formInput} value={formData.precaution} onChange={handleFormChange} placeholder="주의사항을 입력하세요" />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>대표 이미지 URL *</label>
-                  <input name="thumbnailUrl" className={styles.formInput} value={formData.thumbnailUrl} onChange={handleFormChange} placeholder="https://..." />
+                  <label className={styles.formLabel}>대표 이미지 *</label>
+                  <input type="file" accept="image/*" className={styles.formInput} onChange={handleThumbnailUpload} />
+                  {formData.thumbnailUrl && (
+                    <img src={formData.thumbnailUrl} alt="미리보기" style={{ marginTop: 8, width: 120, height: 120, objectFit: "cover" }} />
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>상품 설명</label>
