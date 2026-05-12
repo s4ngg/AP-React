@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { MessageSquare, ChevronDown, ChevronUp, Send } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerInquiries, replyToInquiry, answerSellerInquiry } from "../../api/sellerApi"
+import { getSellerInquiries, replyToInquiry } from "../../api/sellerApi"
 
 import styles from "./SellerInquiryPage.module.css"
 
@@ -40,8 +40,10 @@ export default function SellerInquiryPage() {
   const [expandedId, setExpandedId] = useState(null)
   const [replyTexts, setReplyTexts] = useState({})       // { [inquiryId]: string }
   const [submitting, setSubmitting] = useState(null)      // inquiryId currently being submitted
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
+    setErrorMessage("")
     getSellerInquiries()
       .then((data) => setInquiries(data ?? []))
       .catch(() => {
@@ -51,6 +53,14 @@ export default function SellerInquiryPage() {
   }, [])
 
   const handleToggle = (id) => setExpandedId((prev) => (prev === id ? null : id))
+
+  const handleHeaderKeyDown = (event, id) => {
+    if (event.target !== event.currentTarget) return
+    if (event.key !== "Enter" && event.key !== " ") return
+
+    event.preventDefault()
+    handleToggle(id)
+  }
 
   const handleReplyChange = (id, value) => {
     setReplyTexts((prev) => ({ ...prev, [id]: value }))
