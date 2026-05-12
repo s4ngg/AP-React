@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Sparkles, RefreshCw, Heart } from "lucide-react"
+import axios from "axios"
 import { getAiRecommendations } from "../../api/aiApi"
 import styles from "./AiRecommendSection.module.css"
 import useAuthStore from "../../store/authStore"
+
+const spring = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+})
+
+const categoryMap = {
+  "뷰티": 1, "패션": 2, "식품": 3, "주류": 4, "리빙": 5
+}
 
 function SkeletonCard() {
   return (
@@ -76,8 +85,38 @@ export default function AiRecommendSection() {
   const handleRefresh = async () => {
     setIsLoading(true)
     try {
-      const result = await getAiRecommendations(data.categories, [])
-      setData((prev) => ({ ...prev, ...result }))
+      const userCategories = data.categories.length > 0
+        ? data.categories
+        : ["뷰티", "패션", "식품", "주류", "리빙"]
+
+      const result = await getAiRecommendations(userCategories, [])
+      const recommendedCategories = result.recommendedCategories || []
+
+      let products = []
+      for (const cat of recommendedCategories) {
+        const categoryId = categoryMap[cat]
+        if (categoryId) {
+          const res = await spring.get(`/api/products?categoryId=${categoryId}&size=2`)
+          const items = res.data?.data?.content || []
+          const newItems = items.map((p) => ({
+            id: p.productId,
+            name: p.productName,
+            price: Number(p.price),
+            originalPrice: null,
+            image: p.thumbnailUrl,
+          }))
+          products = [...products, ...newItems]
+        }
+      }
+      const uniqueProducts = products.filter(
+        (p, index, self) => index === self.findIndex((t) => t.id === p.id)
+      )
+
+      setData({
+        categories: recommendedCategories,
+        keywords: result.keywords || [],
+        products: uniqueProducts,
+      })
     } catch (e) {
       console.error("AI 추천 실패", e)
     } finally {

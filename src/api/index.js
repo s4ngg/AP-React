@@ -10,14 +10,7 @@ const getToken = () => {
   }
 }
 
-const getSellerToken = () => {
-  try {
-    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
-    return authStorage?.state?.sellerToken ?? null
-  } catch {
-    return null
-  }
-}
+// getSellerToken 함수 삭제
 
 const getAdminToken = () => {
   try {
@@ -27,15 +20,45 @@ const getAdminToken = () => {
     return null
   }
 }
+const getSellerToken = () => {
+  try {
+    const authStorage = JSON.parse(localStorage.getItem("auth-storage"))
+    return authStorage?.state?.sellerToken ?? null
+  } catch {
+    return null
+  }
+}
 
 const isAdminClaimRequest = (url = "") =>
   url === "/api/claims/admin" || /^\/api\/claims\/[^/]+\/(status|reject)$/.test(url)
 
+const isAdminInquiryRequest = (url = "") =>
+  url === "/api/inquiries/admin" ||
+  /^\/api\/inquiries\/[^/]+\/answers\/admin$/.test(url) ||
+  /^\/api\/inquiries\/[^/]+\/status$/.test(url)
+
 const isAdminRequest = (url = "") =>
-  url.startsWith("/api/admin/") || url.startsWith("/api/admins") || isAdminClaimRequest(url)
+  url.startsWith("/api/admin/") ||
+  (url.startsWith("/api/admins") && url !== "/api/admins/login") ||
+  isAdminClaimRequest(url) ||
+  isAdminInquiryRequest(url) ||
+  url.startsWith("/api/notices") ||
+  url.startsWith("/api/faqs")
+
+const isSellerRequest = (url = "") =>
+  url.startsWith("/api/seller/") ||
+  url.startsWith("/api/sellers/") ||
+  url === "/api/products/seller" ||
+  url === "/api/claims/seller" ||
+  url === "/api/inquiries/seller" ||
+  /^\/api\/inquiries\/[^/]+\/answers\/seller$/.test(url)
 
 const api = axios.create({
+<<<<<<< HEAD
   baseURL: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8080" : ""),
+=======
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+>>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -50,7 +73,11 @@ api.interceptors.request.use(
 
     if (isAdminRequest(config.url) && adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`
+<<<<<<< HEAD
     } else if (config.url?.startsWith("/api/seller") && sellerToken) {
+=======
+    } else if (isSellerRequest(config.url) && sellerToken) {
+>>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
       config.headers.Authorization = `Bearer ${sellerToken}`
     } else if (token) {
       config.headers.Authorization = `Bearer ${token}`

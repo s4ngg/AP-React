@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
 import { CheckCircle, XCircle, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerClaims, approveClaim, rejectClaim } from "../../api/sellerApi"
+import { getSellerClaims, approveClaim, rejectClaim, getClaimDetail, getClaimAttachments } from "../../api/sellerApi"
 import styles from "./SellerRefundPage.module.css"
 
 const CLAIM_TYPE_LABEL = { EXCHANGE: "교환", RETURN: "환불" }
@@ -18,6 +17,9 @@ const REASON_LABEL = {
   ETC: "기타",
 }
 const TYPE_CLASS = { EXCHANGE: "typeExchange", RETURN: "typeRefund" }
+const PROCESSABLE_STATUS = "SUBMITTED"
+
+const isProcessableClaim = (claim) => claim?.status === PROCESSABLE_STATUS
 
 export default function SellerRefundPage() {
   const [requests, setRequests] = useState([])
@@ -30,7 +32,7 @@ export default function SellerRefundPage() {
     getSellerClaims()
       .then((data) =>
         setRequests(
-          (data ?? []).filter((c) => c.status === "SUBMITTED" || c.status === "IN_PROGRESS")
+          (data ?? []).filter(isProcessableClaim)
         )
       )
       .catch((err) => console.error("환불/교환 목록 조회 실패", err))
@@ -39,6 +41,11 @@ export default function SellerRefundPage() {
 
   const handleApprove = async (claimId) => {
     const target = requests.find((r) => r.claimId === claimId)
+    if (!isProcessableClaim(target)) {
+      alert("이미 처리된 요청입니다.")
+      return
+    }
+
     const typeLabel = CLAIM_TYPE_LABEL[target?.claimType] ?? "요청"
     if (!window.confirm(`${typeLabel} 요청을 승인하시겠습니까?`)) return
     try {
@@ -52,6 +59,14 @@ export default function SellerRefundPage() {
 
   const handleRejectSubmit = async () => {
     if (!rejectReason.trim()) return
+    const target = requests.find((r) => r.claimId === rejectModalId)
+    if (!isProcessableClaim(target)) {
+      alert("이미 처리된 요청입니다.")
+      setRejectModalId(null)
+      setRejectReason("")
+      return
+    }
+
     try {
       await rejectClaim(rejectModalId, rejectReason)
       setRequests((prev) => prev.filter((r) => r.claimId !== rejectModalId))
@@ -61,6 +76,14 @@ export default function SellerRefundPage() {
     } catch {
       alert("거부 처리 중 오류가 발생했습니다.")
     }
+  }
+
+  const handleOpenDetail = async (req) => {
+    const [detail, attachments] = await Promise.all([
+      getClaimDetail(req.claimId),
+      getClaimAttachments(req.claimId),
+    ])
+    setSelectedRequest({ ...req, ...detail, attachments: attachments ?? [] })
   }
 
   return (
@@ -115,7 +138,7 @@ export default function SellerRefundPage() {
                       <td>
                         <button
                           className={styles.buyerBtn}
-                          onClick={() => setSelectedRequest(req)}
+                          onClick={() => handleOpenDetail(req)}
                         >
                           상세보기
                         </button>
@@ -128,22 +151,24 @@ export default function SellerRefundPage() {
                       <td>{req.pickupMethod === "COURIER" ? "택배" : "방문"}</td>
                       <td>{req.createdAt?.slice(0, 10)}</td>
                       <td>
-                        <div className={styles.actionGroup}>
-                          <button
-                            className={`${styles.actionBtn} ${styles.approveBtn}`}
-                            onClick={() => handleApprove(req.claimId)}
-                          >
-                            <CheckCircle size={14} />
-                            승인
-                          </button>
-                          <button
-                            className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                            onClick={() => setRejectModalId(req.claimId)}
-                          >
-                            <XCircle size={14} />
-                            거절
-                          </button>
-                        </div>
+                        {isProcessableClaim(req) && (
+                          <div className={styles.actionGroup}>
+                            <button
+                              className={`${styles.actionBtn} ${styles.approveBtn}`}
+                              onClick={() => handleApprove(req.claimId)}
+                            >
+                              <CheckCircle size={14} />
+                              승인
+                            </button>
+                            <button
+                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                              onClick={() => setRejectModalId(req.claimId)}
+                            >
+                              <XCircle size={14} />
+                              거절
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -208,28 +233,45 @@ export default function SellerRefundPage() {
                       {selectedRequest.createdAt?.slice(0, 10)}
                     </span>
                   </div>
+                  {selectedRequest.attachments?.length > 0 && (
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>첨부 이미지</span>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {selectedRequest.attachments.map((att) => (
+                          <img
+                            key={att.attachmentId}
+                            src={att.fileUrl}
+                            alt="클레임 첨부"
+                            style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6, border: "1px solid #eee" }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-            <div className={styles.modalFooter}>
-              <button
-                className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                onClick={() => {
-                  setSelectedRequest(null)
-                  setRejectModalId(selectedRequest.claimId)
-                }}
-              >
-                <XCircle size={14} />
-                거절
-              </button>
-              <button
-                className={`${styles.actionBtn} ${styles.approveBtn}`}
-                onClick={() => handleApprove(selectedRequest.claimId)}
-              >
-                <CheckCircle size={14} />
-                승인
-              </button>
-            </div>
+            {isProcessableClaim(selectedRequest) && (
+              <div className={styles.modalFooter}>
+                <button
+                  className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                  onClick={() => {
+                    setSelectedRequest(null)
+                    setRejectModalId(selectedRequest.claimId)
+                  }}
+                >
+                  <XCircle size={14} />
+                  거절
+                </button>
+                <button
+                  className={`${styles.actionBtn} ${styles.approveBtn}`}
+                  onClick={() => handleApprove(selectedRequest.claimId)}
+                >
+                  <CheckCircle size={14} />
+                  승인
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

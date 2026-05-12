@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, Pencil, X } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
+import { formatDate } from "../../utils/format"
 import styles from "./AdminFAQPage.module.css"
-import { getFaqs, createFaq, deleteFaq } from "../../api/faqApi"
+import { getFaqs, createFaq, updateFaq, deleteFaq } from "../../api/faqApi"
 
 const CATEGORIES = ["전체", "주문/결제", "배송", "교환/반품", "회원"]
 const FAQ_CATEGORIES = CATEGORIES.slice(1)
@@ -27,6 +28,36 @@ export default function AdminFAQPage() {
   const [newQuestion, setNewQuestion] = useState("")
   const [newAnswer, setNewAnswer] = useState("")
   const [newCategory, setNewCategory] = useState(FAQ_CATEGORIES[0])
+
+  const [editTarget, setEditTarget] = useState(null)
+  const [editCategory, setEditCategory] = useState(FAQ_CATEGORIES[0])
+  const [editQuestion, setEditQuestion] = useState("")
+  const [editAnswer, setEditAnswer] = useState("")
+
+  const openEdit = (faq) => {
+    setEditTarget(faq)
+    setEditCategory(CATEGORY_LABEL[faq.category] ?? FAQ_CATEGORIES[0])
+    setEditQuestion(faq.title)
+    setEditAnswer(faq.content)
+  }
+
+  const closeEdit = () => setEditTarget(null)
+
+  const handleEdit = (e) => {
+    e.preventDefault()
+    if (!editQuestion.trim() || !editAnswer.trim()) return
+    updateFaq(editTarget.faqId, {
+      category: CATEGORY_MAP[editCategory],
+      title: editQuestion.trim(),
+      content: editAnswer.trim(),
+      displayOrder: editTarget.displayOrder ?? 0,
+    })
+      .then((data) => {
+        setFAQs((prev) => prev.map((f) => f.faqId === data.faqId ? data : f))
+        closeEdit()
+      })
+      .catch(() => alert("수정에 실패했습니다."))
+  }
 
   useEffect(() => {
     getFaqs()
@@ -149,8 +180,15 @@ export default function AdminFAQPage() {
                       </td>
                       <td className={styles.questionCell}>{faq.title}</td>
                       <td className={styles.answerCell}>{faq.content}</td>
-                      <td>{faq.createdAt?.slice(0, 10)}</td>
-                      <td>
+                      <td>{formatDate(faq.createdAt)}</td>
+                      <td className={styles.actionCell}>
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => openEdit(faq)}
+                          aria-label="수정"
+                        >
+                          <Pencil size={14} />
+                        </button>
                         <button
                           className={styles.deleteBtn}
                           onClick={() => handleDelete(faq.faqId)}
@@ -166,6 +204,49 @@ export default function AdminFAQPage() {
             </table>
           </div>
         </div>
+        {/* 수정 모달 */}
+        {editTarget && (
+          <div className={styles.modalOverlay} onClick={closeEdit}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h2 className={styles.modalTitle}>FAQ 수정</h2>
+                <button className={styles.modalCloseBtn} onClick={closeEdit} aria-label="닫기">
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleEdit} className={styles.modalForm}>
+                <div className={styles.addRow}>
+                  <select
+                    className={styles.addSelect}
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                  >
+                    {FAQ_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    className={styles.addInput}
+                    placeholder="질문"
+                    value={editQuestion}
+                    onChange={(e) => setEditQuestion(e.target.value)}
+                  />
+                </div>
+                <div className={styles.addRow}>
+                  <input
+                    type="text"
+                    className={`${styles.addInput} ${styles.addInputFull}`}
+                    placeholder="답변"
+                    value={editAnswer}
+                    onChange={(e) => setEditAnswer(e.target.value)}
+                  />
+                  <button type="submit" className={styles.addBtn}>저장</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -141,7 +141,7 @@
 }
  
 .validItemFail {
-  color: var(--color-muted);
+  color: #ef4444;
 }
  
 .passwordMatch {

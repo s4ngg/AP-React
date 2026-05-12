@@ -1,8 +1,14 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct } from "../../api/productApi"
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
+
+const APPROVAL_CLASS = {
+  APPROVED: styles.approvalAPPROVED,
+  PENDING: styles.approvalPENDING,
+  REJECTED: styles.approvalREJECTED,
+}
 
 const EMPTY_FORM = {
   productName: "",
@@ -13,27 +19,93 @@ const EMPTY_FORM = {
   precaution: "",
   description: "",
   thumbnailUrl: "",
-  categoryId: 1,
+  categoryId: "",
   optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
 
+const createEmptyForm = (categoryId = "") => ({
+  ...EMPTY_FORM,
+  categoryId,
+  optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
+  productImageList: [],
+})
+
+const getErrorMessage = (error) =>
+  error.response?.data?.message || error.message || "처리 중 오류가 발생했습니다."
+
+const toNullableText = (value) => {
+  const text = value?.trim()
+  return text ? text : null
+}
+
+const buildCreatePayload = (formData) => ({
+  ...formData,
+  price: Number(formData.price),
+  categoryId: Number(formData.categoryId),
+  description: formData.description || formData.productName,
+  productImageList: formData.productImageList.length > 0
+    ? formData.productImageList
+    : formData.thumbnailUrl
+      ? [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }]
+      : [],
+})
+
+const buildUpdatePayload = (formData) => ({
+  productName: toNullableText(formData.productName),
+  brand: toNullableText(formData.brand),
+  price: formData.price ? Number(formData.price) : null,
+  thumbnailUrl: toNullableText(formData.thumbnailUrl),
+  description: toNullableText(formData.description),
+  manufacturer: toNullableText(formData.manufacturer),
+  origin: toNullableText(formData.origin),
+  precaution: toNullableText(formData.precaution),
+})
+
 export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState(null)
+
+  // 등록 모달
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 가격 수정 모달
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [editPrice, setEditPrice] = useState("")
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false)
+
+  // 상세 모달
   const [viewingProduct, setViewingProduct] = useState(null)
+  const [parentCategories, setParentCategories] = useState([])
+  const [categoryLoading, setCategoryLoading] = useState(true)
 
   useEffect(() => {
+    Promise.all([
+      getSellerProducts().catch(() => []),
+      getParentCategories().catch(() => ({ data: [] })),
+    ]).then(([productData, categoryRes]) => {
+      setProducts(productData ?? [])
+      const list = categoryRes?.data ?? categoryRes ?? []
+      setCategories(Array.isArray(list) ? list : [])
+    }).finally(() => setLoading(false))
+  }, [])
 
-    getSellerProducts()
-      .then((data) => setProducts(data ?? []))
-      .catch((err) => console.error("상품 목록 조회 실패", err))
-      .finally(() => setLoading(false))
+  useEffect(() => {
+    getParentCategories()
+      .then((res) => {
+        const categories = res.data ?? []
+        setParentCategories(categories)
+        setFormData((prev) => {
+          if (prev.categoryId || categories.length === 0) return prev
+          return { ...prev, categoryId: String(categories[0].parentCategoryId) }
+        })
+      })
+      .catch(() => setParentCategories([]))
+      .finally(() => setCategoryLoading(false))
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -45,36 +117,7 @@ export default function SellerProductsPage() {
     )
   }, [products, searchTerm])
 
-  const handleOpenCreate = () => {
-    setEditingProduct(null)
-    setFormData(EMPTY_FORM)
-    setIsModalOpen(true)
-  }
-
-  const handleOpenEdit = (product) => {
-    setEditingProduct(product)
-    setFormData({
-      productName: product.productName ?? "",
-      brand: product.brand ?? "",
-      price: String(product.price ?? ""),
-      manufacturer: "",
-      origin: "",
-      precaution: "",
-      description: "",
-      thumbnailUrl: product.thumbnailUrl ?? "",
-      categoryId: 1,
-      optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
-      productImageList: [],
-    })
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setEditingProduct(null)
-    setFormData(EMPTY_FORM)
-  }
-
+  /* ── 등록 핸들러 ── */
   const handleFormChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -105,53 +148,94 @@ export default function SellerProductsPage() {
     }))
   }
 
-  const handleSubmit = async (e) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault()
     if (!formData.productName.trim() || !formData.price || !formData.thumbnailUrl.trim()) {
       alert("상품명, 판매가, 대표 이미지 URL은 필수입니다.")
       return
     }
+    if (!formData.brand.trim() || !formData.manufacturer.trim() || !formData.origin.trim() || !formData.precaution.trim()) {
+      alert("브랜드, 제조사, 원산지, 주의사항은 필수입니다.")
+      return
+    }
+    if (!formData.categoryId) {
+      alert("카테고리를 선택해주세요.")
+      return
+    }
+    const invalidOption = formData.optionList.some((o) => !o.optionName.trim() || !o.optionValue.trim())
+    if (invalidOption) {
+      alert("모든 옵션의 옵션명과 옵션값을 입력해주세요.")
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const payload = {
         ...formData,
         price: Number(formData.price),
         categoryId: Number(formData.categoryId),
-        description: formData.description || formData.productName,
-        productImageList: formData.productImageList.length > 0
-          ? formData.productImageList
-          : formData.thumbnailUrl
-            ? [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }]
-            : [],
+        description: formData.description.trim() || formData.productName,
+        optionList: formData.optionList.map((o) => ({
+          ...o,
+          additionalPrice: Number(o.additionalPrice) || 0,
+          stockQuantity: Number(o.stockQuantity) || 0,
+        })),
+        productImageList: [{ imageUrl: formData.thumbnailUrl, sortOrder: 1 }],
       }
-      console.log("payload:", JSON.stringify(payload, null, 2))
-      if (editingProduct) {
-        const updated = await updateProduct(editingProduct.productId, payload)
-        setProducts((prev) =>
-          prev.map((p) => (p.productId === editingProduct.productId ? { ...p, ...updated } : p))
-        )
-      } else {
-        await createProduct(payload)
-        // 목록 새로고침
-        const fresh = await getSellerProducts()
-        setProducts(fresh ?? [])
-      }
-      handleCloseModal()
+      await createProduct(payload)
+      const fresh = await getSellerProducts()
+      setProducts(fresh ?? [])
+      setIsCreateOpen(false)
+      setFormData(EMPTY_FORM)
     } catch (err) {
-      alert("저장 중 오류가 발생했습니다.")
+      const msg = err?.response?.data?.message || "등록 중 오류가 발생했습니다."
+      alert(msg)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleDelete = async (productId, productName) => {
+  /* ── 수정(가격만) 핸들러 ── */
+  const handleOpenEdit = (product, e) => {
+    e?.stopPropagation()
+    setEditingProduct(product)
+    setEditPrice(String(product.price ?? ""))
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    if (!editPrice || Number(editPrice) < 0) {
+      alert("올바른 가격을 입력해주세요.")
+      return
+    }
+    setIsEditSubmitting(true)
+    try {
+      await updateProduct(editingProduct.productId, { price: Number(editPrice) })
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.productId === editingProduct.productId ? { ...p, price: Number(editPrice) } : p
+        )
+      )
+      setEditingProduct(null)
+    } catch (err) {
+      const msg = err?.response?.data?.message || "수정 중 오류가 발생했습니다."
+      alert(msg)
+    } finally {
+      setIsEditSubmitting(false)
+    }
+  }
+
+  /* ── 삭제 핸들러 ── */
+  const handleDelete = async (productId, productName, e) => {
+    e?.stopPropagation()
     if (!window.confirm(`"${productName}"을(를) 삭제하시겠습니까?`)) return
     try {
       await deleteProduct(productId)
       setProducts((prev) => prev.filter((p) => p.productId !== productId))
       if (viewingProduct?.productId === productId) setViewingProduct(null)
-    } catch {
-      alert("삭제 중 오류가 발생했습니다.")
+    } catch (err) {
+      const msg = err?.response?.data?.message || "삭제 중 오류가 발생했습니다."
+      alert(msg)
     }
   }
 
@@ -172,11 +256,12 @@ export default function SellerProductsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className={styles.createBtn} onClick={handleOpenCreate}>
+            <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
               <Plus size={16} />
               상품 등록
             </button>
           </div>
+
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
@@ -185,14 +270,15 @@ export default function SellerProductsPage() {
                   <th>브랜드</th>
                   <th>카테고리</th>
                   <th>판매가</th>
+                  <th>승인 상태</th>
                   <th>관리</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={5} className={styles.emptyRow}>불러오는 중...</td></tr>
+                  <tr><td colSpan={6} className={styles.emptyRow}>불러오는 중...</td></tr>
                 ) : filteredProducts.length === 0 ? (
-                  <tr><td colSpan={5} className={styles.emptyRow}>등록된 상품이 없습니다.</td></tr>
+                  <tr><td colSpan={6} className={styles.emptyRow}>등록된 상품이 없습니다.</td></tr>
                 ) : (
                   filteredProducts.map((product) => (
                     <tr
@@ -210,11 +296,26 @@ export default function SellerProductsPage() {
                       <td>{product.parentCategoryName ?? "-"}</td>
                       <td>{Number(product.price).toLocaleString()}원</td>
                       <td>
+                        <span className={APPROVAL_CLASS[product.approvalStatus] ?? ""}>
+                          {product.approvalStatus === "APPROVED" ? "승인완료"
+                            : product.approvalStatus === "REJECTED" ? "반려"
+                            : "승인대기"}
+                        </span>
+                      </td>
+                      <td>
                         <div className={styles.actionBtns} onClick={(e) => e.stopPropagation()}>
-                          <button className={styles.editBtn} onClick={() => handleOpenEdit(product)} aria-label="수정">
+                          <button
+                            className={styles.editBtn}
+                            onClick={(e) => handleOpenEdit(product, e)}
+                            aria-label="가격 수정"
+                          >
                             <Pencil size={14} />
                           </button>
-                          <button className={styles.deleteBtn} onClick={() => handleDelete(product.productId, product.productName)} aria-label="삭제">
+                          <button
+                            className={styles.deleteBtn}
+                            onClick={(e) => handleDelete(product.productId, product.productName, e)}
+                            aria-label="삭제"
+                          >
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -228,15 +329,18 @@ export default function SellerProductsPage() {
         </div>
       </main>
 
-      {/* 상세 모달 */}
+      {/* ── 상세 모달 ── */}
       {viewingProduct && (
         <div className={styles.modalOverlay} onClick={() => setViewingProduct(null)}>
           <div className={styles.detailModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.detailModalHeader}>
               <h2 className={styles.modalTitle}>{viewingProduct.productName}</h2>
               <div className={styles.detailModalActions}>
-                <button className={styles.editInDetailBtn} onClick={() => { setViewingProduct(null); handleOpenEdit(viewingProduct) }}>
-                  <Pencil size={14} /> 수정하기
+                <button
+                  className={styles.editInDetailBtn}
+                  onClick={() => { setViewingProduct(null); handleOpenEdit(viewingProduct) }}
+                >
+                  <Pencil size={14} /> 가격 수정
                 </button>
                 <button className={styles.modalCloseBtn} onClick={() => setViewingProduct(null)}>
                   <X size={20} />
@@ -264,21 +368,66 @@ export default function SellerProductsPage() {
                   <span className={styles.productInfoLabel}>판매가</span>
                   <span className={styles.productInfoValue}>{Number(viewingProduct.price).toLocaleString()}원</span>
                 </div>
+                <div className={styles.productInfoRow}>
+                  <span className={styles.productInfoLabel}>승인 상태</span>
+                  <span className={APPROVAL_CLASS[viewingProduct.approvalStatus] ?? ""}>
+                    {viewingProduct.approvalStatus === "APPROVED" ? "승인완료"
+                      : viewingProduct.approvalStatus === "REJECTED" ? "반려"
+                      : "승인대기"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 등록/수정 모달 */}
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={handleCloseModal}>
+      {/* ── 가격 수정 모달 ── */}
+      {editingProduct && (
+        <div className={styles.modalOverlay} onClick={() => setEditingProduct(null)}>
+          <div className={styles.modal} style={{ maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>가격 수정</h2>
+              <button className={styles.modalCloseBtn} onClick={() => setEditingProduct(null)}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleEditSubmit}>
+              <div className={styles.formBody}>
+                <p className={styles.formLabel} style={{ marginBottom: 4 }}>{editingProduct.productName}</p>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>새 판매가 (원) *</label>
+                  <input
+                    type="number"
+                    className={styles.formInput}
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    placeholder="0"
+                    min="0"
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className={styles.modalFooter}>
+                <button type="button" className={styles.cancelBtn} onClick={() => setEditingProduct(null)}>취소</button>
+                <button type="submit" className={styles.submitBtn} disabled={isEditSubmitting}>
+                  {isEditSubmitting ? "저장 중..." : "수정하기"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── 상품 등록 모달 ── */}
+      {isCreateOpen && (
+        <div className={styles.modalOverlay} onClick={() => { setIsCreateOpen(false); setFormData(EMPTY_FORM) }}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>{editingProduct ? "상품 수정" : "상품 등록"}</h2>
-              <button className={styles.modalCloseBtn} onClick={handleCloseModal}><X size={20} /></button>
+              <h2 className={styles.modalTitle}>상품 등록</h2>
+              <button className={styles.modalCloseBtn} onClick={() => { setIsCreateOpen(false); setFormData(EMPTY_FORM) }}>
+                <X size={20} />
+              </button>
             </div>
-            <form className={styles.formWrapper} onSubmit={handleSubmit}>
+            <form className={styles.formWrapper} onSubmit={handleCreateSubmit}>
               <div className={styles.formBody}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>상품명 *</label>
@@ -294,8 +443,15 @@ export default function SellerProductsPage() {
                     <input type="number" name="price" className={styles.formInput} value={formData.price} onChange={handleFormChange} placeholder="0" min="0" />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>카테고리 ID *</label>
-                    <input type="number" name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange} placeholder="1" min="1" />
+                    <label className={styles.formLabel}>카테고리 *</label>
+                    <select name="categoryId" className={styles.formInput} value={formData.categoryId} onChange={handleFormChange}>
+                      <option value="">카테고리 선택</option>
+                      {categories.map((cat) => (
+                        <option key={cat.parentCategoryId ?? cat.categoryId} value={cat.parentCategoryId ?? cat.categoryId}>
+                          {cat.categoryName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className={styles.formRow}>
@@ -317,8 +473,8 @@ export default function SellerProductsPage() {
                   <input name="thumbnailUrl" className={styles.formInput} value={formData.thumbnailUrl} onChange={handleFormChange} placeholder="https://..." />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>상품 설명 *</label>
-                  <textarea name="description" className={styles.formTextarea} value={formData.description} onChange={handleFormChange} placeholder="상품 설명을 입력하세요" rows={3} />
+                  <label className={styles.formLabel}>상품 설명</label>
+                  <textarea name="description" className={styles.formTextarea} value={formData.description} onChange={handleFormChange} placeholder="상품 설명을 입력하세요 (미입력 시 상품명으로 대체)" rows={3} />
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>상품 옵션 *</label>
@@ -326,6 +482,7 @@ export default function SellerProductsPage() {
                     <div key={idx} className={styles.optionRow}>
                       <input className={styles.formInput} placeholder="옵션명 (예: 사이즈)" value={opt.optionName} onChange={(e) => handleOptionChange(idx, "optionName", e.target.value)} />
                       <input className={styles.formInput} placeholder="옵션값 (예: L)" value={opt.optionValue} onChange={(e) => handleOptionChange(idx, "optionValue", e.target.value)} />
+                      <input type="number" className={styles.formInput} placeholder="추가금액" value={opt.additionalPrice} onChange={(e) => handleOptionChange(idx, "additionalPrice", Number(e.target.value))} min="0" />
                       <input type="number" className={styles.formInput} placeholder="재고" value={opt.stockQuantity} onChange={(e) => handleOptionChange(idx, "stockQuantity", Number(e.target.value))} min="0" />
                       {formData.optionList.length > 1 && (
                         <button type="button" className={styles.deleteBtn} onClick={() => handleRemoveOption(idx)}><X size={14} /></button>
@@ -336,9 +493,9 @@ export default function SellerProductsPage() {
                 </div>
               </div>
               <div className={styles.modalFooter}>
-                <button type="button" className={styles.cancelBtn} onClick={handleCloseModal}>취소</button>
+                <button type="button" className={styles.cancelBtn} onClick={() => { setIsCreateOpen(false); setFormData(EMPTY_FORM) }}>취소</button>
                 <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
-                  {isSubmitting ? "저장 중..." : editingProduct ? "수정하기" : "등록하기"}
+                  {isSubmitting ? "등록 중..." : "등록하기"}
                 </button>
               </div>
             </form>

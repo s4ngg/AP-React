@@ -5,16 +5,16 @@ import styles from "./FAQList.module.css";
 
 const CATEGORY_MAP = {
     DELIVERY: "배송",
-    PAYMENT: "결제",
-    CANCEL_REFUND: "취소/환불",
+    PAYMENT: "주문/결제",
+    CANCEL_REFUND: "교환/반품",
     MEMBER: "회원",
 };
 
 const CATEGORIES = [
     { label: "전체", value: null },
+    { label: "주문/결제", value: "PAYMENT" },
     { label: "배송", value: "DELIVERY" },
-    { label: "결제", value: "PAYMENT" },
-    { label: "취소/환불", value: "CANCEL_REFUND" },
+    { label: "교환/반품", value: "CANCEL_REFUND" },
     { label: "회원", value: "MEMBER" },
 ];
 
@@ -30,7 +30,7 @@ export default function FAQList() {
             ? getFaqsByCategory(activeCategory)
             : getFaqs();
         request
-            .then(res => setFaqs((res.data?.data || []).filter(f => f.isVisible !== false)))
+            .then(data => setFaqs((data || []).filter(f => f.isVisible !== false)))
             .catch(() => setFaqs([]))
             .finally(() => setLoading(false));
         setOpenId(null);

@@ -1,6 +1,9 @@
 import { create } from "zustand"
+import { persist } from "zustand/middleware"
 
-const useCartStore = create((set, get) => ({
+const useCartStore = create(
+  persist(
+    (set, get) => ({
   items: [],
 
   // 상품 추가
@@ -80,6 +83,11 @@ const useCartStore = create((set, get) => ({
 
   // 전체 비우기
   clearCart: () => set({ items: [] }),
-}))
+    }),
+    {
+      name: "cart-storage",
+    }
+  )
+)
 
 export default useCartStore

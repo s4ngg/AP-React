@@ -1,17 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, ShoppingCart, User, Menu, X, ChevronDown, LogOut, Headphones, Store } from "lucide-react"
 import useAuthStore from "../../store/authStore"
 import useCartStore from "../../store/cartStore"
+import { getChildCategories, getParentCategories } from "../../api/productApi"
 import styles from "./Header.module.css"
-
-const categoryData = {
-  뷰티: ["메이크업", "스킨케어", "남성화장품", "향수"],
-  패션: ["여성의류", "남성의류", "잡화·ACC"],
-  식품: ["과일·견과", "축산·수산", "디저트"],
-  주류: ["와인", "양주", "맥주·기타"],
-  리빙: ["캔들디퓨저 인센스", "조명·무드등", "가구·DIY", "침구·패브릭"],
-}
 
 const navLinks = [
   { name: "특별할인" },
@@ -21,13 +14,56 @@ const navLinks = [
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isLoggedIn, logout, adminToken } = useAuthStore()
+  const { user, isLoggedIn, logout, sellerToken, adminToken } = useAuthStore()
   const { items } = useCartStore()
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [categoryOpen, setCategoryOpen] = useState(false)
-  const [hoveredCategory, setHoveredCategory] = useState("뷰티")
+  const [parentCategories, setParentCategories] = useState([])
+  const [childCategoriesByParentId, setChildCategoriesByParentId] = useState({})
+  const [hoveredCategoryId, setHoveredCategoryId] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadCategories = async () => {
+      try {
+        const parentResponse = await getParentCategories()
+        const parents = parentResponse.data ?? []
+
+        const childEntries = await Promise.all(
+          parents.map(async (parent) => {
+            try {
+              const childResponse = await getChildCategories(parent.parentCategoryId)
+              return [parent.parentCategoryId, childResponse.data ?? []]
+            } catch {
+              return [parent.parentCategoryId, []]
+            }
+          })
+        )
+
+        if (!isMounted) return
+
+        setParentCategories(parents)
+        setChildCategoriesByParentId(Object.fromEntries(childEntries))
+        setHoveredCategoryId(parents[0]?.parentCategoryId ?? null)
+      } catch {
+        if (!isMounted) return
+
+        setParentCategories([])
+        setChildCategoriesByParentId({})
+        setHoveredCategoryId(null)
+      }
+    }
+
+    loadCategories()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -38,8 +74,39 @@ export default function Header() {
   const handleNavClick = () => {
     alert("아직 준비중인 기능입니다.")
   }
+<<<<<<< HEAD
   const sellerToken = useAuthStore((state) => state.sellerToken)
+=======
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery("")
+    }
+  }
+
+>>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
   const userInitial = user?.name?.charAt(0) || "MY"
+  const hoveredParentCategory = parentCategories.find(
+    (category) => category.parentCategoryId === hoveredCategoryId
+  )
+  const hoveredChildCategories = hoveredCategoryId
+    ? childCategoriesByParentId[hoveredCategoryId] ?? []
+    : []
+
+  const moveToParentCategory = (category) => {
+    setCategoryOpen(false)
+    setMobileMenuOpen(false)
+    navigate(`/products?category=${encodeURIComponent(category.categoryName)}`)
+  }
+
+  const moveToChildCategory = (parentCategory, childCategory) => {
+    setCategoryOpen(false)
+    setMobileMenuOpen(false)
+    navigate(
+      `/products?category=${encodeURIComponent(parentCategory.categoryName)}&subCategory=${encodeURIComponent(childCategory.categoryName)}`
+    )
+  }
 
   return (
     <header className={styles.header}>
@@ -54,9 +121,21 @@ export default function Header() {
           <Link to="/" className={styles.logo}>AllPick</Link>
 
           <div className={styles.searchBar}>
+<<<<<<< HEAD
             <input type="text" placeholder="찾으시는 상품을 검색해보세요"/>
             <button className={styles.searchBtn} aria-label="검색">
               <Search size={18}/>
+=======
+            <input
+              type="text"
+              placeholder="찾으시는 상품을 검색해보세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
+              <Search size={18} />
+>>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
             </button>
           </div>
 
@@ -68,10 +147,17 @@ export default function Header() {
                   <span>{user?.name || "마이페이지"}</span>
                 </Link>
 
+<<<<<<< HEAD
                 {sellerToken && (
                   <Link to="/seller" className={styles.iconBtn}>
                     <Store size={20}/>
                     <span>셀러</span>
+=======
+                {isLoggedIn && sellerToken && (
+                  <Link to="/seller" className={styles.iconBtn}>
+                    <Store size={20} />
+                    <span>판매자 관리</span>
+>>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
                   </Link>
                 )}
 
@@ -91,7 +177,8 @@ export default function Header() {
                   <span>회원가입</span>
                 </Link>
               </>
-            )}
+            )
+            }
 
             <Link to="/cart" className={`${styles.iconBtn} ${styles.cartBtn}`}>
               <ShoppingCart size={20}/>
@@ -105,7 +192,16 @@ export default function Header() {
               <Headphones size={20}/>
               <span>고객센터</span>
             </Link>
-
+            {/* 아래 추가 */}
+            {isLoggedIn && sellerToken && (
+              <Link
+                to="/seller"
+                className={styles.mobileMenuItem}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                판매자 관리
+              </Link>
+            )}
             <button
               className={styles.mobileMenuBtn}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -113,13 +209,25 @@ export default function Header() {
             >
               {mobileMenuOpen ? <X size={20}/> : <Menu size={20}/>}
             </button>
-          </div>
-        </div>
+          </div >
+        </div >
 
         <div className={styles.mobileSearch}>
+<<<<<<< HEAD
           <input type="text" placeholder="찾으시는 상품을 검색해보세요"/>
           <button className={styles.searchBtn} aria-label="검색">
             <Search size={18}/>
+=======
+          <input
+            type="text"
+            placeholder="찾으시는 상품을 검색해보세요"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+          <button className={styles.searchBtn} aria-label="검색" onClick={handleSearch}>
+            <Search size={18} />
+>>>>>>> 9db647d4d6545241c8f71621844edb48f64f4253
           </button>
         </div>
 
@@ -140,36 +248,28 @@ export default function Header() {
             {categoryOpen && (
               <div className={styles.categoryDropdown}>
                 <div className={styles.mainCategoryList}>
-                  {Object.keys(categoryData).map((categoryName) => (
+                  {parentCategories.map((category) => (
                     <button
-                      key={categoryName}
+                      key={category.parentCategoryId}
                       type="button"
-                      className={`${styles.mainCategoryItem} ${hoveredCategory === categoryName ? styles.activeMainCategoryItem : ""}`}
-                      onMouseEnter={() => setHoveredCategory(categoryName)}
-                      onClick={() => {
-                        setCategoryOpen(false)
-                        navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-                      }}
+                      className={`${styles.mainCategoryItem} ${hoveredCategoryId === category.parentCategoryId ? styles.activeMainCategoryItem : ""}`}
+                      onMouseEnter={() => setHoveredCategoryId(category.parentCategoryId)}
+                      onClick={() => moveToParentCategory(category)}
                     >
-                      {categoryName}
+                      {category.categoryName}
                     </button>
                   ))}
                 </div>
 
                 <div className={styles.subCategoryList}>
-                  {categoryData[hoveredCategory].map((subCategory) => (
+                  {hoveredParentCategory && hoveredChildCategories.map((subCategory) => (
                     <button
-                      key={subCategory}
+                      key={subCategory.childCategoryId}
                       type="button"
                       className={styles.subCategoryItem}
-                      onClick={() => {
-                        setCategoryOpen(false)
-                        navigate(
-                          `/products?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`
-                        )
-                      }}
+                      onClick={() => moveToChildCategory(hoveredParentCategory, subCategory)}
                     >
-                      {subCategory}
+                      {subCategory.categoryName}
                     </button>
                   ))}
                 </div>
@@ -187,38 +287,30 @@ export default function Header() {
             </button>
           ))}
         </div>
-      </nav>
+      </nav >
 
       {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
           <p className={styles.mobileMenuLabel}>카테고리</p>
-          {Object.keys(categoryData).map((categoryName) => (
-            <div key={categoryName} className={styles.mobileCategoryGroup}>
+          {parentCategories.map((category) => (
+            <div key={category.parentCategoryId} className={styles.mobileCategoryGroup}>
               <button
                 type="button"
                 className={styles.mobileMenuItemButton}
-                onClick={() => {
-                  setMobileMenuOpen(false)
-                  navigate(`/products?category=${encodeURIComponent(categoryName)}`)
-                }}
+                onClick={() => moveToParentCategory(category)}
               >
-                {categoryName}
+                {category.categoryName}
               </button>
 
               <div className={styles.mobileSubCategoryList}>
-                {categoryData[categoryName].map((subCategory) => (
+                {(childCategoriesByParentId[category.parentCategoryId] ?? []).map((subCategory) => (
                   <button
-                    key={subCategory}
+                    key={subCategory.childCategoryId}
                     type="button"
                     className={styles.mobileSubCategoryItem}
-                    onClick={() => {
-                      setMobileMenuOpen(false)
-                      navigate(
-                        `/products?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`
-                      )
-                    }}
+                    onClick={() => moveToChildCategory(category, subCategory)}
                   >
-                    {subCategory}
+                    {subCategory.categoryName}
                   </button>
                 ))}
               </div>
@@ -284,6 +376,6 @@ export default function Header() {
           </div>
         </div>
       )}
-    </header>
+    </header >
   )
 }
