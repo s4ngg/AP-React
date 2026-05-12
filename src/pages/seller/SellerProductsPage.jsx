@@ -460,8 +460,22 @@ export default function SellerProductsPage() {
                     <div key={idx} className={styles.optionRow}>
                       <input className={styles.formInput} placeholder="옵션명 (예: 사이즈)" value={opt.optionName} onChange={(e) => handleOptionChange(idx, "optionName", e.target.value)} />
                       <input className={styles.formInput} placeholder="옵션값 (예: L)" value={opt.optionValue} onChange={(e) => handleOptionChange(idx, "optionValue", e.target.value)} />
-                      <input type="number" className={styles.formInput} placeholder="추가금액" value={opt.additionalPrice} onChange={(e) => handleOptionChange(idx, "additionalPrice", Number(e.target.value))} min="0" />
-                      <input type="number" className={styles.formInput} placeholder="재고" value={opt.stockQuantity} onChange={(e) => handleOptionChange(idx, "stockQuantity", Number(e.target.value))} min="0" />
+                      <input
+                        type="number"
+                        className={styles.formInput}
+                        placeholder="추가금액 (원)"
+                        value={opt.additionalPrice}
+                        onChange={(e) => handleOptionChange(idx, "additionalPrice", Number(e.target.value))}
+                        min="0"
+                      />
+                      <input
+                        type="number"
+                        className={styles.formInput}
+                        placeholder="재고 (개)"
+                        value={opt.stockQuantity}
+                        onChange={(e) => handleOptionChange(idx, "stockQuantity", Number(e.target.value))}
+                        min="0"
+                      />
                       {formData.optionList.length > 1 && (
                         <button type="button" className={styles.deleteBtn} onClick={() => handleRemoveOption(idx)}><X size={14} /></button>
                       )}
