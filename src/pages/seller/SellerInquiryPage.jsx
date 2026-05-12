@@ -45,7 +45,7 @@ export default function SellerInquiryPage() {
   useEffect(() => {
     setErrorMessage("")
     getSellerInquiries()
-      .then((data) => setInquiries(data ?? []))
+      .then((data) => setInquiries((data ?? []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))))
       .catch(() => {
         setErrorMessage("문의 목록을 불러오지 못했습니다.")
       })

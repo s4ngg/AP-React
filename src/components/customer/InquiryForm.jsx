@@ -83,7 +83,7 @@ export default function InquiryForm({ initialView = "form", onBack }) {
         if (initialView !== "history") return;
         setHistoryLoading(true);
         getMyInquiries()
-            .then((res) => setMyInquiries(res.data?.data || []))
+            .then((res) => setMyInquiries((res.data?.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))))
             .catch(() => setMyInquiries([]))
             .finally(() => setHistoryLoading(false));
     }, [initialView]);
@@ -174,7 +174,7 @@ export default function InquiryForm({ initialView = "form", onBack }) {
         setHistoryLoading(true);
         try {
             const res = await getMyInquiries();
-            setMyInquiries(res.data?.data || []);
+            setMyInquiries((res.data?.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
         } catch {
             setMyInquiries([]);
         } finally {
