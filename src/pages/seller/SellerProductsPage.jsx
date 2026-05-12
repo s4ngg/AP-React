@@ -77,7 +77,7 @@ export default function SellerProductsPage() {
           return { ...prev, categoryId: String(categories[0].parentCategoryId) }
         })
       })
-      .catch(() => { })
+      .catch(() => {})
   }, [])
 
   const filteredProducts = useMemo(() => {
@@ -464,7 +464,7 @@ export default function SellerProductsPage() {
                         type="number"
                         className={styles.formInput}
                         placeholder="추가금액 (원)"
-                        value={opt.additionalPrice === 0 ? "" : opt.additionalPrice}
+                        value={opt.additionalPrice}
                         onChange={(e) => handleOptionChange(idx, "additionalPrice", Number(e.target.value))}
                         min="0"
                       />
@@ -472,7 +472,7 @@ export default function SellerProductsPage() {
                         type="number"
                         className={styles.formInput}
                         placeholder="재고 (개)"
-                        value={opt.stockQuantity === 0 ? "" : opt.stockQuantity}
+                        value={opt.stockQuantity}
                         onChange={(e) => handleOptionChange(idx, "stockQuantity", Number(e.target.value))}
                         min="0"
                       />
