@@ -392,7 +392,7 @@ export default function ReturnForm({ onBack }) {
                         />
                     </div>
 
-                    {SIMPLE_REASON_CODES.includes(reason) && (
+                    {SIMPLE_REASON_CODES.includes(reason) && pickup === "COURIER" && (
                         <div className={styles.feeInfoBox}>
                             <AlertCircle size={16} />
                             <p>단순 변심·사이즈 변경 사유의 경우 왕복 배송비 <strong>6,000원</strong>이 부과됩니다.</p>
