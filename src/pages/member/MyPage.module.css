@@ -401,6 +401,11 @@
   flex: 1;
 }
 
+.orderItemActions {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .orderItemName {
   font-size: 14px;
   font-weight: 500;
@@ -474,6 +479,24 @@
   background-color: #f9fafb;
 }
 
+.reviewWriteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #2563eb;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+}
+
+.reviewWriteBtn:hover {
+  background-color: #1d4ed8;
+}
+
 .empty {
   display: flex;
   flex-direction: column;
@@ -482,6 +505,18 @@
   padding: 60px 0;
   color: #9ca3af;
   font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .orderItem {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .orderItemActions {
+    width: calc(100% - 76px);
+    margin-left: 76px;
+  }
 }
 
 /* ─── 배송지 관리 ─────────────────────── */
