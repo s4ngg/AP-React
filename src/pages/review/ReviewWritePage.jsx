@@ -38,6 +38,7 @@ export default function ReviewWritePage() {
         const res = await getProductDetail(id)
         setProduct(res.data)
       } catch {
+        setProduct(null)
       }
     }
     fetchProduct()
@@ -71,7 +72,7 @@ export default function ReviewWritePage() {
         orderItemId: Number(orderItemId),
         rating,
         content: content.trim(),
-        selectedOption,
+        selectedOption: selectedOption || null,
       })
       setSubmitted(true)
     } catch (err) {

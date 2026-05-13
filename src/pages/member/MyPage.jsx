@@ -12,7 +12,7 @@ import {
   updateDeliveryAddress,
   deleteDeliveryAddress,
 } from "../../api/orderApi"
-import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket, Store } from "lucide-react"
+import { User, Package, MapPin, AlertTriangle, ChevronRight, Eye, EyeOff, Award, Ticket, Store, Star } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 // 백엔드 OrderStatus enum → 한글 라벨 매핑
@@ -309,6 +309,14 @@ export default function MyPage() {
       .catch(() => alert("주문 취소에 실패했습니다."))
   }
 
+  const getReviewWriteUrl = (item) => {
+    const params = new URLSearchParams({ orderItemId: String(item.orderItemId) })
+    if (item.selectedOption) {
+      params.set("selectedOption", item.selectedOption)
+    }
+    return `/products/${item.productId}/review/write?${params.toString()}`
+  }
+
   const filteredCoupons = coupons.filter((c) =>
     couponFilter === "available" ? !c.isUsed : c.isUsed
   )
@@ -488,6 +496,17 @@ export default function MyPage() {
                               <p className={styles.orderItemMeta}>{item.quantity}개</p>
                               <p className={styles.orderItemPrice}>{Number(item.totalPrice).toLocaleString()}원</p>
                             </div>
+                            {order.status === "DELIVERED" && (
+                              <div className={styles.orderItemActions}>
+                                <button
+                                  className={styles.reviewWriteBtn}
+                                  onClick={() => navigate(getReviewWriteUrl(item))}
+                                >
+                                  <Star size={14} />
+                                  후기 작성
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
