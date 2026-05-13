@@ -412,6 +412,7 @@
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid #e5e7eb;
+  cursor: zoom-in;
 }
 
 .rejectTextarea {

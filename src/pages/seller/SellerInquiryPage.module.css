@@ -355,3 +355,7 @@
   border-radius: 6px;
   border: 1px solid #e5e7eb;
 }
+
+.attachmentImage {
+  cursor: zoom-in;
+}

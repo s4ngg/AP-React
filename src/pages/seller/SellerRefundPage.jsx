@@ -6,6 +6,7 @@ import {
   useApproveClaimMutation,
   useSellerClaims,
 } from "../../query/useSellerClaimQuery"
+import ImagePreviewModal from "../../components/common/ImagePreviewModal"
 import styles from "./SellerRefundPage.module.css"
 
 const CLAIM_TYPE_LABEL = { EXCHANGE: "교환", RETURN: "반품" }
@@ -65,6 +66,7 @@ export default function SellerRefundPage() {
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [processingId, setProcessingId] = useState(null)
   const [detailLoadingId, setDetailLoadingId] = useState(null)
+  const [previewSrc, setPreviewSrc] = useState(null)
 
   const filteredClaims = useMemo(() => {
     if (activeTab === "ALL") return claims
@@ -225,6 +227,8 @@ export default function SellerRefundPage() {
         </div>
       </main>
 
+      <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
+
       {selectedRequest && (
         <div className={styles.modalOverlay} onClick={() => setSelectedRequest(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -302,6 +306,7 @@ export default function SellerRefundPage() {
                             src={attachment.imageUrl}
                             alt="클레임 첨부"
                             className={styles.attachmentImage}
+                            onClick={() => setPreviewSrc(attachment.imageUrl)}
                           />
                         ))}
                       </div>

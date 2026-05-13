@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Send, CheckCircle } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import { formatDate } from "../../utils/format"
 import { getAdminInquiries, postAdminAnswer, updateInquiryStatus } from "../../api/inquiryApi"
+import ImagePreviewModal from "../../components/common/ImagePreviewModal"
 import styles from "./AdminInquiryPage.module.css"
 
 const TYPE_LABEL = {
@@ -33,6 +34,7 @@ export default function AdminInquiryPage() {
   const [submitting, setSubmitting] = useState(false)
   const [completingId, setCompletingId] = useState(null)
   const [loadError, setLoadError] = useState(false)
+  const [previewSrc, setPreviewSrc] = useState(null)
 
   useEffect(() => {
     getAdminInquiries()
@@ -85,6 +87,7 @@ export default function AdminInquiryPage() {
 
   return (
     <div className={styles.adminLayout}>
+      <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
       <AdminSidebar />
       <main className={styles.content}>
         <h1 className={styles.pageTitle}>1:1 문의 관리</h1>
@@ -152,6 +155,7 @@ export default function AdminInquiryPage() {
                                       src={att.imageUrl}
                                       alt="첨부 이미지"
                                       className={styles.attachmentImage}
+                                      onClick={() => setPreviewSrc(att.imageUrl)}
                                     />
                                   ))}
                                 </div>
