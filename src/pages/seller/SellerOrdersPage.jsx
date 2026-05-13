@@ -102,7 +102,7 @@ export default function SellerOrdersPage() {
         prev.map((o) => (o.orderId === orderId ? { ...o, status: nextStatus, statusLabel: STATUS_LABEL[nextStatus] } : o))
       )
     } catch (err) {
-      alert(err.response?.data?.message || "주문 상태 변경에 실패했습니다.")
+      alert(err.response?.data?.message || err.message || "주문 상태 변경에 실패했습니다.")
     } finally {
       setUpdatingOrderId(null)
     }
