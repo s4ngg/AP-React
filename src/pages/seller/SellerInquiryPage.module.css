@@ -341,3 +341,17 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+.attachmentList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attachmentImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}

@@ -96,7 +96,7 @@ export default function AiRecommendSection() {
       for (const cat of recommendedCategories) {
         const categoryId = categoryMap[cat]
         if (categoryId) {
-          const res = await spring.get(`/api/products?categoryId=${categoryId}&size=2`)
+          const res = await spring.get(`/api/products?categoryId=${categoryId}&size=4`)
           const items = res.data?.data?.content || []
           const newItems = items.map((p) => ({
             id: p.productId,
@@ -180,17 +180,7 @@ export default function AiRecommendSection() {
           </button>
         </div>
 
-        {!isLoading && data.categories.length > 0 && (
-          <div className={styles.analysisTags}>
-            <span className={styles.analysisLabel}>분석 기반:</span>
-            {data.categories.map((c) => (
-              <span key={c} className={`${styles.tag} ${styles.tagBlue}`}>{c}</span>
-            ))}
-            {data.keywords.map((k) => (
-              <span key={k} className={`${styles.tag} ${styles.tagPurple}`}>{k}</span>
-            ))}
-          </div>
-        )}
+
 
         {isLoading && (
           <>

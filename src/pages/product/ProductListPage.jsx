@@ -78,9 +78,12 @@ function ProductListPage() {
     const queryCategory = params.get("category");
     const queryKeyword = params.get("keyword");
 
+    const querySubCategory = params.get("subCategory")
+
     if (queryKeyword) {
       setSearchKeyword(queryKeyword)
       setSelectedParentName("")
+      setSelectedChildName("")
     }
 
     if (queryCategory && parentCategories.length > 0) {
@@ -90,6 +93,13 @@ function ProductListPage() {
         setSelectedParentName(found.categoryName);
         setSearchKeyword("")
       }
+    }
+
+    if (querySubCategory) {
+      setSelectedChildName(querySubCategory)
+    } else {
+      setSelectedChildName("")
+      setSelectedChildId(null)
     }
   }, [location.search, parentCategories]);
 
@@ -108,6 +118,8 @@ function ProductListPage() {
         p.productName?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         p.brand?.toLowerCase().includes(searchKeyword.toLowerCase())
       )
+    } else if (selectedChildName) {
+      result = result.filter((p) => p.childCategoryName === selectedChildName);
     } else if (selectedParentName) {
       result = result.filter((p) => p.parentCategoryName === selectedParentName);
     }
@@ -117,7 +129,7 @@ function ProductListPage() {
     else if (selectedSort === "가격높은순") result.sort((a, b) => Number(b.price) - Number(a.price));
 
     return result;
-  }, [allProducts, selectedParentName, selectedSort, searchKeyword]);
+  }, [allProducts, selectedParentName, selectedChildName, selectedSort, searchKeyword]);
 
   // 페이지네이션
   const totalElements = filteredSortedProducts.length;

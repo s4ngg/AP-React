@@ -299,7 +299,7 @@ export default function SellerRefundPage() {
                         {selectedRequest.attachments.map((attachment) => (
                           <img
                             key={attachment.attachmentId}
-                            src={attachment.fileUrl}
+                            src={attachment.imageUrl}
                             alt="클레임 첨부"
                             className={styles.attachmentImage}
                           />

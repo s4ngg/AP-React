@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Pencil, Plus, RotateCcw, Trash2 } from "lucide-react"
 import AdminSidebar from "../../components/admin/AdminSidebar"
 import {
@@ -15,15 +15,33 @@ import styles from "./AdminCategoryPage.module.css"
 
 const TABS = ["대분류", "소분류"]
 
-const EMPTY_FORM = {
+const BASE_FORM = {
   categoryName: "",
   slug: "",
-  sortOrder: "0",
   isActive: "1",
 }
 
+const getNextSortOrder = (categories) =>
+  String(Math.max(0, ...categories.map((category) => Number(category.sortOrder) || 0)) + 1)
+
+const createEmptyForm = (categories = []) => ({
+  ...BASE_FORM,
+  sortOrder: getNextSortOrder(categories),
+})
+
 const getErrorMessage = (error) =>
   error.response?.data?.message || error.message || "처리 중 오류가 발생했습니다."
+
+const isInvalidSortOrder = (sortOrder) => {
+  const order = Number(sortOrder)
+  return !Number.isInteger(order) || order < 1
+}
+
+const hasDuplicateSortOrder = (categories, sortOrder, editingId, idKey) =>
+  categories.some((category) =>
+    Number(category.sortOrder) === Number(sortOrder) &&
+    String(category[idKey]) !== String(editingId)
+  )
 
 const buildPayload = (form) => ({
   categoryName: form.categoryName.trim(),
@@ -37,8 +55,8 @@ export default function AdminCategoryPage() {
   const [parentCategories, setParentCategories] = useState([])
   const [childCategories, setChildCategories] = useState([])
   const [selectedParentId, setSelectedParentId] = useState("")
-  const [parentForm, setParentForm] = useState(EMPTY_FORM)
-  const [childForm, setChildForm] = useState(EMPTY_FORM)
+  const [parentForm, setParentForm] = useState(() => createEmptyForm())
+  const [childForm, setChildForm] = useState(() => createEmptyForm())
   const [editingParentId, setEditingParentId] = useState(null)
   const [editingChildId, setEditingChildId] = useState(null)
   const [isParentLoading, setIsParentLoading] = useState(true)
@@ -50,51 +68,59 @@ export default function AdminCategoryPage() {
     [parentCategories, selectedParentId]
   )
 
-  const loadParents = async () => {
+  const loadParents = useCallback(async () => {
     setIsParentLoading(true)
     try {
       const data = await getAdminParentCategories()
       const parents = data ?? []
       setParentCategories(parents)
+      setParentForm(createEmptyForm(parents))
       setSelectedParentId((prev) => {
         if (prev && parents.some((category) => String(category.parentCategoryId) === String(prev))) {
           return prev
         }
         return parents[0]?.parentCategoryId ? String(parents[0].parentCategoryId) : ""
       })
+      return parents
     } catch (error) {
       alert(getErrorMessage(error))
+      return []
     } finally {
       setIsParentLoading(false)
     }
-  }
+  }, [])
 
-  const loadChildren = async (parentCategoryId) => {
+  const loadChildren = useCallback(async (parentCategoryId) => {
     if (!parentCategoryId) {
       setChildCategories([])
+      setChildForm(createEmptyForm())
       return
     }
 
     setIsChildLoading(true)
     try {
       const data = await getAdminChildCategories(parentCategoryId)
-      setChildCategories(data ?? [])
+      const children = data ?? []
+      setChildCategories(children)
+      setChildForm(createEmptyForm(children))
+      return children
     } catch (error) {
       alert(getErrorMessage(error))
+      return []
     } finally {
       setIsChildLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadParents()
-  }, [])
+  }, [loadParents])
 
   useEffect(() => {
     if (activeTab === 1) {
       loadChildren(selectedParentId)
     }
-  }, [activeTab, selectedParentId])
+  }, [activeTab, selectedParentId, loadChildren])
 
   const handleParentFormChange = (event) => {
     const { name, value } = event.target
@@ -112,6 +138,14 @@ export default function AdminCategoryPage() {
       alert("카테고리명과 slug를 입력해주세요.")
       return
     }
+    if (isInvalidSortOrder(parentForm.sortOrder)) {
+      alert("정렬 번호는 1 이상의 숫자로 입력해주세요.")
+      return
+    }
+    if (hasDuplicateSortOrder(parentCategories, parentForm.sortOrder, editingParentId, "parentCategoryId")) {
+      alert("이미 사용 중인 정렬 번호입니다.")
+      return
+    }
 
     setIsSubmitting(true)
     try {
@@ -120,9 +154,9 @@ export default function AdminCategoryPage() {
       } else {
         await createAdminParentCategory(buildPayload(parentForm))
       }
-      setParentForm(EMPTY_FORM)
       setEditingParentId(null)
-      await loadParents()
+      const parents = await loadParents()
+      setParentForm(createEmptyForm(parents))
     } catch (error) {
       alert(getErrorMessage(error))
     } finally {
@@ -140,6 +174,14 @@ export default function AdminCategoryPage() {
       alert("카테고리명과 slug를 입력해주세요.")
       return
     }
+    if (isInvalidSortOrder(childForm.sortOrder)) {
+      alert("정렬 번호는 1 이상의 숫자로 입력해주세요.")
+      return
+    }
+    if (hasDuplicateSortOrder(childCategories, childForm.sortOrder, editingChildId, "childCategoryId")) {
+      alert("이미 사용 중인 정렬 번호입니다.")
+      return
+    }
 
     setIsSubmitting(true)
     try {
@@ -148,9 +190,9 @@ export default function AdminCategoryPage() {
       } else {
         await createAdminChildCategory(selectedParentId, buildPayload(childForm))
       }
-      setChildForm(EMPTY_FORM)
       setEditingChildId(null)
-      await loadChildren(selectedParentId)
+      const children = await loadChildren(selectedParentId)
+      setChildForm(createEmptyForm(children))
     } catch (error) {
       alert(getErrorMessage(error))
     } finally {
@@ -163,7 +205,7 @@ export default function AdminCategoryPage() {
     setParentForm({
       categoryName: category.categoryName ?? "",
       slug: category.slug ?? "",
-      sortOrder: String(category.sortOrder ?? 0),
+      sortOrder: String(category.sortOrder ?? 1),
       isActive: String(category.isActive ?? 1),
     })
   }
@@ -173,18 +215,18 @@ export default function AdminCategoryPage() {
     setChildForm({
       categoryName: category.categoryName ?? "",
       slug: category.slug ?? "",
-      sortOrder: String(category.sortOrder ?? 0),
+      sortOrder: String(category.sortOrder ?? 1),
       isActive: String(category.isActive ?? 1),
     })
   }
 
   const handleResetParentForm = () => {
-    setParentForm(EMPTY_FORM)
+    setParentForm(createEmptyForm(parentCategories))
     setEditingParentId(null)
   }
 
   const handleResetChildForm = () => {
-    setChildForm(EMPTY_FORM)
+    setChildForm(createEmptyForm(childCategories))
     setEditingChildId(null)
   }
 
@@ -259,7 +301,7 @@ export default function AdminCategoryPage() {
                   className={styles.sortInput}
                   value={parentForm.sortOrder}
                   onChange={handleParentFormChange}
-                  min="0"
+                  min="1"
                   aria-label="정렬 순서"
                 />
                 <select
@@ -389,7 +431,7 @@ export default function AdminCategoryPage() {
                   className={styles.sortInput}
                   value={childForm.sortOrder}
                   onChange={handleChildFormChange}
-                  min="0"
+                  min="1"
                   aria-label="정렬 순서"
                 />
                 <select

@@ -7,9 +7,9 @@ export const getProducts = (page = 0, size = 20) =>
     .get("/api/products", { params: { page, size, sort: "createdAt,desc" } })
     .then((res) => res.data.data)
 
-export const getProductList = async (page = 0, size = 8) => {
+export const getProductList = async (page = 0, size = 8, sort = "createdAt,desc") => {
   const response = await api.get("/api/products", {
-    params: { page, size, sort: "createdAt,desc" },
+    params: { page, size, sort },
   })
   return response.data
 }
