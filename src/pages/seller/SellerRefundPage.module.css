@@ -429,3 +429,17 @@
 .rejectTextarea:focus {
   border-color: #2563eb;
 }
+
+.rejectModal {
+  background: #fff;
+  border-radius: 12px;
+  width: 440px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.rejectModalBody {
+  padding: 16px 24px;
+}
