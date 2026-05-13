@@ -33,10 +33,10 @@ export const createProduct = (data) =>
 
 export const uploadProductImage = (file) => {
   const formData = new FormData()
-  formData.append("file", file)
+  formData.append("image", file)
   return api
     .post("/api/products/images", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": "multipart/form-data" }
     })
     .then((res) => res.data.data)
 }
