@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react"
-import { CheckCircle, X } from "lucide-react"
+import { CheckCircle, X, XCircle } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import { getClaimAttachments, getClaimDetail } from "../../api/sellerApi"
 import {
   useApproveClaimMutation,
+  useRejectClaimMutation,
   useSellerClaims,
 } from "../../query/useSellerClaimQuery"
 import ImagePreviewModal from "../../components/common/ImagePreviewModal"
@@ -61,12 +62,15 @@ const formatAmount = (amount) => {
 export default function SellerRefundPage() {
   const { data: claims = [], isLoading, isError } = useSellerClaims()
   const approveMutation = useApproveClaimMutation()
+  const rejectMutation = useRejectClaimMutation()
 
   const [activeTab, setActiveTab] = useState("ALL")
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [processingId, setProcessingId] = useState(null)
   const [detailLoadingId, setDetailLoadingId] = useState(null)
   const [previewSrc, setPreviewSrc] = useState(null)
+  const [rejectModalClaimId, setRejectModalClaimId] = useState(null)
+  const [rejectReason, setRejectReason] = useState("")
 
   const filteredClaims = useMemo(() => {
     if (activeTab === "ALL") return claims
@@ -96,6 +100,22 @@ export default function SellerRefundPage() {
       alert("승인 처리 중 오류가 발생했습니다.")
     } finally {
       setProcessingId(null)
+    }
+  }
+
+  const handleRejectOpen = (claimId) => {
+    setRejectReason("")
+    setRejectModalClaimId(claimId)
+  }
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) return alert("반려 사유를 입력해주세요.")
+    try {
+      await rejectMutation.mutateAsync({ claimId: rejectModalClaimId, rejectReason: rejectReason.trim() })
+      setRejectModalClaimId(null)
+      setSelectedRequest(null)
+    } catch {
+      alert("반려 처리 중 오류가 발생했습니다.")
     }
   }
 
@@ -213,6 +233,14 @@ export default function SellerRefundPage() {
                               <CheckCircle size={14} />
                               승인
                             </button>
+                            <button
+                              className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                              onClick={() => handleRejectOpen(request.claimId)}
+                              disabled={processingId === request.claimId}
+                            >
+                              <XCircle size={14} />
+                              반려
+                            </button>
                           </div>
                         ) : (
                           <span className={styles.processedText}>처리 완료</span>
@@ -228,6 +256,48 @@ export default function SellerRefundPage() {
       </main>
 
       <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
+
+      {rejectModalClaimId && (
+        <div className={styles.modalOverlay} onClick={() => setRejectModalClaimId(null)}>
+          <div className={styles.rejectModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>반려 사유 입력</h2>
+              <button
+                className={styles.modalCloseBtn}
+                onClick={() => setRejectModalClaimId(null)}
+                aria-label="닫기"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className={styles.rejectModalBody}>
+              <textarea
+                className={styles.rejectTextarea}
+                placeholder="반려 사유를 입력해주세요."
+                rows={4}
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={`${styles.actionBtn} ${styles.cancelBtn}`}
+                onClick={() => setRejectModalClaimId(null)}
+              >
+                취소
+              </button>
+              <button
+                className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                onClick={handleRejectSubmit}
+                disabled={rejectMutation.isPending}
+              >
+                <XCircle size={14} />
+                {rejectMutation.isPending ? "처리 중..." : "반려 확인"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedRequest && (
         <div className={styles.modalOverlay} onClick={() => setSelectedRequest(null)}>
@@ -317,6 +387,14 @@ export default function SellerRefundPage() {
             </div>
             {isProcessableClaim(selectedRequest) && (
               <div className={styles.modalFooter}>
+                <button
+                  className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                  onClick={() => handleRejectOpen(selectedRequest.claimId)}
+                  disabled={processingId === selectedRequest.claimId}
+                >
+                  <XCircle size={14} />
+                  반려
+                </button>
                 <button
                   className={`${styles.actionBtn} ${styles.approveBtn}`}
                   onClick={() => handleApprove(selectedRequest.claimId)}
