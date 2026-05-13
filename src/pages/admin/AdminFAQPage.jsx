@@ -22,6 +22,8 @@ const CATEGORY_LABEL = {
   MEMBER: "회원",
 }
 
+const sortFaqs = (list) => [...list].sort((a, b) => b.faqId - a.faqId)
+
 export default function AdminFAQPage() {
   const [faqs, setFAQs] = useState([])
   const [selectedCategory, setSelectedCategory] = useState("전체")
@@ -53,7 +55,7 @@ export default function AdminFAQPage() {
       displayOrder: editTarget.displayOrder ?? 0,
     })
       .then((data) => {
-        setFAQs((prev) => prev.map((f) => f.faqId === data.faqId ? data : f))
+        setFAQs((prev) => sortFaqs(prev.map((f) => f.faqId === data.faqId ? data : f)))
         closeEdit()
       })
       .catch(() => alert("수정에 실패했습니다."))
@@ -61,7 +63,7 @@ export default function AdminFAQPage() {
 
   useEffect(() => {
     getFaqs()
-      .then((data) => setFAQs(data ?? []))
+      .then((data) => setFAQs(sortFaqs(data ?? [])))
       .catch(() => alert("FAQ를 불러오지 못했습니다."))
   }, [])
 
@@ -82,7 +84,7 @@ export default function AdminFAQPage() {
       displayOrder: 0,
     })
       .then((data) => {
-        setFAQs((prev) => [data, ...prev])
+        setFAQs((prev) => sortFaqs([data, ...prev]))
         setNewQuestion("")
         setNewAnswer("")
       })

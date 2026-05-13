@@ -6,12 +6,18 @@ import styles from "./AdminNoticePage.module.css"
 import { getNotices, createNotice, updateNotice, deleteNotice } from "../../api/noticeApi.js"
 
 
+const sortNotices = (list) =>
+  [...list].sort((a, b) => {
+    if (a.fixed !== b.fixed) return b.fixed - a.fixed
+    return new Date(b.createdAt) - new Date(a.createdAt)
+  })
+
 export default function AdminNoticePage() {
   const [notices, setNotices] = useState([])
 
   useEffect(() => {
     getNotices()
-        .then((data) => setNotices(data ?? []))
+        .then((data) => setNotices(sortNotices(data ?? [])))
         .catch(() => alert("공지사항을 불러오지 못했습니다."))
   }, [])
 
@@ -30,7 +36,7 @@ export default function AdminNoticePage() {
     if (!title) return
     createNotice({ title, content: newContent.trim(), fixed: newIsPinned })
         .then((data) => {
-          setNotices((prev) => [data, ...prev])
+          setNotices((prev) => sortNotices([data, ...prev]))
           setNewTitle("")
           setNewContent("")
           setNewIsPinned(false)
@@ -53,7 +59,7 @@ export default function AdminNoticePage() {
     if (!title) return
     updateNotice(editTarget.noticeId, { title, content: editContent.trim(), fixed: editIsPinned })
       .then((data) => {
-        setNotices((prev) => prev.map((n) => n.noticeId === data.noticeId ? data : n))
+        setNotices((prev) => sortNotices(prev.map((n) => n.noticeId === data.noticeId ? data : n)))
         closeEdit()
       })
       .catch(() => alert("수정에 실패했습니다."))
