@@ -315,6 +315,28 @@
   color: #1d4ed8;
 }
 
+/* 상태 변경 버튼 (배송 시작 / 배송 완료) */
+.actionBtn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #2563eb;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.actionBtn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.actionBtn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
 /* 주문 상세 모달 */
 .modalOverlay {
   position: fixed;
