@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
 import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories, uploadProductImage } from "../../api/productApi"
 const APPROVAL_CLASS = {
@@ -76,8 +75,6 @@ export default function SellerProductsPage() {
     if (!selectedParentId) { setChildCategories([]); return }
     setChildCategoriesLoading(true)
     getChildCategories(selectedParentId)
-      .then((res) => setChildCategories(res.data ?? []))
-      .catch(() => setChildCategories([]))
       .then((res) => {
         const list = res?.data ?? res ?? []
         const children = Array.isArray(list) ? list : []
@@ -136,6 +133,7 @@ export default function SellerProductsPage() {
       const url = await uploadProductImage(file)
       setFormData((prev) => ({ ...prev, thumbnailUrl: url }))
     } catch {
+      alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.")
       e.target.value = ""
     } finally {
       setIsUploading(false)
