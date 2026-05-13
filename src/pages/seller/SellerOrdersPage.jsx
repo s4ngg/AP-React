@@ -3,7 +3,7 @@ import { X, Search } from "lucide-react"
 import { Link } from "react-router-dom"
 import SellerSidebar from "../../components/seller/SellerSidebar"
 import styles from "./SellerOrdersPage.module.css"
-import { getSellerOrders } from "../../api/sellerApi"
+import { getSellerOrders, updateSellerOrderStatus } from "../../api/sellerApi"
 
 const STATUS_TABS = [
   { value: "ALL", label: "전체" },
@@ -62,6 +62,7 @@ export default function SellerOrdersPage() {
   const [searchType, setSearchType] = useState("memberName")
   const [searchTerm, setSearchTerm] = useState("")
   const [appliedSearch, setAppliedSearch] = useState({ type: "memberName", term: "" })
+  const [updatingOrderId, setUpdatingOrderId] = useState(null)
 
   useEffect(() => {
     let ignore = false
@@ -88,6 +89,23 @@ export default function SellerOrdersPage() {
 
   const handleSearch = () => {
     setAppliedSearch({ type: searchType, term: searchTerm.trim() })
+  }
+
+  const handleUpdateStatus = async (orderId, nextStatus) => {
+    const actionLabel = nextStatus === "SHIPPING" ? "배송을 시작" : "배송을 완료"
+    if (!window.confirm(`해당 주문의 ${actionLabel}하시겠습니까?`)) return
+
+    setUpdatingOrderId(orderId)
+    try {
+      await updateSellerOrderStatus(orderId, nextStatus)
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId === orderId ? { ...o, status: nextStatus, statusLabel: STATUS_LABEL[nextStatus] } : o))
+      )
+    } catch (err) {
+      alert(err.response?.data?.message || "주문 상태 변경에 실패했습니다.")
+    } finally {
+      setUpdatingOrderId(null)
+    }
   }
 
   const handleSearchClear = () => {
@@ -175,15 +193,16 @@ export default function SellerOrdersPage() {
                   <th>결제금액</th>
                   <th>주문일</th>
                   <th>상태</th>
+                  <th>관리</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} className={styles.emptyRow}>불러오는 중...</td></tr>
+                  <tr><td colSpan={7} className={styles.emptyRow}>불러오는 중...</td></tr>
                 ) : errorMessage ? (
-                  <tr><td colSpan={6} className={styles.emptyRow}>{errorMessage}</td></tr>
+                  <tr><td colSpan={7} className={styles.emptyRow}>{errorMessage}</td></tr>
                 ) : filteredOrders.length === 0 ? (
-                  <tr><td colSpan={6} className={styles.emptyRow}>해당 조건의 주문이 없습니다.</td></tr>
+                  <tr><td colSpan={7} className={styles.emptyRow}>해당 조건의 주문이 없습니다.</td></tr>
                 ) : (
                   filteredOrders.map((order) => (
                     <tr key={order.orderItemId ?? order.orderId}>
@@ -204,6 +223,26 @@ export default function SellerOrdersPage() {
                         <span className={`${styles.statusBadge} ${styles[STATUS_BADGE_CLASS[order.status]]}`}>
                           {getStatusLabel(order)}
                         </span>
+                      </td>
+                      <td>
+                        {order.status === "PAID" && (
+                          <button
+                            className={styles.actionBtn}
+                            onClick={() => handleUpdateStatus(order.orderId, "SHIPPING")}
+                            disabled={updatingOrderId === order.orderId}
+                          >
+                            배송 시작
+                          </button>
+                        )}
+                        {order.status === "SHIPPING" && (
+                          <button
+                            className={styles.actionBtn}
+                            onClick={() => handleUpdateStatus(order.orderId, "DELIVERED")}
+                            disabled={updatingOrderId === order.orderId}
+                          >
+                            배송 완료
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))

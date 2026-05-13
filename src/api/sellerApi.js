@@ -43,6 +43,9 @@ export const getSellerClaims = () =>
 export const getSellerOrders = () =>
   api.get("/api/seller/orders").then((res) => res.data.data)
 
+export const updateSellerOrderStatus = (orderId, status) =>
+  api.patch(`/api/seller/orders/${orderId}/status`, { status }).then((res) => res.data)
+
 export const approveClaim = (claimId) =>
   api.patch(`/api/claims/${claimId}/approve`).then((res) => res.data)
 
