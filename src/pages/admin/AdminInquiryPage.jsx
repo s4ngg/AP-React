@@ -144,6 +144,19 @@ export default function AdminInquiryPage() {
                             <div className={styles.detailBox}>
                               <p className={styles.detailContent}>{inq.content}</p>
 
+                              {(inq.attachments ?? []).length > 0 && (
+                                <div className={styles.attachmentList}>
+                                  {inq.attachments.map((att) => (
+                                    <img
+                                      key={att.attachmentId}
+                                      src={att.imageUrl}
+                                      alt="첨부 이미지"
+                                      className={styles.attachmentImage}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+
                               {(inq.answers ?? []).length > 0 && (
                                 <div className={styles.answerList}>
                                   {inq.answers.map((ans) => (

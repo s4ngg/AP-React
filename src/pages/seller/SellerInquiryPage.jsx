@@ -169,6 +169,23 @@ export default function SellerInquiryPage() {
                         <p className={styles.questionText}>{inq.content}</p>
                       </div>
 
+                      {/* 첨부 이미지 */}
+                      {(inq.attachments ?? []).length > 0 && (
+                        <div className={styles.questionBox}>
+                          <p className={styles.questionLabel}>첨부 이미지</p>
+                          <div className={styles.attachmentList}>
+                            {inq.attachments.map((att) => (
+                              <img
+                                key={att.attachmentId}
+                                src={att.imageUrl}
+                                alt="첨부 이미지"
+                                className={styles.attachmentImage}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* 기존 답변 표시 (완료된 경우) */}
                       {inq.status === "COMPLETED" && inq.answerContent && (
                         <div className={styles.answerBox}>
