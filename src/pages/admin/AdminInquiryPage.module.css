@@ -271,3 +271,19 @@
   background-color: #86efac;
   cursor: not-allowed;
 }
+
+.attachmentList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.attachmentImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
