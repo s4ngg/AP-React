@@ -1,9 +1,8 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Plus, Pencil, Trash2, X } from "lucide-react"
 import SellerSidebar from "../../components/seller/SellerSidebar"
-import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories } from "../../api/productApi"
 import styles from "./SellerProductsPage.module.css"
-
+import { getSellerProducts, createProduct, updateProduct, deleteProduct, getParentCategories, getChildCategories, uploadProductImage } from "../../api/productApi"
 const APPROVAL_CLASS = {
   APPROVED: styles.approvalAPPROVED,
   PENDING: styles.approvalPENDING,
@@ -34,6 +33,7 @@ const EMPTY_FORM = {
   description: "",
   thumbnailUrl: "",
   categoryId: "",
+  categoryIds: [],
   optionList: [{ optionName: "", optionValue: "", additionalPrice: 0, stockQuantity: 0 }],
   productImageList: [],
 }
@@ -42,6 +42,7 @@ export default function SellerProductsPage() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [childCategories, setChildCategories] = useState([])
+  const [childCategoriesLoading, setChildCategoriesLoading] = useState(false)
   const [selectedParentId, setSelectedParentId] = useState("")
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -50,7 +51,7 @@ export default function SellerProductsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const [isUploading, setIsUploading] = useState(false);
   // 가격 수정 모달
   const [editingProduct, setEditingProduct] = useState(null)
   const [editPrice, setEditPrice] = useState("")
@@ -72,9 +73,16 @@ export default function SellerProductsPage() {
 
   useEffect(() => {
     if (!selectedParentId) { setChildCategories([]); return }
+    setChildCategoriesLoading(true)
     getChildCategories(selectedParentId)
-      .then((res) => setChildCategories(res.data ?? []))
+      .then((res) => {
+        const list = res?.data ?? res ?? []
+        const children = Array.isArray(list) ? list : []
+        setChildCategories(children)
+        setFormData((prev) => ({ ...prev, categoryId: "", categoryIds: [] }))
+      })
       .catch(() => setChildCategories([]))
+      .finally(() => setChildCategoriesLoading(false))
   }, [selectedParentId])
 
   const filteredProducts = useMemo(() => {
@@ -117,6 +125,20 @@ export default function SellerProductsPage() {
     }))
   }
 
+  const handleThumbnailUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setIsUploading(true)
+    try {
+      const url = await uploadProductImage(file)
+      setFormData((prev) => ({ ...prev, thumbnailUrl: url }))
+    } catch {
+      alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.")
+      e.target.value = ""
+    } finally {
+      setIsUploading(false)
+    }
+  }
   const handleCreateSubmit = async (e) => {
     e.preventDefault()
     if (!formData.productName.trim() || !formData.price || !formData.thumbnailUrl.trim()) {
@@ -127,8 +149,8 @@ export default function SellerProductsPage() {
       alert("브랜드, 제조사, 원산지, 주의사항은 필수입니다.")
       return
     }
-    if (!formData.categoryId) {
-      alert("카테고리를 선택해주세요.")
+    if (!selectedParentId || formData.categoryIds.length === 0) {
+      alert("카테고리 소분류를 하나 이상 선택해주세요.")
       return
     }
     const invalidOption = formData.optionList.some((o) => !o.optionName.trim() || !o.optionValue.trim())
@@ -142,7 +164,8 @@ export default function SellerProductsPage() {
       const payload = {
         ...formData,
         price: Number(formData.price),
-        categoryId: Number(formData.categoryId),
+        childCategoryId: Number(formData.categoryId),
+        parentCategoryId: Number(selectedParentId),  // ← 이 줄 추가
         description: formData.description.trim() || formData.productName,
         optionList: formData.optionList.map((o) => ({
           ...o,
@@ -417,6 +440,7 @@ export default function SellerProductsPage() {
                     <label className={styles.formLabel}>판매가 (원) *</label>
                     <input type="number" name="price" className={styles.formInput} value={formData.price} onChange={handleFormChange} placeholder="0" min="0" />
                   </div>
+
                   <div className={styles.formGroup}>
                     <label className={styles.formLabel}>카테고리 *</label>
                     <select
@@ -424,7 +448,8 @@ export default function SellerProductsPage() {
                       value={selectedParentId}
                       onChange={(e) => {
                         setSelectedParentId(e.target.value)
-                        setFormData((prev) => ({ ...prev, categoryId: "" }))
+                        setFormData((prev) => ({ ...prev, categoryId: "", categoryIds: [] }))
+                        setChildCategories([])
                       }}
                     >
                       <option value="">대분류 선택</option>
@@ -434,21 +459,33 @@ export default function SellerProductsPage() {
                         </option>
                       ))}
                     </select>
-                    <select
-                      name="categoryId"
-                      className={styles.formInput}
-                      style={{ marginTop: 6 }}
-                      value={formData.categoryId}
-                      onChange={handleFormChange}
-                      disabled={!selectedParentId || childCategories.length === 0}
-                    >
-                      <option value="">소분류 선택</option>
-                      {childCategories.map((child) => (
-                        <option key={child.childCategoryId} value={child.childCategoryId}>
-                          {child.categoryName}
-                        </option>
-                      ))}
-                    </select>
+                    {selectedParentId && (
+                      <div style={{ marginTop: 6, border: "1px solid #ddd", borderRadius: 6, padding: "6px 10px", maxHeight: 160, overflowY: "auto" }}>
+                        {childCategoriesLoading ? (
+                          <p style={{ fontSize: 13, color: "#999", margin: 0 }}>불러오는 중...</p>
+                        ) : childCategories.length === 0 ? (
+                          <p style={{ fontSize: 13, color: "#e53935", margin: 0 }}>이 카테고리에는 소분류가 없습니다. 다른 대분류를 선택해주세요.</p>
+                        ) : (
+                          childCategories.map((child) => (
+                            <label key={child.childCategoryId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", cursor: "pointer", fontSize: 14 }}>
+                              <input
+                                type="radio"
+                                name="categoryId"
+                                checked={formData.categoryId === String(child.childCategoryId)}
+                                onChange={() =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    categoryId: String(child.childCategoryId),
+                                    categoryIds: [child.childCategoryId],
+                                  }))
+                                }
+                              />
+                              {child.categoryName}
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className={styles.formRow}>
@@ -466,8 +503,11 @@ export default function SellerProductsPage() {
                   <input name="precaution" className={styles.formInput} value={formData.precaution} onChange={handleFormChange} placeholder="주의사항을 입력하세요" />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>대표 이미지 URL *</label>
-                  <input name="thumbnailUrl" className={styles.formInput} value={formData.thumbnailUrl} onChange={handleFormChange} placeholder="https://..." />
+                  <label className={styles.formLabel}>대표 이미지 *</label>
+                  <input type="file" accept="image/*" className={styles.formInput} onChange={handleThumbnailUpload} />
+                  {formData.thumbnailUrl && (
+                    <img src={formData.thumbnailUrl} alt="미리보기" style={{ marginTop: 8, width: 120, height: 120, objectFit: "cover" }} />
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>상품 설명</label>
@@ -505,7 +545,11 @@ export default function SellerProductsPage() {
               </div>
               <div className={styles.modalFooter}>
                 <button type="button" className={styles.cancelBtn} onClick={() => { setIsCreateOpen(false); setFormData(EMPTY_FORM) }}>취소</button>
-                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={isSubmitting || (!!selectedParentId && !childCategoriesLoading && childCategories.length === 0)}
+                >
                   {isSubmitting ? "등록 중..." : "등록하기"}
                 </button>
               </div>

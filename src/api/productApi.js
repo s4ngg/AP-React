@@ -31,6 +31,15 @@ export const getProductDetail = async (productId, page = 0) => {
 export const createProduct = (data) =>
   api.post("/api/products", data).then((res) => res.data.data)
 
+export const uploadProductImage = (file) => {
+  const formData = new FormData()
+  formData.append("image", file)
+  return api
+    .post("/api/products/images", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    })
+    .then((res) => res.data.data)
+}
 export const updateProduct = (productId, data) =>
   api.patch(`/api/products/${productId}`, data).then((res) => res.data.data)
 

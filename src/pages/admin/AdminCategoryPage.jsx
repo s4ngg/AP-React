@@ -43,9 +43,11 @@ const hasDuplicateSortOrder = (categories, sortOrder, editingId, idKey) =>
     String(category[idKey]) !== String(editingId)
   )
 
-const buildPayload = (form) => ({
+const buildPayload = (form, isNew = false) => ({
   categoryName: form.categoryName.trim(),
-  slug: form.slug.trim(),
+  slug: isNew
+    ? `${form.categoryName.trim().toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`
+    : form.slug.trim(),
   sortOrder: Number(form.sortOrder),
   isActive: Number(form.isActive),
 })
@@ -152,7 +154,7 @@ export default function AdminCategoryPage() {
       if (editingParentId) {
         await updateAdminParentCategory(editingParentId, buildPayload(parentForm))
       } else {
-        await createAdminParentCategory(buildPayload(parentForm))
+        await createAdminParentCategory(buildPayload(parentForm, true))
       }
       setEditingParentId(null)
       const parents = await loadParents()
@@ -188,7 +190,7 @@ export default function AdminCategoryPage() {
       if (editingChildId) {
         await updateAdminChildCategory(editingChildId, buildPayload(childForm))
       } else {
-        await createAdminChildCategory(selectedParentId, buildPayload(childForm))
+        await createAdminChildCategory(selectedParentId, buildPayload(childForm, true))
       }
       setEditingChildId(null)
       const children = await loadChildren(selectedParentId)
